@@ -1,5 +1,6 @@
 <%= brick.template('inc_top') %>
-<div class="title"><%= brick.title %></div>
+
+<h1><%= brick.site.title %> :: <%= brick.title %></h1>
 <%
 if brick.isStreamCreatable:
     %><div class="actionlinks"><a href="<%= quoteHTML(brick.edPrefix+brick.path()) %>?qps-action%3AnewItem=1">Create new</a></div><%

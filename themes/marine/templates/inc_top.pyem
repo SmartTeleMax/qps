@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>Редакторский интерфейс "<%= brick.site.title %>"</title>
+<title>Editor interface of <%= brick.site.title %></title>
 <%
 styleSheetURL = getattr(brick, 'styleSheetURL', None)
 if styleSheetURL:

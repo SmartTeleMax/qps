@@ -1,4 +1,7 @@
 <%= brick.template('inc_top') %>
+
+<h1>Editor interface of <q><%= brick.site.title %></q></h1>
+
 <table class="centermenu">
 <%
 for stream in brick.allowedStreams:
