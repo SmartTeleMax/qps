@@ -1,0 +1,5 @@
+<%
+if value:
+    %><a href="<%= edPrefix+value.path() %>">&gt;&gt;</a><%
+else:
+    %>&mdash;
