@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.39 2004/11/24 16:39:18 ods Exp $
+# $Id: qFieldTypes.py,v 1.40 2004/11/30 13:05:00 corva Exp $
 
 '''Classes for common field types'''
 
@@ -268,19 +268,30 @@ class DATETIME(FieldType):
     format = '%d.%m.%Y %H:%M'
     error_message = 'Invalid date format'
     default = 'now'
+    allowNull = False
     def convertFromCode(self, value, item=None):
         if value=='now':
             return DateTime.now()
+        elif not value:
+            return
         else:
             # DateTime.strptime is not available on Windows
             return DateTime.DateTime(*time.strptime(value, self.format)[:6])
     convertFromString = convertFromCode
     def convertToString(self, value, item=None):
-        return value.strftime(self.format)
+        if value is None:
+            return str(value)
+        else:
+            return value.strftime(self.format)
     def convertToForm(self, value):
-        return value.strftime(self.format)
+        if value is None:
+            return ''
+        else:
+            return value.strftime(self.format)
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
+        if not value and self.allowNull:
+            return
         try:
             # DateTime.strptime is not available on Windows
             return DateTime.DateTime(*time.strptime(value, self.format)[:6])
@@ -689,6 +700,8 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
                                  'is not allowed'
     allowed_formats = ('GIF', 'PNG', 'JPEG')
     linkThrough = 0
+    allowUrl = False
+    allowFile = True
     
     class _Image:
         def __init__(self, field_type, item, body=None, old_path=None):
@@ -740,20 +753,22 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
             return self._Image(self, item, '', old_path)
 
         sources = []
-        try:
-            sources.append(form[name+'-body'].file)
-        except (KeyError, AttributeError):
-            pass
-        try:
-            url = form[name+'-url'].value
-            referer = '/'.join(url.split('/')[:-1])+'/'
+        if self.allowFile:
+            try:
+                sources.append(form[name+'-body'].file)
+            except (KeyError, AttributeError):
+                pass
+        if self.allowUrl:
+            try:
+                url = form[name+'-url'].value
+                referer = '/'.join(url.split('/')[:-1])+'/'
             
-            import urllib2
-            req = urllib2.Request(url=url)
-            req.add_header('Referer', referer)
-            sources.append(urllib2.urlopen(req))
-        except (IOError, KeyError, AttributeError, ValueError):
-            pass
+                import urllib2
+                req = urllib2.Request(url=url)
+                req.add_header('Referer', referer)
+                sources.append(urllib2.urlopen(req))
+            except (IOError, KeyError, AttributeError, ValueError):
+                pass
 
         image = self._Image(self, item)
         for source in sources:
@@ -860,6 +875,10 @@ class THUMBNAIL(IMAGE):
                 getattr(item, self.fieldToThumb, None), '_image', None)
         else:
             # field thumbnails itself
+            if form.has_key(name+'-delete'):
+                old_path =  getattr(getattr(item, name), 'path', None)
+                return self._Image(self, item, '', old_path)
+            
             image = image_orig = getattr(
                 IMAGE.convertFromForm(self, form, name, item), '_image', None)
 
