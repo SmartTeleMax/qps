@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.7 2004/06/29 08:55:36 corva Exp $
+# $Id: qVirtual.py,v 1.8 2004/07/14 15:45:40 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -71,7 +71,7 @@ class VirtualRule:
             return
 
     def constructId(self, param_item):
-        id_str = param_item.fields['id'].convertToString(param_item.id)
+        id_str = param_item.fields.id.convertToString(param_item.id)
         return '%s/%s' % (self.prefix, id_str)
 
     def condition(self, stream):
