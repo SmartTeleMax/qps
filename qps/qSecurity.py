@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.6 2004/12/23 00:48:34 corva Exp $
+# $Id: qSecurity.py,v 1.7 2005/01/25 11:13:40 corva Exp $
 
 '''Function to check permissions'''
 
@@ -152,6 +152,7 @@ class BasicAuthHandler:
 class CookieAuthHandler:
     usersStream = None # name of users stream
     authCookieName = "qpsuser" # name for auth cookie
+    expireTimeout = 31536000 # year in seconds
     
     def authCookiePath(self):
         return self.prefix
@@ -195,20 +196,12 @@ class CookieAuthHandler:
         elif login and passwd:
             stream = self.site.retrieveStream(self.usersStream)
             user = stream.getUser(login)
-
-            if user:
-                passwd_field = user.fields['passwd']
-                
-                if passwd_field.crypt(passwd) == user.passwd:
-                    # success!
-                    if perm_login:
-                        expires = 84600*365
-                    else:
-                        expires = None
-                    
-                    qHTTP.setCookie(response, self.authCookieName,
-                                    "%s:%s" % (user.login, user.passwd),
-                                    expires, path=self.authCookiePath)
+            if user and user.fields[stream.passwdField].crypt(passwd) == \
+               getattr(user, stream.passwdField):
+                expires = perm_login and self.expireTimeout or None
+                qHTTP.setCookie(response, self.authCookieName,
+                                "%s:%s" % (user.login, user.passwd),
+                                expires, path=self.authCookiePath)
             raise self.SeeOther(self.prefix+objs[-1].path())
 
     def do_reAuth(self, request, response, form, objs, user):
