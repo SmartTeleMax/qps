@@ -1,0 +1,29 @@
+#!%(python_executable)s
+# $Id: $
+
+import qps, os, logging
+qps.configLogger(level=logging.INFO)
+from PPA.HTTP.CGI import Adapter
+from qps import qEdit
+from Site import Site
+
+
+class Edit(qEdit.Edit):
+
+    prefix = ''
+    templateDirs = [%(`edit_templates_dir`)s]
+    fieldTemplateDirs = [%(`field_templates_dir`)s]
+
+
+class Main(Adapter):
+
+    def __init__(self):
+        self.__edit = Edit(Site())
+
+    def handle(self, request, response):
+        self.__edit.handle(request, response)
+
+
+handle = Main()
+if __name__=='__main__':
+    handle()

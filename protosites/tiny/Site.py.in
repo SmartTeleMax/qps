@@ -1,0 +1,44 @@
+# $Id: $
+#import locale
+#locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+from qps import qSite
+from qps.qUtils import DictRecord
+from qps import qFieldTypes as FT
+
+class Site(qSite.Site):
+
+    title = %(`title`)s
+    makeRoot = %(`make_dir`)s
+    templateDirs = [%(`make_templates_dir`)s]
+    #templateCharset = 'utf-8'
+    #clientCharset = 'utf-8'
+    #dbCharset = 'utf-8'
+    streamDescriptions = {
+        'static_stream_example': DictRecord(
+            title='Static stream title',
+            streamClass='qps.qBricks.qStatic.StaticStream',
+            itemListSpec = [
+                ('id1', {'title': 'First item title'}),
+                ('id2', {'title': 'Second item title'}),
+            ],
+            permissions=[('all', 'rx')]),
+        #'sql_stream_example': DictRecord(
+        #    title='SQL stream example',
+        #    tableName='stream_table',
+        #    condition='',  # raw SQL condition to place into WHERE clause
+        #    order='id',
+        #    indexNum=10,   # number of items on page
+        #    streamCat='sql_stream_template_category',
+        #    streamClass='qps.qBricks.qSQL.SQLStream',
+        #    permissions=[('editor', 'rwxcd'), ('all', 'rx')]),
+    }
+    itemFieldsOrder = {
+        #'stream_table': ['title', 'body'],
+    }
+    itemFields = {
+        #'stream_table': {
+        #    'title' : FT.STRING(title='Title'),
+        #    'body'  : FT.TEXT(title='Body text'),
+        #},
+    }
+    dbParams = {'user': 'test', 'database': 'test', 'passwd': 'secret'}

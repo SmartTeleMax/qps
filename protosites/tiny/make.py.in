@@ -1,0 +1,28 @@
+#!%(python_executable)s
+# $Id: $
+
+import os, logging, sys
+from getopt import getopt
+from qps import configLogger, qPath
+configLogger(level=logging.INFO)
+from Site import Site
+
+site = Site()
+path_parser = qPath.PathParser(site)
+opts, args = getopt(sys.argv[1:], 'p:')
+params = {}
+for opt, arg in opts:
+    if opt=='-p':
+        try:
+            name, value = arg.split('=', 1)
+            value = eval(value, {'__builtinds__': {}})
+        except ValueError:
+            sys.exit('Incorrect value for option -p: %r' % arg)
+        else:
+            params[name] = value
+args = args or ['/']
+for arg in args:
+    obj = path_parser(arg)[-1]
+    if obj is None:
+        sys.exit('Object with path %r not found' % arg)
+    obj.make(maker_params=params)
