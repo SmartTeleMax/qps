@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-<title>Редактура <%= brick.site.title + ': ' + brick.title %></title><%
+<title>Редактура <%= brick.site.title + ': ' + getattr(item, 'title', item.id) + ': ' + brick.title %></title><%
 if brick.site.clientCharset:
     %>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
@@ -59,7 +59,7 @@ for repeat in Cook.Repeat(brick):
 <td bgcolor=#F0F1F2><%
     if checked:
         %><input type="hidden" name="qps-old" value="<%= id_str %>"><%
-    %><input type="checkbox" name="qps-new" value="<%= id_str %>"<%
+    %><input type="<%= boundElementType %>" name="qps-new" value="<%= id_str %>"<%
     if checked:
         %> checked<%
     %>></td></tr><%
