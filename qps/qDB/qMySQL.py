@@ -1,4 +1,4 @@
-# $Id: qMySQL.py,v 1.11 2004/03/16 15:52:48 ods Exp $
+# $Id: qMySQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 
 '''Connection class for MySQL(tm)'''
 
@@ -27,9 +27,12 @@ class Connection(qSQL.Connection):
 
     def replace(self, table, field_dict):
         '''Construct and execute MySQL REPLACE command and return cursor.'''
-        updates = ', '.join(['%s=%s' % (fn, self.convert(fv))
-                             for fn, fv in field_dict.items()])
-        query = 'REPLACE %s SET %s' % (table, updates)
+        query = Query()
+        for name, value in field_dict.items():
+            if query:
+                query += ','
+            query += Query('%s=' % name, Param(value))
+        query = 'UPDATE %s SET ' % table + query
         return self.execute(query)
     
     class _sql_lock:
