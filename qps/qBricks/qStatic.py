@@ -1,4 +1,4 @@
-# $Id: qStatic.py,v 1.2 2004/06/08 15:32:22 ods Exp $
+# $Id: qStatic.py,v 1.3 2004/06/18 07:44:03 corva Exp $
 
 '''Classes for hardcoded bricks'''
 
@@ -16,12 +16,15 @@ class StaticItem(qBase.Item):
 
 
 class StaticStream(qBase.Stream):
-    '''Base class for statically (in code) defined streams. For example:
-
-        class Regions(StaticStream):
+    '''Class for streams with statically defined (hard-coded) items data.
+    
+    The simpiest way to use it is defining itemListSpec option in stream
+    configuration.  But for large data sets you may want to subclass, e.g.:
+        class Cities(StaticStream):
             itemListSpec = [
-                {'id': 'moscow', 'title': 'Moscow'},
-                {'id': 'peterburg', 'title': 'Saint-Peterburg'}]
+                {'id': 'moscow',    'title': 'Moscow'},
+                {'id': 'peterburg', 'title': 'Saint-Peterburg'},
+            ]
     '''
 
     itemClass = StaticItem
