@@ -20,7 +20,7 @@ for field_name in brick.allowedFields:
 <tr class="errormessage"><td clospan="2"><%= error %></td></tr><%
     %>
 <tr class="field">
-<td><%= brick.showField(field_name) %></td></tr>
+<%= brick.showField(field_name) %></tr>
 <%
 %>
 </table>
