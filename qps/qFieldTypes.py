@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.23 2004/07/15 11:26:16 ods Exp $
+# $Id: qFieldTypes.py,v 1.24 2004/07/23 12:48:09 ods Exp $
 
 '''Classes for common field types'''
 
@@ -896,6 +896,9 @@ class AgregateFieldType(FieldType):
             self.__dict__.update(ext_fields)
         def __getattr__(self, name):
             return getattr(self.__item, name)
+
+    def getDefault(self, item=None):
+        return self.convertFromString('', item)
 
 
 class CONTAINER(AgregateFieldType):
