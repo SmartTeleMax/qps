@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.11 2004/06/04 14:20:00 ods Exp $
+# $Id: qEdit.py,v 1.12 2004/06/04 14:42:31 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -326,7 +326,7 @@ class EditBase:
         self.deleteItems(stream, form, user)
         raise self.SeeOther(self.prefix+stream.path())
 
-    def updateStream(self, stream, form, user):
+    def updateItems(self, stream, form, user):
         '''Method to update several items of stream at once.  Only changed
         fields are updated.  Names for fields are rewriten (in sense of
         field_type.convertFromForm()) from "name" to "qps-old:%s:%s" %
@@ -363,18 +363,18 @@ class EditBase:
                             changed_fields.append(field_name)
                     except field_type.InvalidFieldContent, exc:
                         logger.warning(
-                                'Error in updateStream for field %s: %s',
+                                'Error in updateItems for field %s: %s',
                                 field_name, exc.message)
                 if changed_fields:
                     item.store(changed_fields)
 
-    def do_updateStream(self, request, response, form, objs, user):
+    def do_updateItems(self, request, response, form, objs, user):
         '''Update several items of stream.  The path corresponds to stream, of
         which items are updated.'''
         stream = objs[-1]
         if stream.type!='stream':
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        self.updateStream(stream, form, user)
+        self.updateItems(stream, form, user)
         raise self.SeeOther(self.prefix+stream.path())
     
     def do_unbindItems(self, request, response, form, objs, user):
