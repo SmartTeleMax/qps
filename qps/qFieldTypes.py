@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.28 2004/08/06 12:30:36 corva Exp $
+# $Id: qFieldTypes.py,v 1.29 2004/08/12 13:11:49 corva Exp $
 
 '''Classes for common field types'''
 
@@ -334,7 +334,7 @@ class SELECT(DROP):
         return form.getlist(name)
         
 
-class LazyItem:
+class LazyItem(object):
     """Base class for other Lazy Classes, it is supposed to be stored into
     field of item as a references to other item without retrieving it untill
     it is really neccessary"""
@@ -362,6 +362,12 @@ class LazyItem:
                                          # implementation in 2.2
             raise AttributeError(name)
         return getattr(self._item, name)
+
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            object.__setattr__(self, name, value)
+        else:
+            setattr(self._item, name, value)
 
     def __repr__(self):
         return '<LazyItem for stream_id=%r id=%r>' % (self._stream_id,
