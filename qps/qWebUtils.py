@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.59 2004/03/16 15:48:21 ods Exp $
+# $Id: qWebUtils.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
 
 '''Template support'''
 
@@ -12,9 +12,7 @@ from StringIO import StringIO
 
 class _PPATemplateWrapper(TemplateWrapper):
     
-    def __call__(self, object=None, namespace={}, **kwargs):
-        namespace = namespace.copy()
-        kwargs['brick'] = kwargs['__object__'] = object
+    def __call__(self, namespace={}, **kwargs):
         fp = StringIO()
         self.interpret(fp, namespace, kwargs)
         return fp.getvalue()
@@ -53,42 +51,25 @@ class TemplateGetter(object):
         return template
 
 
-class MakedObject:
-    '''Wrapper class to add templating tools to made object.
-    Positional arguments:
-        object           - object to be made;
-        template_getter  - function (or other callable object) implementing
-                           template lookup, default looks for templates in
-                           base_dir+'./template';
-    Keyword arguments:
-        global_namespace - global namespace for template,
-        **kwargs         - other parameters.
-    '''
+class RenderHelper(object):
+    def __init__(self, publisher):
+        "Publisher is an object with getTemplate and globalNamespace attrs"
+        self.publisher = publisher
 
-    def __init__(self, object, template_getter, global_namespace={}, **kwargs):
-        self.object = object
-        self.getTemplate = template_getter
-        self.globalNamespace = global_namespace
-        self.__dict__.update(kwargs)
-
-    def __getattr__(self, attr_name):
-        return getattr(self.object, attr_name)
-
-    def template(self, template_name, brick=None, **kwargs):
-        # Notice, brick have to be already wrapped with MakedObject
-        if brick is None:
-            brick = self
-        name_space = self.globalNamespace.copy()
-        name_space.update(kwargs)
+    def __call__(self, template_name, **kwargs):
+        ns = self.publisher.globalNamespace.copy()
+        ns.update(kwargs)
+        ns['template'] = self
         logger.debug('Rendering template %s', template_name)
-        result = self.getTemplate(template_name)(brick, name_space)
+        result = self.publisher.getTemplate(template_name)(ns)
         logger.debug('Finished rendering template %s', template_name)
         return result
-        
+
 
 class Publisher:
 
-    proxyClass = MakedObject
+    proxyClass = lambda self, x: x
+    renderHelper = RenderHelper
     templateDirs = None
 
     def __init__(self, site):
@@ -106,12 +87,12 @@ class Publisher:
     getTemplate = qUtils.CachedAttribute(getTemplate)
 
     def prepareObject(self, obj):
-        return self.proxyClass(obj, template_getter=self.getTemplate,
-                               global_namespace=self.globalNamespace)
+        return self.proxyClass(obj)
 
     def renderObject(self, obj, template_name, **kwargs):
         obj = self.prepareObject(obj)
-        return obj.template(template_name, **kwargs)
+        template = self.renderHelper(self)
+        return template(template_name, brick=obj, **kwargs)
 
 
 # vim: ts=8 sts=4 sw=4 ai et
