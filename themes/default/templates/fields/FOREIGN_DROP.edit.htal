@@ -1,7 +1,7 @@
 <span tal:replace="getattr(brick, 'title', name)">Title</span>:
 <select name="" tal:attributes="name name; size brick.layout.get('size')">
-<option tal:condition="brick.extra_option"
-	tal:content="structure brick.extra_option" value="">Extra option label</option>
+<option tal:condition="brick.extraOption"
+	tal:content="structure brick.extraOption" value="">Extra option label</option>
 <option tal:repeat="item stream"
 	tal:attributes="value item.fields['id'].convertToString(item.id); selected value and item.id==value.id and 'selected' or None"
 	tal:content="structure brick.getLabel(item)">Option label</option>

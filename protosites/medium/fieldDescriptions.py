@@ -1,4 +1,4 @@
-# $Id: fieldDescriptions.py,v 1.1 2004/06/04 10:50:06 ods Exp $
+# $Id: fieldDescriptions.py,v 1.2 2004/06/04 11:46:40 ods Exp $
 from qps import qFieldTypes as FT
 
 
@@ -23,7 +23,7 @@ itemFields = {
 
     'docs': {
         'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics',
-                                  extra_option='(no rubric)'),
+                                  extraOption='(no rubric)'),
         'title' : FT.STRING(title='Title',
                             indexPermissions=[('all', 'r')]),
         'body'  : FT.TEXT(title='Body text'),

@@ -6,8 +6,8 @@ if brick.layout.has_key('size'):
     additional_attrs += ' size="%s"' % brick.layout['size']
 %><select name="<%= name %>"<%= additional_attrs %>>
 <%
-if brick.extra_option:
-    %><option value=""><%= brick.extra_option %></option>
+if brick.extraOption:
+    %><option value=""><%= brick.extraOption %></option>
 <%
 for cur_item in stream:
     %><option value="<%= quoteHTML(cur_item.fields['id'].convertToString(cur_item.id)) %>"<%= value and cur_item.id==value.id and ' selected' or '' %>><%= brick.getLabel(cur_item) %></option>

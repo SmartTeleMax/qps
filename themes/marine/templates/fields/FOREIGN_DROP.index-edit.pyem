@@ -5,8 +5,8 @@ if value:
 %>
 <select name="qps-new:<%= field_suffix %>">
 <%
-if brick.extra_option:
-    %><option value=""><%= brick.extra_option %></option>
+if brick.extraOption:
+    %><option value=""><%= brick.extraOption %></option>
 <%
 for cur_item in stream:
     %><option value="<%= quoteHTML(cur_item.fields['id'].convertToString(cur_item.id)) %>"<%= value and cur_item.id==value.id and ' selected' or '' %>><%= brick.getLabel(cur_item) %></option>

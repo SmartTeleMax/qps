@@ -5,8 +5,8 @@ field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
 <input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= getattr(value, 'id', '') %>">
 <select style="width: 150px" name="qps-new:<%= field_suffix %>" <%= str(brick.layout) %> class=a12>
 <%
-if brick.extra_option:
-    %><option value=""><%= brick.extra_option %></option><%
+if brick.extraOption:
+    %><option value=""><%= brick.extraOption %></option><%
 for item in stream:
     %><option value="<%= item.id %>"<%
     if item == value:

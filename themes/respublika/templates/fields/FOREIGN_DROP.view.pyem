@@ -7,5 +7,5 @@ if value:
 if value:
     %><%= brick.getLabel(value) %><%
 else:
-    %><%= brick.extra_option %><%
+    %><%= brick.extraOption %><%
 %></span>

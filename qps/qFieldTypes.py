@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.14 2004/06/09 06:40:30 corva Exp $
+# $Id: qFieldTypes.py,v 1.15 2004/06/09 07:17:41 ods Exp $
 
 '''Classes for common field types'''
 
@@ -384,8 +384,8 @@ class GettedLazyItem(LazyItem):
 
 class FOREIGN_DROP(FieldType):
     proxyClass = RetrievedLazyItem
-    extra_option = None
-    missing_id = None # representation of missing value in DB (default is NULL)
+    extraOption = None
+    missingID = None # representation of missing value in DB (default is NULL)
     default = None
     labelTemplate = '%(quoteHTML(getattr(brick, "title", brick.id)))s'
 
@@ -402,7 +402,7 @@ class FOREIGN_DROP(FieldType):
                                    value)
 
     def convertFromDB(self, value, item):
-        if value!=self.missing_id:
+        if value!=self.missingID:
             return self.proxyClass(item.site, self._stream_params(item),
                                    value)
     
@@ -410,7 +410,7 @@ class FOREIGN_DROP(FieldType):
         if value: # calls LazyItem.__nonzero__ that checks for None
             return value.stream.fields['id'].convertToDB(value.id, item)
         else:
-            return self.missing_id
+            return self.missingID
 
     def convertFromForm(self, form, name, item):
         value = form.getfirst(name, '')
