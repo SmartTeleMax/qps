@@ -2,7 +2,7 @@
 <span class=s3>&nbsp;</span><br>
 <input type="hidden" name="<%= name %>"<%
 if value:
-    %> value="<%= value %>"<%
+    %> value="<%= value.id %>"<%
 %>><span class=a12><%
 if value:
     %><%= brick.getLabel(value) %><%

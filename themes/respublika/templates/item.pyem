@@ -72,13 +72,11 @@ for field in template.allowedFields(brick):
 <%= template.showField(brick, field) %>
 </td></tr><%
 %>
-
-<tr bgcolor="#E1E4E6"><td><center><input type="submit" name="qps-action:<%
-if template.isNew:
-    %>createItem<%
-else:
-    %>updateItem<%
-%>" value="Готово"></center></td></tr>
+<%
+if 'w' in template.user.getPermissions(brick.permissions):
+    %>
+<tr bgcolor="#E1E4E6"><td><center><input type="submit" name="qps-action:<%= template.isNew and 'createItem' or 'updateItem' %>" value="Готово"></center></td></tr><%
+%>
 
 </table>
 </td></tr>
