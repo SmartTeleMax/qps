@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.25 2004/09/26 23:17:16 corva Exp $
+# $Id: qEdit.py,v 1.26 2004/10/31 14:19:45 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -43,9 +43,11 @@ class RenderHelper(qWebUtils.RenderHelper):
         # assume item.type=='item'
         itemFieldsOrder = []
         for field_name, field_type in item.fields.iteritems():
-            perms = self.user.getPermissions(
-                self.isNew and field_type.createPermissions or
-                field_type.permissions)
+            if self.isNew:
+                permissions = field_type.createPermissions
+            else:
+                permissions = field_type.permissions
+            perms = self.user.getPermissions(permissions)
             if ('w' in perms or 'r' in perms) and \
                    not (self.isNew and field_type.omitForNew):
                 itemFieldsOrder.append(field_name)
@@ -95,9 +97,11 @@ class RenderHelper(qWebUtils.RenderHelper):
         '''Return representation of field in editor interface'''
         field_type = item.fields[name]
         stream_perms = self.user.getPermissions(item.stream.permissions)
-        perms = self.user.getPermissions(self.isNew and
-                                         field_type.createPermissions or
-                                         field_type.permissions)
+        if self.isNew:
+            permissions = field_type.createPermissions
+        else:
+            permissions = field_type.permissions
+        perms = self.user.getPermissions(permissions)
         if 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
@@ -174,10 +178,12 @@ class EditBase:
         itemFieldsOrder = []
         id_field_name = item.fields.idFieldName
         for field_name, field_type in item.fields.iteritems():
+            if isNew:
+                permissions = field_type.createPermissions
+            else:
+                permissions = field_type.permissions
             if field_name!=id_field_name and \
-                    user.checkPermission('w', isNew and
-                                         field_type.createPermissions or
-                                         field_type.permissions):
+                    user.checkPermission('w', permissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
