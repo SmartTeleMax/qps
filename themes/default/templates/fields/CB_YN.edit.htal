@@ -1,0 +1,2 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:
+<input type="checkbox" value="y" tal:attributes="name name; checked value and 'checked' or None"/>
