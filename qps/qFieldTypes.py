@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.21 2004/07/07 15:06:20 corva Exp $
+# $Id: qFieldTypes.py,v 1.22 2004/07/14 15:45:24 ods Exp $
 
 '''Classes for common field types'''
 
@@ -600,6 +600,7 @@ class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExtFieldTypeMixIn):
 class EXT_VIRTUAL_REFERENCE(FieldType):
 
     default = None
+    paramName = None       # optional
     permissions = [('all', 'r')]
     linkThrough = 0
     templateStream = None  # must be set
@@ -608,9 +609,11 @@ class EXT_VIRTUAL_REFERENCE(FieldType):
     rewriteToStream = None
 
     class LazyVirtual:
-        def __init__(self, item, template_stream, rewrite_to_stream=None):
+        def __init__(self, item, template_stream, param_name=None,
+                     rewrite_to_stream=None):
             self._item = weakref.proxy(item)
             self._template_stream = template_stream
+            self._param_name = param_name
             self._rewrite_to_stream = rewrite_to_stream
         def _stream(self):
             item = self._item
@@ -628,7 +631,10 @@ class EXT_VIRTUAL_REFERENCE(FieldType):
                 template_stream = getattr(stream.virtual, 'templateStream',
                                           None)
                 if template_stream is not None and \
-                        template_stream==self._template_stream:
+                        template_stream==self._template_stream and \
+                        (self._param_name is None or \
+                         self._param_name==getattr(stream.virtual,
+                                                   'paramName', None)):
                     return stream
         _stream = qUtils.CachedAttribute(_stream)
         def __nonzero__(self):
@@ -643,7 +649,8 @@ class EXT_VIRTUAL_REFERENCE(FieldType):
 
     def retrieve(self, item):
         return self.LazyVirtual(item, self.templateStream,
-                                self.rewriteToStream)
+                                param_name=self.paramName,
+                                rewrite_to_stream=self.rewriteToStream)
 
     def store(self, value, item):
         pass
