@@ -23,9 +23,10 @@ else:
 <td align="right">
 <table class="topmenu"><tr>
 <%
-for stream in template.allowedStreams:
-    if getattr(stream, 'showInMenu', 0):
-        %><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td><%
+if template.user:
+    for stream in template.allowedStreams:
+        if getattr(stream, 'showInMenu', 0):
+            %><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td><%
 %>
 </tr></table>
 </td></tr>
