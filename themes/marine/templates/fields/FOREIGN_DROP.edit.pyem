@@ -10,7 +10,7 @@ if brick.extra_option:
     %><option value=""><%= brick.extra_option %></option>
 <%
 for item in stream:
-    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(item.id)) %>"<%= item.id==value.id and ' selected' or '' %>><%= brick.getLabel(item) %></option>
+    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(item.id)) %>"<%= value and item.id==value.id and ' selected' or '' %>><%= brick.getLabel(item) %></option>
 <%
 %></select>
 </td>    
