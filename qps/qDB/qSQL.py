@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.20 2004/03/16 15:52:48 ods Exp $
+# $Id: qSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -8,24 +8,135 @@ logger = logging.getLogger(__name__)
 from mx import DateTime
 
 
-class WrongType(TypeError):
-    '''Raised when unknown type is used'''
-    def __init__(self, value_type):
-        self.value_type = value_type
-    def __str__(self):
-        return 'Cannot represent object of type %s in SQL query' % \
-               self.value_type.__name__
-
-
 class Raw:
-    '''Base class for types that know how to represent itself in SQL
-    (convert method).'''
-    def __init__(self, sql_repr):
-        self.sql_repr = sql_repr
-    def convert(self):
-        return self.sql_repr
+    "Raw query parameter"
+    
+    def __init__(self, value):
+        self.value = value
     def __repr__(self):
-        return '<%s(%s)>' % (self.__class__.__name__, self.sql_repr)
+        return 'Raw(%r)' % (self.value,)
+
+
+class Param(object):
+    "Query parameter"
+
+    def __new__(cls, value):
+        if isinstance(value, Raw):
+            return value.value
+        else:
+            self = object.__new__(cls)
+            self.value = value
+            return self
+    def __repr__(self):
+        return 'Param(%r)' % (self.value,)
+
+
+class Query(object):
+    """SQL query object. Represents SQL query and can be converted to any
+    Python DB API 2.0 format.
+
+    Usage:
+
+        query = Query('id=', Param(10))
+        query += ' AND ' + Query('date>', Param(datetimeobject)) + \
+        ' AND published=' + Param('y')
+        
+
+        Query(' AND ').join(query_parts)
+
+        query.sql(paramstyle)"""
+
+    def __init__(self, *args):
+        self.chunks = list(args)
+
+    def __repr__(self):
+        return ''.join([type(c) is str and c or repr(c) for c in self.chunks])
+    __str__ = __repr__
+
+    def __nonzero__(self):
+        return len(self.chunks) > 0
+
+    def __add__(self, other):
+        if isinstance(other, Query):
+            return Query(*(self.chunks + other.chunks))
+        else:
+            return Query(*(self.chunks+[other]))
+
+    def __radd__(self, other):
+        if isinstance(other, Query):
+            return Query(*(other.chunks+self.chunks))
+        else:
+            return Query(*([other]+self.chunks))
+
+    def join(self, queries):
+        result = Query()
+        for query in queries:
+            if result:
+                result += self
+            result += query
+        return result
+
+    def sql(self, paramstyle):
+        return getattr(self, "to_%s" % paramstyle)()
+
+    def to_qmark(self):
+        query_parts = []
+        params = []
+        for chunk in self.chunks:
+            if isinstance(chunk, Param):
+                params.append(chunk.value)
+                query_parts.append('?')
+            else:
+                query_parts.append(chunk)
+        return ''.join(query_parts), params
+
+    def to_numeric(self):
+        query_parts = []
+        params = []
+        for chunk in self.chunks:
+            if isinstance(chunk, Param):
+                params.append(chunk.value)
+                query_parts.append(':%d' % len(params))
+            else:
+                query_parts.append(chunk)
+
+        # DCOracle2 has broken support for sequences of other types
+        return ''.join(query_parts), tuple(params)
+
+    def to_named(self):
+        query_parts = []
+        params = {}
+        for chunk in self.chunks:
+            if isinstance(chunk, Param):
+                name = 'p%d' % len(params)  # Are numbers in name allowed?
+                params[name] = chunk.value
+                query_parts.append(':%s' % name)
+            else:
+                query_parts.append(chunk)
+        return ''.join(query_parts), params
+
+    def to_format(self):
+        query_parts = []
+        params = []
+        for chunk in self.chunks:
+            if isinstance(chunk, Param):
+                params.append(chunk.value)
+                query_parts.append('%s')
+            else:
+                query_parts.append(chunk.replace('%', '%%'))
+        return ''.join(query_parts), params
+
+    def to_pyformat(self):
+        query_parts = []
+        params = {}
+        for chunk in self.chunks:
+            if isinstance(chunk, Param):
+                name = '%d' % len(params)
+                params[name] = chunk.value
+                query_parts.append('%%(%s)s' % name)
+            else:
+                query_parts.append(chunk.replace('%', '%%'))
+        return ''.join(query_parts), params
 
 
 class Transaction:
@@ -90,15 +201,19 @@ class Connection(object):
         return cls.__connections_cache[cache_key]
 
     def __del__(self):
-        if self._dbh is not None:
+        if self.connected():
             self._dbh.close()
+
+    def connected(self):
+        return self._dbh is not None
 
     def _connect(self, *args, **kwargs):
         return self._db_module.connect(*args, **kwargs)
 
     def connect(self):
-        args, kwargs = self.__connection_params
-        self._dbh = self._connect(*args, **kwargs)
+        if not self.connected():
+            args, kwargs = self.__connection_params
+            self._dbh = self._connect(*args, **kwargs)
 
     def _connect_and_execute(self, query):
         self.connect()
@@ -117,7 +232,10 @@ class Connection(object):
         '''Execute SQL command and return cursor.'''
         cursor = self._dbh.cursor()
         logger.debug(query)
-        cursor.execute(query)
+        if isinstance(query, Query):
+            cursor.execute(*query.sql(self._db_module.paramstyle))
+        else:
+            cursor.execute(query)
         return cursor
 
     def queryLimits(self, limitOffset=0, limitSize=0):
@@ -130,34 +248,41 @@ class Connection(object):
     def select(self, table, fields, condition='', order='', group='',
                limitOffset=0, limitSize=0):
         '''Construct and execute SQL query and return cursor.'''
-        assert type(fields) is not str  # Catch common error
-        query_parts = ['SELECT %s FROM %s' % (','.join(fields), table)]
+        assert type(fields) is not str   # Catch common error
+        query = Query('SELECT %s FROM %s' % (','.join(fields), table))
         if condition:
-            query_parts.append('WHERE '+condition)
+            query += ' WHERE ' + condition
         if group:
-            query_parts.append('GROUP BY '+group)
+            query += ' GROUP BY ' + group
         if order:
-            query_parts.append('ORDER BY '+order)
+            query += ' ORDER BY ' + order
         if limitOffset or limitSize:
-            query_parts.append(self.queryLimits(limitOffset, limitSize))
-        return self.execute(' '.join(query_parts))
+            query += ' ' + self.queryLimits(limitOffset, limitSize)
+        return self.execute(query)
 
     def insert(self, table, field_dict):
         '''Construct and execute SQL INSERT command and return cursor.'''
         field_names = []
         field_values = []
         for field_name, field_value in field_dict.items():
+            if field_names:
+                field_names.append(',')
+                field_values.append(',')
             field_names.append(field_name)
-            field_values.append(self.convert(field_value))
-        query = 'INSERT INTO %s (%s) VALUES (%s)' % \
-                    (table, ','.join(field_names), ','.join(field_values))
+            field_values.append(Param(field_value))
+        query = 'INSERT INTO %s (' % table + Query(*field_names) + \
+                ') VALUES (' + Query(*field_values) + ')'
         return self.execute(query)
 
     def update(self, table, field_dict, condition=''):
         '''Construct and execute SQL UPDATE command and return cursor.'''
-        updates = ', '.join(['%s=%s' % (fn, self.convert(fv))
-                             for fn, fv in field_dict.items()])
-        query = 'UPDATE %s SET %s' % (table, updates)
+        query = Query()
+        for name, value in field_dict.items():
+            if query:
+                query += ','
+            query += Query('%s=' % name, Param(value))
+        query = 'UPDATE %s SET ' % table + query
+
         if condition:
             query += ' WHERE '+condition
         return self.execute(query)
@@ -244,38 +369,16 @@ class Connection(object):
     def escape(self, string):
         raise NotImplementedError('escape()')
 
-    def convert(self, value):
-        '''Return string representing value in SQL query.'''
-        value_type = type(value)
-        if value is None:
-            return 'NULL'
-        elif value_type is DateTime.DateTimeType:
-            return "'%s'" % value.strftime('%Y-%m-%d %H:%M:%S')
-        elif value_type is str:
-            return "'%s'" % self.escape(value)
-        elif value_type is unicode:
-            return "'%s'" % self.escape(str(value))
-        elif value_type in (int, long, float):
-            return str(value)
-        elif isinstance(value, Raw):
-            return value.convert()
-        else:
-            raise WrongType(value_type)
-
     def updateLU(self, table, condition, field='_qps_lu', ts=Raw('NOW()')):
         return self.update(table, {field: ts}, condition)
-
-    # Bind to Connection namespace
-    WrongType = WrongType
-    Raw = Raw
 
     def IN(self, field_name, values):
         if values:
             if len(values)==1:
-                return '%s=%s' % (field_name, self.convert(values[0]))
+                return Query('%s=' % field_name, Param(values[0]))
             else:
-                return '%s IN (%s)' % (field_name,
-                                       ','.join(map(self.convert, values)))
+                return '%s IN (' % field_name + \
+                       Query(',').join([Param(x) for x in values]) + ')'
         else:
             return '0'
 
@@ -283,13 +386,15 @@ class Connection(object):
         if not values:
             return '1'
         elif len(values)==1:
-            return '%s!=%s' % (field_name, self.convert(values[0]))
+            return Query('%s!=' % field_name, Param(values[0]))
         else:
-            return '%s NOT IN (%s)' % (field_name,
-                                       ','.join(map(self.convert, values)))
+            return '%s NOT IN (' % field_name + \
+                       Query(',').join([Param(x) for x in values]) + ')'
 
-    def join(self, exprs, joiner='AND'):
+    def join(self, exprs, joiner=' AND '):
         assert type(exprs) is not str  # Catch common error
+        if not isinstance(joiner, Query):
+            joiner = Query(joiner)
         exprs = filter(None, exprs)
         if not exprs:
             return ''
