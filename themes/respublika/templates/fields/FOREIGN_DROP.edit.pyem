@@ -1,14 +1,22 @@
 <span class=t11b id=db1><%= brick.title %>: </span><br><span class=s3>&nbsp;</span><br>
-<span class=a12>
-<select name="<%= name %>" <%= str(brick.layout) %> class=a12>
-<%
-if brick.extra_option:
-    %><option value=""><%= brick.extra_option %></option><%
-for item in stream:
-    %><option value="<%= item.id %>"<%
-    if item == value:
-        %> selected<%
-    %>><%= brick.getLabel(item) %></option><%
-%>
+<span class=a12><%
+if stream.indexNum:
+    if value:
+        %><%= brick.getLabel(value) %><br><%
+    if not isNew:
+        href = edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name
+        %>
+<a href="<%= href %>" onclick="javascript:var new_window=window.open('<%= href %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;"><span class=t12 id=db1>&gt;&gt;</span></a><%
+else:
+    %>
+<select name="<%= name %>" <%= str(brick.layout) %> class=a12><%
+    if brick.extra_option:
+        %><option value=""><%= brick.extra_option %></option><%
+    for item in stream:
+        %><option value="<%= item.id %>"<%
+        if item == value:
+            %> selected<%
+        %>><%= brick.getLabel(item) %></option><%
+    %>
 </select>
 </span>
