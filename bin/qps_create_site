@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.6 2004/03/22 12:08:19 ods Exp $
+# $Id: qps_create_site,v 1.7 2004/03/22 15:58:44 ods Exp $
 
 import sys, os, shutil
 sys.path.append('..')  # let it work without installation
@@ -33,7 +33,7 @@ class SiteProtos:
                 if os.path.exists(dst):
                     if not (force and os.path.isfile(dst)):
                         raise RuntimeError('File %r already exists' % dst)
-                print '%r -> %r' % (src, dst)
+                print 'Installing %r' % (os.path.basename(dst))
                 if os.path.isfile(src):
                     self.copyFile(src, dst)
                 else:
@@ -64,15 +64,15 @@ parser.add_option('-p', '--proto', dest='proto', default='tiny', # XXX
 
 # look for protosites directory
 prefix = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
-for dir in [os.path.join(prefix, 'protosites'),
-            os.path.join(prefix, 'share', 'QPS', 'protosites')]:
-    protos_dir = dir
-    break
+for share_dir in [prefix, os.path.join(prefix, 'share', 'QPS')]:
+    protos_dir = os.path.join(share_dir, 'protosites')
+    if os.path.isdir(protos_dir):
+        break
 else:
     sys.exit('"protosites" directory not found. Make sure QPS is installed '\
              'correctly')
-edit_templates_dir = os.path.join(prefix, 'themes', 'default')
-field_templates_dir = os.path.join(prefix, 'themes', 'default', 'fields')
+edit_templates_dir = os.path.join(share_dir, 'themes', 'default')
+field_templates_dir = os.path.join(share_dir, 'themes', 'default', 'fields')
 
 protos = SiteProtos(protos_dir)
 protos_list = protos.list()
@@ -98,7 +98,7 @@ code_dir = os.path.normpath(site_root+'/code')
 map(mkdir, (site_root, make_dir, make_templates_dir, code_dir))
 title = 'Sample site created from %r prototype' % options.proto
 
-#try:
-protos.copy(options.proto, code_dir, vars(), options.force)
-#except Exception, exc:
-#    sys.exit(exc)
+try:
+    protos.copy(options.proto, code_dir, vars(), options.force)
+except Exception, exc:
+    sys.exit(exc)
