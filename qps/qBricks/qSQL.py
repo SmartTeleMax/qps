@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.11 2004/07/01 19:38:03 corva Exp $
+# $Id: qSQL.py,v 1.12 2004/07/30 14:16:03 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -103,7 +103,7 @@ class SQLItem(qBase.Item):
             
             if not fields.has_key(id_field_name) and \
                (not (id_field_type.omitForNew and self.id is None) or \
-                not id_field_ytpe.omitForNew):
+                not id_field_type.omitForNew):
                 fields[id_field_name] = id_field_type.convertToDB(self.id,self)
                 
             cursor = self.dbConn.insert(self.stream.tableName, fields)
