@@ -48,7 +48,7 @@ if brick:
 <!-- fields titles -->
     <tr bgcolor="#A0AAB1"><%
     for field_name in template.allowedIndexFields(brick):
-        field_type = brick.allStreamFields[field_name]
+        field_type = brick.indexFields[field_name]
         %>
         <td nowrap>
         <span class=t11><%= field_type.indexTitle %></span><%
@@ -80,7 +80,7 @@ if brick:
 <%= template.showFieldInIndex(item, field) %>
         </td><%
         %>
-        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= brick.itemIDField.convertToString(item.id) %>"></center>
+        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= item.fields['id'].convertToString(item.id) %>"></center>
         </td>
     </tr><%
     %>

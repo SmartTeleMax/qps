@@ -14,7 +14,7 @@
 <thead><tr>
 <%
 for field_name in template.bindingIndexFields(brick):
-    %><th><%= brick.allStreamFields[field_name].indexTitle %></th><%
+    %><th><%= brick.indexFields[field_name].indexTitle %></th><%
 %><th>[X]</th>
 </tr></thead>
 
@@ -27,7 +27,7 @@ for it in Cook.Repeat(brick):
     for field_name in template.bindingIndexFields(brick):
         %>
 <td><%= template.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
-    id_str = brick.itemIDField.convertToString(item.id)
+    id_str = item.fields['id'].convertToString(item.id)
     %>
 <td><%
     if isBound(item):

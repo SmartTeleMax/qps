@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.6 2004/06/04 08:47:43 corva Exp $
+# $Id: qMake.py,v 1.7 2004/06/04 09:40:29 corva Exp $
 
 '''Defines common maker classes'''
 
@@ -203,7 +203,7 @@ class ImagesMaker(Maker):
     def do_delete(self, item):
         from qFieldTypes import IMAGE
         from glob import glob
-        for field_name, field_type in item.stream.itemExtFields.items():
+        for field_name, field_type in item.fields.external.iteritems():
             if isinstance(field_type, IMAGE):
                 image = getattr(item, field_name)
                 for old_path in glob(image.pattern+'.*'):
@@ -212,7 +212,7 @@ class ImagesMaker(Maker):
     def do_make(self, item):
         from qFieldTypes import IMAGE
         from glob import glob
-        for field_name, field_type in item.stream.itemExtFields.items():
+        for field_name, field_type in item.fields.external.iteritems():
             if isinstance(field_type, IMAGE):
                 image = getattr(item, field_name)
                 if image:

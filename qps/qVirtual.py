@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.4 2004/06/08 07:59:57 ods Exp $
+# $Id: qVirtual.py,v 1.5 2004/06/09 06:42:42 corva Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -53,8 +53,8 @@ class VirtualRule:
             param_stream = site.retrieveStream(self.paramStream,
                                                tag=site.transmitTag(tag))
             try:
-                param_item_id = param_stream.fields['id'].convertFromString(
-                    parts[-1])
+                param_item_id = \
+                    param_stream.fields['id'].convertFromString(parts[-1])
             except ValueError:
                 return
             param_item = param_stream.retrieveItem(param_item_id)
@@ -80,7 +80,7 @@ class VirtualRule:
         # XXX We must convert field with convertToDB
         # But there are problems with following code when many-to-many relation
         # is used. Try indexFields then use getattr(stream,
-        # name).stream.itemIDField?
+        # name).stream.fields['id']?
         #return conn.join(
         #        ['%s=%s' % (name,
         #                    conn.convert(

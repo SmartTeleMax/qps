@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.5 2004/06/08 15:32:22 ods Exp $
+# $Id: qBase.py,v 1.6 2004/06/09 06:53:32 corva Exp $
 
 '''Base brick classes'''
 
@@ -71,6 +71,10 @@ class Item(Brick):
         return self.stream.fields
     fields = qUtils.CachedAttribute(fields)
 
+    def indexFields(self):
+        return self.stream.indexFields
+    indexFields = qUtils.CachedAttribute(indexFields)
+
     def __eq__(self, other):
         # Note that the same objects taken from different streams are not
         # equal!
@@ -90,7 +94,7 @@ class Item(Brick):
 
     def initFieldFromCode(self, field_name, value):
         '''Initialize field from code'''
-        field_type = self.stream.indexFields[field_name]
+        field_type = self.indexFields[field_name]
         value = field_type.convertFromCode(value, item=self)
         setattr(self, field_name, value)
 
@@ -172,13 +176,13 @@ class Item(Brick):
             self._ext_fields_retrieved = 1
 
     def storeExtField(self, field_name):
-        field_type = self.fields.external[field_name]
+        field_type = self.fields[field_name]
         field_type.store(getattr(self, field_name), item=self)
 
     def storeExtFields(self, names=None):
         '''For each external field store it, if its listed in names.  By
         default store all external fields.'''
-        for field_name, field_type in self.fields.external.items():
+        for field_name, field_type in self.fields.external.iteritems():
             if field_type.storeControl!='never' and \
                     (field_type.storeControl=='always' or \
                      names is None or field_name in names):
@@ -370,7 +374,7 @@ class Stream(Brick):
 
     # --- External fields ---
     def deleteExtFields(self, item_ids):
-        for field_name, field_type in self.itemExtFields.items():
+        for field_name, field_type in self.fields.external.iteritems():
             field_type.delete(item_ids, stream=self)
 
 

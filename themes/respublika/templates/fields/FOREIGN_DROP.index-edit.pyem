@@ -1,5 +1,5 @@
 <%
-field_suffix = '%s:%s' % (item.stream.itemIDField.convertToString(item.id), name)
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
 %>
 <span class=a12>
 <input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= getattr(value, 'id', '') %>">

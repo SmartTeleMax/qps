@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.4 2004/04/05 10:58:27 ods Exp $
+# $Id: qSite.py,v 1.5 2004/04/07 15:30:46 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -28,8 +28,6 @@ class Site(object):
         # itemMakeAction(item) -> {'make'|'delete'|None}
         # switches the behavior of maker.process()
         itemMakeAction=lambda i: 'make')
-    defaultItemIDField = qFieldTypes.STRING(title='ID')
-    itemFieldsOrder = itemFields = itemExtFields = itemIDFields = {}
     title = host = None
     transmitTags = {'edit'  : 'edit',
                     'delete': 'all'}

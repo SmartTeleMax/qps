@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.4 2004/06/08 15:32:22 ods Exp $
+# $Id: qSQL.py,v 1.5 2004/06/09 06:53:31 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -100,7 +100,7 @@ class SQLItem(qBase.Item):
         join_fields = self.prepareJoinFieldsForDB()
         # remove from fields read-only fields
         for field_name in fields.keys():
-            field_type = self.stream.indexFields[field_name]
+            field_type = self.indexFields[field_name]
             if field_type.storeControl=='never' or \
                     (field_type.storeControl!='always' and \
                      names is not None and field_name not in names):
@@ -108,14 +108,14 @@ class SQLItem(qBase.Item):
         tnx = self.dbConn.getTransaction()
         if not self.exists(1):
             # INSERT
-            if not (self.stream.itemIDField.omitForNew and self.id is None):
-                fields['id'] = self.stream.itemIDField.convertToDB(self.id,
-                                                                   self)
+            id_field_type = self.fields['id']
+            if not (id_field_type.omitForNew and self.id is None):
+                fields['id'] = id_field_type.convertToDB(self.id, self)
             cursor = self.dbConn.insert(self.stream.tableName, fields)
 
-            if self.stream.itemIDField.omitForNew and self.id is None:
+            if id_field_type.omitForNew and self.id is None:
                 # Auto-increment support
-                self.id = self.stream.itemIDField.convertFromDB(
+                self.id = id_field_type.convertFromDB(
                         self.dbConn.lastInsertID(self.stream.tableName, 'id'),
                         self)
             self._exists = 1
@@ -128,7 +128,7 @@ class SQLItem(qBase.Item):
             join_field_type = self.fields[self.stream.joinField]
             param_db_value = join_field_type.itemField.convertToDB(param_value,
                                                                    self)
-            id_db_value = self.stream.itemIDField.convertToDB(self.id, self)
+            id_db_value = self.fields['id'].convertToDB(self.id, self)
             condition = '%s=%s AND %s=%s' % (
                                     join_field_type.idFieldName,
                                     self.dbConn.convert(id_db_value),

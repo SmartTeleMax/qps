@@ -1,4 +1,4 @@
-<tal:block tal:define="field_suffix '%s:%s' % (item.stream.itemIDField.convertToString(item.id), name)">
+<tal:block tal:define="field_suffix '%s:%s' % (item.fields['id'].convertToString(item.id), name)">
 <input type="hidden"
        tal:attributes="name 'qps-old:'+field_suffix; value value"/>
 <input type="text"

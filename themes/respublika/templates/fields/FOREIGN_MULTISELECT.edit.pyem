@@ -8,7 +8,7 @@ for value_item in Cook.Repeat(not stream.indexNum and stream or value):
     if value_item.isEven:
         %><tr><%
     %>
-<td><input type="checkbox" name="<%= name %>" value="<%= stream.itemIDField.convertToString(value_item.value.id) %>"<%
+<td><input type="checkbox" name="<%= name %>" value="<%= value_item.fields['id'].convertToString(value_item.value.id) %>"<%
     if value_item.value in value:
         %> checked<%
     %>></td>

@@ -15,7 +15,7 @@ if template.isStreamCreatable(brick):
 <thead><tr>
 <%
 for field_name in template.allowedIndexFields(brick):
-    %><th><%= brick.allStreamFields[field_name].indexTitle %></th><%
+    %><th><%= brick.indexFields[field_name].indexTitle %></th><%
 if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
     %><th>[X]</th><%
 %>
@@ -32,7 +32,7 @@ for it in Cook.Repeat(brick):
 <td><%= template.showFieldInIndex(item, field_name) %></td><%
     if template.isStreamDeletable(brick) or template.isStreamUpdatable(brick):
         %>
-<td><input type="checkbox" name="qps-select" value="<%= brick.itemIDField.convertToString(item.id) %>"></td><%
+<td><input type="checkbox" name="qps-select" value="<%= item.fields['id'].convertToString(item.id) %>"></td><%
     %>
 </tr>
 <%

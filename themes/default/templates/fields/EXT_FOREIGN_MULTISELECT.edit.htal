@@ -1,6 +1,6 @@
 <span tal:replace="getattr(brick, 'title', name)">Title</span>:
 <tal:block tal:repeat="value_item not stream.indexNum and stream or value">
-<input type="checkbox" tal:attributes="name name; value stream.itemIDField.convertToString(value_item.id); checked value_item in value">
+<input type="checkbox" tal:attributes="name name; value value_item.fields['id'].convertToString(value_item.id); checked value_item in value">
 <tal:block tal:content="structure brick.getLabel(value_item)">Label</tal:block><br>
 </tal:block>
 <a tal:condition="stream.indexNum and not isNew"

@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.17 2004/06/08 15:32:22 ods Exp $
+# $Id: qEdit.py,v 1.18 2004/06/09 06:42:42 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -225,7 +225,7 @@ class EditBase:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
-        item = stream.createNewItem(stream.itemIDField.getDefault())
+        item = stream.createNewItem(stream.fields['id'].getDefault())
         self.showBrick(request, response, item, user, isNew=1)
 
     def do_createItem(self, request, response, form, objs, user):
@@ -237,16 +237,17 @@ class EditBase:
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
         errors = {}
-        if stream.itemIDField.omitForNew:
+        if_field_type = stream.fields['id']
+        if if_field_type.omitForNew:
             item_id = None
         else:
             try:
-                item_id = stream.itemIDField.convertFromForm(form, 'id')
-            except stream.itemIDField.InvalidFieldContent, exc:
+                item_id = if_field_type.convertFromForm(form, 'id')
+            except if_field_type.InvalidFieldContent, exc:
                 errors['id'] = exc.message
-                item_id = stream.itemIDField.getDefault()
+                item_id = if_field_type.getDefault()
         item = stream.createNewItem(item_id)
-        if not (stream.itemIDField.omitForNew or errors) and item.exists()==1:
+        if not (if_field_type.omitForNew or errors) and item.exists()==1:
             raise self.ClientError(403, self.existing_id_error)
         errors.update(item.initFieldsFromForm(
                         form, names=self.storableFields(stream, user)))
@@ -296,7 +297,7 @@ class EditBase:
         "qps-select" form field.'''
         if not user.checkPermission('d', stream.permissions):
             raise self.ClientError(403, self.delete_denied_error)
-        item_ids = map(stream.itemIDField.convertFromString,
+        item_ids = map(stream.fields['id'].convertFromString,
                        form.getlist('qps-select'))
         if item_ids:
             try:
@@ -332,7 +333,7 @@ class EditBase:
                     item_id_strs[parts[1]] = 1
             for item_id_str in item_id_strs.keys():
                 changed_fields = []
-                item_id = stream.itemIDField.convertFromString(item_id_str)
+                item_id = stream.fields['id'].convertFromString(item_id_str)
                 item = stream.retrieveItem(item_id)
                 if item is None:  # Somebody deleted it :)
                     continue
@@ -378,7 +379,7 @@ class EditBase:
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
         binding_to_item = getattr(stream, stream.virtual.paramName)
-        item_ids = map(stream.itemIDField.convertFromString,
+        item_ids = map(stream.fields['id'].convertFromString,
                        form.getlist('qps-select'))
         for item_id in item_ids:
             item = stream.retrieveItem(item_id)
@@ -476,10 +477,9 @@ class EditBase:
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
-        old_ids = map(template_stream.itemIDField.convertFromString,
-                      form.getlist('qps-old'))
-        new_ids = map(template_stream.itemIDField.convertFromString,
-                      form.getlist('qps-new'))
+        convert = template_stream.fields['id'].convertFromString
+        old_ids = map(convert, form.getlist('qps-old'))
+        new_ids = map(convert, form.getlist('qps-new'))
         if bound.type=='stream':  # direct binding
             for item_id in old_ids:
                 if item_id not in new_ids:

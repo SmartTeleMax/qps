@@ -53,7 +53,7 @@ for repeat in Cook.Repeat(brick):
         field_type = brick.allItemFields[field_name]
         %>
 <td bgcolor=#F0F1F2><%= template.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
-    id_str = brick.itemIDField.convertToString(item.id)
+    id_str = item.fields['id'].convertToString(item.id)
     checked = isBound(item) and 'checked'
     %>
 <td bgcolor=#F0F1F2><%

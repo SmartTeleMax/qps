@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.13 2004/06/08 13:21:54 ods Exp $
+# $Id: qFieldTypes.py,v 1.14 2004/06/09 06:40:30 corva Exp $
 
 '''Classes for common field types'''
 
@@ -321,12 +321,15 @@ class SELECT(DROP):
     layout = _LayoutDict({'size': 5, 'multiple': 'multiple'})
     default = []
     fieldSeparator = ','
-    itemIDField = STRING()  # must be the same as itemIDField of stream
     def convertToDB(self, value, item=None):
+        stream = item.site.retrieveStream(self.stream,
+                                tag=item.site.transmitTag(item.stream.tag))
         return self.fieldSeparator.join(
-                        map(self.itemIDField.convertToString, value)+[''])
+                        map(stream.fields['id'].convertToString, value)+[''])
     def convertFromDB(self, value, item=None):
-        return map(self.itemIDField.convertFromString,
+        stream = item.site.retrieveStream(self.stream,
+                                tag=item.site.transmitTag(item.stream.tag))
+        return map(stream.fields['id'].convertFromString,
                    value.split(self.fieldSeparator)[:-1])
     def convertFromForm(self, form, name, item=None): 
         return form.getlist(self.name)
@@ -415,8 +418,7 @@ class FOREIGN_DROP(FieldType):
             stream = self._retrieve_stream(item)
             return self.proxyClass(item.site,
                                    self._stream_params(item),
-                                   stream.fields['id'].convertFromString(value)
-                                   )
+                                   stream.fields['id'].convertFromString(value))
 
     def getLabel(self, item):
         namespace = item.site.globalNamespace.copy()
@@ -449,8 +451,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
             item_ids = value.split(self.fieldSeparator)
             stream = self._retrieve_stream(item)
             return self.convertFromCode(
-                        map(stream.fields['id'].convertFromString, item_ids),
-                        item)
+                    map(stream.fields['id'].convertFromString, item_ids), item)
         else:
             return []
 
@@ -458,8 +459,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         value = form.getlist(name)
         stream = self._retrieve_stream(item)
         return self.convertFromCode(
-                    map(stream.fields['id'].convertFromString, value),
-                    item)
+                    map(stream.fields['id'].convertFromString, value), item)
 
     def convertToDB(self, value, item=None):
         item_ids = [FOREIGN_DROP.convertToString(self, item.id)
@@ -1085,6 +1085,9 @@ class FieldDescriptions(object):
         return dict(self._config)
     _config_dict = qUtils.CachedAttribute(_config_dict)
 
+    def has_key(self, field_name):
+        return self._config_dict.has_key(field_name)
+
     def external(self):
         return FieldDescriptions(
             [(fn, ft) for fn, ft in self._config if hasattr(ft, 'store')])
@@ -1111,7 +1114,7 @@ class FieldDescriptionsRepository:
     def __init__(self, config):
         self._config = config
         self._cache = {}
-    def __getattr__(self, table):
+    def __getitem__(self, table):
         if not self._cache.has_key(table):
             self._cache[table] = FieldDescriptions(self._config[table])
         return self._cache[table]

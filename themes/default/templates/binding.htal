@@ -48,7 +48,7 @@ next page &gt;&gt;</a>
 <td tal:repeat="field_name template.bindingIndexFields(brick)"
     tal:content="structure template.showFieldInIndex(item, field_name, allow_edit=0)">
 Field value</td>
-<td tal:define="id_str brick.itemIDField.convertToString(item.id); checked isBound(item) and 'checked'">
+<td tal:define="id_str item.fields['id'].convertToString(item.id); checked isBound(item) and 'checked'">
 <input type="hidden" name="qps-old" tal:condition="checked"
        tal:attributes="value id_str">
 <input name="qps-new"
