@@ -80,7 +80,7 @@ if brick:
     if template.isStreamUpdatable(brick):
         %>
 &nbsp; <input type="submit" name="qps-action:updateItems" value="Обновить"><%
-    if hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.fields[brick.joinField]):
+    if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
         %>
 &nbsp; <input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
     if'd' in template.getPermissions(brick):
