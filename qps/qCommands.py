@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.16 2004/03/16 15:05:46 ods Exp $
+# $Id: qCommands.py,v 1.1.1.1 2004/03/18 15:17:15 ods Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -86,4 +86,4 @@ class Publisher(qWebUtils.Publisher):
         
         return self.site.clientCharset
 
-# vim: ts=8 sts=4 sw=4 ai et
+# vim: ts=8 sts=4 sw=4 ai et:
