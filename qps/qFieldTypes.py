@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.25 2004/07/27 12:59:07 ods Exp $
+# $Id: qFieldTypes.py,v 1.26 2004/07/27 13:18:31 ods Exp $
 
 '''Classes for common field types'''
 
@@ -267,6 +267,8 @@ class DATETIME(FieldType):
         else:
             return DateTime.strptime(value, self.format)
     convertFromString = convertFromCode
+    def convertToString(self, value, item=None):
+        return value.strftime(self.format)
     def convertToForm(self, value):
         return value.strftime(self.format)
     def convertFromForm(self, form, name, item=None):
