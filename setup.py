@@ -22,4 +22,5 @@ setup(name='QPS',
       ],
       download_url='http://prdownloads.sourceforge.net/ppa/'\
                    'QPS-%s.tar.gz?download' % qps.__version__,
-      packages=['qps', 'qps.qDB', 'qps.qBricks'])
+      packages=['qps', 'qps.qDB', 'qps.qBricks'],
+      scripts=['bin/qps_create_site'])
