@@ -41,7 +41,7 @@ for repeat in Cook.Repeat(brick):
         %>
 <tr bgcolor="#A0AAB1"><%
         for field_name in template.bindingIndexFields(brick):
-            field_type = brick.allItemFields[field_name]
+            field_type = brick.fields[field_name]
             %>
 <td nowrap style="height: 2em;"><span class=t11><%= field_type.indexTitle %></span></td><%
         %>
@@ -50,7 +50,7 @@ for repeat in Cook.Repeat(brick):
     %>
 <tr valign="top"><%
     for field_name in template.bindingIndexFields(brick):
-        field_type = brick.allItemFields[field_name]
+        field_type = brick.fields[field_name]
         %>
 <td bgcolor=#F0F1F2><%= template.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
     id_str = item.fields['id'].convertToString(item.id)
