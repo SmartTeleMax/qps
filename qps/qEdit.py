@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.9 2004/06/04 09:40:29 corva Exp $
+# $Id: qEdit.py,v 1.10 2004/06/04 10:13:52 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -36,7 +36,7 @@ class RenderHelper(qWebUtils.RenderHelper):
         return streams
     allowedStreams = qUtils.CachedAttribute(allowedStreams)
 
-    def getAllowedFields(self, obj):
+    def allowedFields(self, obj):
         # assume obj.type=='item'
         stream = obj.stream
         item_fields = stream.allItemFields
@@ -49,7 +49,7 @@ class RenderHelper(qWebUtils.RenderHelper):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def getAllowedIndexFields(self, obj):
+    def allowedIndexFields(self, obj):
         # assume obj.type=='stream':
         stream = obj
         item_fields = stream.allStreamFields
@@ -62,7 +62,7 @@ class RenderHelper(qWebUtils.RenderHelper):
                     itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def checkIfStreamUpdatable(self, obj):
+    def isStreamUpdatable(self, obj):
         allowedIndexFields = self.getAllowedIndexFields(obj)
         # assume obj.type=='stream':
         stream = obj
@@ -74,18 +74,18 @@ class RenderHelper(qWebUtils.RenderHelper):
                     return 1
         return 0
 
-    def checkIfStreamUnbindable(self, obj):
+    def isStreamUnbindable(self, obj):
         return hasattr(obj, 'joinField') and \
                 self.user.checkPermission('w',
                     brick.allItemFields[brick.joinField].indexPermissions)
 
-    def checkIfStreamCreatable(self, obj):
+    def isStreamCreatable(self, obj):
         return self.user.checkPermission('c', obj.permissions)
 
-    def checkIfStreamDeletable(self, obj):
+    def isStreamDeletable(self, obj):
         return self.user.checkPermission('d', obj.permissions)
 
-    def getBindingIndexFields(self, obj):
+    def bindingIndexFields(self, obj):
         # assume self.object.type=='stream':
         stream = obj
         item_fields = stream.allItemFields
@@ -96,7 +96,6 @@ class RenderHelper(qWebUtils.RenderHelper):
                    self.user.checkPermission('r', field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
-    bindingIndexFields = qUtils.CachedAttribute(getBindingIndexFields)
 
     def showField(self, obj, name):
         '''Return representation of field in editor interface'''
