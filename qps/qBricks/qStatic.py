@@ -1,4 +1,4 @@
-# $Id: qStatic.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qStatic.py,v 1.2 2004/06/08 15:32:22 ods Exp $
 
 '''Classes for hardcoded bricks'''
 
@@ -18,10 +18,10 @@ class StaticItem(qBase.Item):
 class StaticStream(qBase.Stream):
     '''Base class for statically (in code) defined streams. For example:
 
-        class Regions(ListStream):
+        class Regions(StaticStream):
             itemListSpec = [
-                ('moscow',          {'title': 'Moscow'}),
-                ('peterburg',       {'title': 'Saint-Peterburg'})]
+                {'id': 'moscow', 'title': 'Moscow'},
+                {'id': 'peterburg', 'title': 'Saint-Peterburg'}]
     '''
 
     itemClass = StaticItem
@@ -31,12 +31,13 @@ class StaticStream(qBase.Stream):
     def retrieve(self, ignoreStatus=0):
         if not self._retrieved or ignoreStatus:
             self.itemList = items = []
-            for id, others in self.itemListSpec:
+            for fields in self.itemListSpec:
                 # XXX createItemFromCode? It will be usefull for ZODB-like
                 # storages too.
-                item = self.itemClass(self.site, self, id)
-                for field_name, value in others.iteritems():
-                    item.initFieldFromCode(field_name, value)
+                item = self.createNewItem(fields['id'])
+                for field_name, value in fields.iteritems():
+                    if field_name!='id':
+                        item.initFieldFromCode(field_name, value)
                 item.retrieveExtFields()
                 item._retrieved = 1
                 items.append(item)
