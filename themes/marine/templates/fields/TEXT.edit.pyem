@@ -1,2 +1,2 @@
 <td class="name"><%= getattr(brick, 'title', name) %>:</td>
-<td width="100%"><textarea name="<%= name %>" cols="<%= brick.layout.get('cols', 60) %>" rows="<%= brick.layout.get('rows', 10) %>"><%= quoteHTML(str(value)) %></textarea></td>
+<td width="100%"><textarea name="<%= name %>" cols="<%= brick.layout.get('cols', 60) %>" rows="<%= brick.layout.get('rows', 10) %>"><%= quoteHTML('%s' % (value,)) %></textarea></td>

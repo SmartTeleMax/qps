@@ -7,7 +7,7 @@ if brick.layout.has_key('size'):
     additional_attrs += ' size="%s"' % brick.layout['size']
 elif hasattr(brick, 'maxlength'):
     additional_attrs += ' size="%s"' % min(brick.maxlength+1, 20)
-if str(value):
-    %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= quoteHTML(str(value)) %>"><%
+if '%s' % (value,):
+    %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= quoteHTML('%s' % (value,)) %>"><%
 %>
-<input type="text" name="qps-new:<%= field_suffix %>" value="<%= quoteHTML(str(value)) %>"<%= additional_attrs %>>
+<input type="text" name="qps-new:<%= field_suffix %>" value="<%= quoteHTML('%s' % (value,)) %>"<%= additional_attrs %>>
