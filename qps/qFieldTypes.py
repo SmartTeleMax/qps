@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.47 2005/02/15 15:18:18 corva Exp $
+# $Id: qFieldTypes.py,v 1.48 2005/02/22 12:15:57 ods Exp $
 
 '''Classes for common field types'''
 
@@ -161,9 +161,9 @@ class STRING_ID(STRING):
     title = 'ID'
     minlength = 1
     maxlength = 32
-    pattern = '^[0-9a-zA-Z_]+$'
-    not_match_error_message = 'ID can contain latin alfanumeric characters '\
-                              'and underscore only'
+    pattern = '^[0-9a-zA-Z_-]+$'
+    not_match_error_message = 'ID can contain latin alfanumeric characters, '\
+                              'underscores and dashes only'
     permissions = [('all', 'r')]
     createPermissions = [('all', 'rw')]
     indexPermissions = [('all', 'r')]
