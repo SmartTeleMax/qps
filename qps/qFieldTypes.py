@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.32 2004/09/14 15:02:28 corva Exp $
+# $Id: qFieldTypes.py,v 1.33 2004/09/26 23:17:16 corva Exp $
 
 '''Classes for common field types'''
 
@@ -7,7 +7,6 @@ import types, os, re, sys, weakref, logging
 logger = logging.getLogger(__name__)
 
 from mx import DateTime
-from mx.Misc.LazyModule import LazyModule
 
 import qUtils
 
