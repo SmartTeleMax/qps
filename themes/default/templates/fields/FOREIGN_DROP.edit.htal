@@ -6,3 +6,4 @@
 	tal:attributes="value item.id; selected value and item.id==value.id and 'selected' or None"
 	tal:content="structure brick.getLabel(item)">Option label</option>
 </select>
+<a tal:condition="not isNew and stream.indexNum!=0 and len(stream)>=stream.indexNum" tal:attributes="href '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (edPrefix, stream.path(), item.path(), name)">more &gt;&gt;</a>
