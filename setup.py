@@ -1,7 +1,66 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-import qps
+from distutils.core import Command, setup
+from distutils.command.build import build
+import os, qps
+
+
+class qps_build_pydoc(Command):
+
+    description = 'build API reference with pydoc'
+
+    user_options = [
+        ('build-dir=', 'd', 'destination directory'),
+    ]
+
+    def initialize_options(self):
+        self.build_dir = None
+
+    def finalize_options(self):
+        self.set_undefined_options('build',
+                                   ('build_pydoc', 'build_dir'))
+        if self.distribution.packages:
+            # XXX just a quick hack
+            self.package = self.distribution.packages[0]
+        else:
+            self.package = None
+
+    def run(self):
+        if self.package:
+            import pydoc
+            cwd = os.getcwd()
+            self.mkpath(self.build_dir)
+            os.chdir(self.build_dir)
+            try:
+                pydoc.writedocs(os.path.join(cwd, self.package),
+                                pkgpath=self.package+'.')
+            except:
+                if not self.dry_run:
+                    os.chdir(cwd)
+                    raise
+            os.chdir(cwd)
+
+
+class qps_build(build):
+
+    user_options = build.user_options + [
+        ('build-pydoc=', None, 'build directory for API reference'),
+    ]
+
+    sub_commands = build.sub_commands + [
+        # XXX don't build by default yet
+        #('build_pydoc', None),
+    ]
+
+    def initialize_options(self):
+        build.initialize_options(self)
+        self.build_pydoc = None
+
+    def finalize_options(self):
+        build.finalize_options(self)
+        if self.build_pydoc is None:
+            self.build_pydoc = os.path.join(self.build_base, 'pydoc')
+
 
 setup(name='QPS',
       version=qps.__version__,
@@ -23,4 +82,8 @@ setup(name='QPS',
       download_url='http://prdownloads.sourceforge.net/ppa/'\
                    'QPS-%s.tar.gz?download' % qps.__version__,
       packages=['qps', 'qps.qDB', 'qps.qBricks'],
-      scripts=['bin/qps_create_site'])
+      scripts=['bin/qps_create_site'],
+      cmdclass={
+        'build'         : qps_build,
+        'build_pydoc'   : qps_build_pydoc,
+      })
