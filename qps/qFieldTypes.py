@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.7 2004/05/06 14:27:33 ods Exp $
+# $Id: qFieldTypes.py,v 1.8 2004/06/04 08:57:28 corva Exp $
 
 '''Classes for common field types'''
 
@@ -355,7 +355,7 @@ class LazyItem:
 
     def __getattr__(self, name):
         if name in ('_item', '__del__'): # XXX Avoid unlimited recursion due
-                                         # to bug in decriptiors
+                                         # to bug in descriptors
                                          # implementation in 2.2
             raise AttributeError(name)
         return getattr(self._item, name)
