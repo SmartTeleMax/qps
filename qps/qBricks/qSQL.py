@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.9 2004/06/10 11:24:15 corva Exp $
+# $Id: qSQL.py,v 1.10 2004/06/29 09:02:45 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -253,8 +253,8 @@ class SQLStream(qBase.Stream):
                 item_ids = self.dbConn.selectFieldAsList(
                     table,
                     fields[0],
-                    "(%s) AND (%s)" % (condition,
-                                       self.dbConn.IN(fields[0], item_ids)))
+                    self.dbConn.join([condition,
+                                      self.dbConn.IN(fields[0], item_ids)]))
             if item_ids:
                 self.deleteExtFields(item_ids)
                 cursor = self.dbConn.delete(
