@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
+# $Id: qPath.py,v 1.2 2004/06/09 06:42:42 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -47,7 +47,7 @@ class PathParser:
             if item_id==self.index_file:
                 return (self.site, stream)
             try:
-                item_id = stream.fields['id'].convertFromString(item_id)
+                item_id = stream.fields.id.convertFromString(item_id)
             except:
                 return (self.site, stream, None)
             return (self.site, stream, stream.retrieveItem(item_id))

@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.6 2004/06/09 06:53:32 corva Exp $
+# $Id: qBase.py,v 1.7 2004/06/09 07:17:42 ods Exp $
 
 '''Base brick classes'''
 
@@ -90,7 +90,7 @@ class Item(Brick):
 
     def path(self):
         return '%s%s.html' % (self.stream.path(),
-                              self.fields['id'].convertToString(self.id))
+                              self.fields.id.convertToString(self.id))
 
     def initFieldFromCode(self, field_name, value):
         '''Initialize field from code'''
@@ -106,7 +106,7 @@ class Item(Brick):
         if names is None:
             names = self.fields.keys()
         for field_name in names:
-            if field_name!='id':
+            if field_name!=self.fields.idFieldName:
                 field_type = self.fields[field_name]
                 if field_type.initFromForm:
                     try:
@@ -328,7 +328,7 @@ class Stream(Brick):
         else:
             virtual_param_names = []
         for field_name, field_type in self.fields.iteritems():
-            if field_name!='id':
+            if field_name!=self.fields.idFieldName:
                 if field_name in virtual_param_names:
                     value = getattr(self, field_name)
                 elif defaults.has_key(field_name):

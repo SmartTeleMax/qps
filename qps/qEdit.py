@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.20 2004/06/10 11:24:15 corva Exp $
+# $Id: qEdit.py,v 1.21 2004/06/18 23:30:33 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -165,16 +165,18 @@ class EditBase:
 
     def storableFields(self, item, user):
         itemFieldsOrder = []
+        id_field_name = stream.fields.idFieldName
         for field_name, field_type in item.fields.iteritems():
-            if field_name!='id' and \
+            if field_name!=id_field_name and \
                     user.checkPermission('w', field_type.permissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
     def storableIndexFields(self, stream, user):
         itemFieldsOrder = []
+        id_field_name = stream.fields.idFieldName
         for field_name, field_type in stream.indexFields.iteritems():
-            if field_name!='id' and \
+            if field_name!=id_field_name and \
                     user.checkPermission('w', field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
@@ -224,7 +226,7 @@ class EditBase:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
-        item = stream.createNewItem(stream.fields['id'].getDefault())
+        item = stream.createNewItem(stream.fields.id.getDefault())
         self.showBrick(request, response, item, user, isNew=1)
 
     def do_createItem(self, request, response, form, objs, user):
@@ -236,14 +238,15 @@ class EditBase:
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
         errors = {}
-        id_field_type = stream.fields['id']
+        id_field_type = stream.fields.id
+        id_field_name = stream.fields.idFieldName
         if id_field_type.omitForNew:
             item_id = None
         else:
             try:
-                item_id = id_field_type.convertFromForm(form, 'id')
+                item_id = id_field_type.convertFromForm(form, id_field_name)
             except id_field_type.InvalidFieldContent, exc:
-                errors['id'] = exc.message
+                errors[id_field_name] = exc.message
                 item_id = id_field_type.getDefault()
         item = stream.createNewItem(item_id)
         if not (id_field_type.omitForNew or errors) and item.exists()==1:
@@ -296,7 +299,7 @@ class EditBase:
         "qps-select" form field.'''
         if not user.checkPermission('d', stream.permissions):
             raise self.ClientError(403, self.delete_denied_error)
-        item_ids = map(stream.fields['id'].convertFromString,
+        item_ids = map(stream.fields.id.convertFromString,
                        form.getlist('qps-select'))
         if item_ids:
             try:
@@ -332,7 +335,7 @@ class EditBase:
                     item_id_strs[parts[1]] = 1
             for item_id_str in item_id_strs.keys():
                 changed_fields = []
-                item_id = stream.fields['id'].convertFromString(item_id_str)
+                item_id = stream.fields.id.convertFromString(item_id_str)
                 item = stream.retrieveItem(item_id)
                 if item is None:  # Somebody deleted it :)
                     continue
@@ -378,7 +381,7 @@ class EditBase:
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
         binding_to_item = getattr(stream, stream.virtual.paramName)
-        item_ids = map(stream.fields['id'].convertFromString,
+        item_ids = map(stream.fields.id.convertFromString,
                        form.getlist('qps-select'))
         for item_id in item_ids:
             item = stream.retrieveItem(item_id)
@@ -476,7 +479,7 @@ class EditBase:
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
-        convert = template_stream.fields['id'].convertFromString
+        convert = template_stream.fields.id.convertFromString
         old_ids = map(convert, form.getlist('qps-old'))
         new_ids = map(convert, form.getlist('qps-new'))
         if bound.type=='stream':  # direct binding
