@@ -1,4 +1,4 @@
-<%= brick.template('inc_top') %>
+<%= template('inc_top', brick=brick) %>
 
 <h1><%= brick.site.title %> :: <%= brick.stream.title %> :: <%= getattr(brick, 'title', brick.id) %></h1>
 
@@ -9,25 +9,25 @@ if errors:
 
 <%
 %>
-<form action="<%= brick.edPrefix+(brick.isNew and brick.stream.path() or brick.path()) %>" method="POST" enctype="multipart/form-data">
+<form action="<%= template.edit.prefix+(template.isNew and brick.stream.path() or brick.path()) %>" method="POST" enctype="multipart/form-data">
 
 <table class="data" width="100%">
 <%
-for field_name in brick.allowedFields:
+for field_name in template.allowedFields(brick):
     error = errors.get(field_name)
     if error:
         %>
 <tr class="errormessage"><td clospan="2"><%= error %></td></tr><%
     %>
 <tr class="field">
-<%= brick.showField(field_name) %></tr>
+<%= template.showField(brick, field_name) %></tr>
 <%
 %>
 </table>
 
 <div class="actionbuttons">
 <%
-if brick.isNew:
+if template.isNew:
     %><input type="submit" name="qps-action:createItem" value="Create"><%
 else:
     %><input type="submit" name="qps-action:updateItem" value="Update"><%
@@ -36,4 +36,4 @@ else:
 
 </form>
 
-<%= brick.template('inc_bottom') %>
+<%= template('inc_bottom', brick=brick) %>

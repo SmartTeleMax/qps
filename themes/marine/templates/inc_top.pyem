@@ -3,7 +3,7 @@
 <head>
 <title>Editor interface of <%= brick.site.title %></title>
 <%
-styleSheetURL = getattr(brick, 'styleSheetURL', None)
+styleSheetURL = getattr(template.edit, 'styleSheetURL', None)
 if styleSheetURL:
     %><link rel="stylesheet" type="text/css" href="<%= quoteHTML(styleSheetURL) %>"><%
 %>
@@ -12,8 +12,8 @@ if styleSheetURL:
 <table width="100%">
 <tr>
 <td align="left" class="sitetitle">
-<a href="<%= brick.edPrefix+'/' %>"><%
-logoURL = getattr(brick, 'logoURL', None)
+<a href="<%= template.edit.prefix+'/' %>"><%
+logoURL = getattr(template.edit, 'logoURL', None)
 if logoURL:
     %><img src="<%= quoteHTML(logoURL) %>" alt="Editor interface of &quot;<%= brick.site.title %>&quot;"><%
 else:
@@ -23,9 +23,9 @@ else:
 <td align="right">
 <table class="topmenu"><tr>
 <%
-for stream in brick.allowedStreams:
+for stream in template.allowedStreams:
     if getattr(stream, 'showInMenu', 0):
-        %><td><a href="<%= brick.edPrefix+stream.path() %>"><%= stream.title %></a></td><%
+        %><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td><%
 %>
 </tr></table>
 </td></tr>

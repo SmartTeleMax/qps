@@ -1,22 +1,22 @@
-<%= brick.template('inc_top') %>
+<%= template('inc_top', brick=brick) %>
 
 <h1><%= brick.site.title %> :: <%= brick.title %></h1>
 <%
-if brick.isStreamCreatable:
-    %><div class="actionlinks"><a href="<%= quoteHTML(brick.edPrefix+brick.path()) %>?qps-action%3AnewItem=1">Create new</a></div><%
+if template.isStreamCreatable(brick):
+    %><div class="actionlinks"><a href="<%= quoteHTML(template.edit.prefix+brick.path()) %>?qps-action%3AnewItem=1">Create new</a></div><%
 %>
 
-<form action="<%= quoteHTML(brick.edPrefix+brick.path()) %>" method="POST">
+<form action="<%= quoteHTML(template.edit.prefix+brick.path()) %>" method="POST">
 
-<%= brick.template('inc_pages') %>
+<%= template('inc_pages', brick=brick) %>
 
 <table width="100%" class="data">
 
 <thead><tr>
 <%
-for field_name in brick.allowedIndexFields:
+for field_name in template.allowedIndexFields(brick):
     %><th><%= brick.allStreamFields[field_name].indexTitle %></th><%
-if brick.isStreamDeletable or brick.isStreamUnbindable:
+if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
     %><th>[X]</th><%
 %>
 </tr></thead>
@@ -27,10 +27,10 @@ for it in Cook.Repeat(brick):
     item = it.value
     %>
 <tr class="<%= it.alter('odd', 'even') %>"><%
-    for field_name in brick.allowedIndexFields:
+    for field_name in template.allowedIndexFields(brick):
         %>
-<td><%= brick.showFieldInIndex(item, field_name) %></td><%
-    if brick.isStreamDeletable or brick.isStreamUpdatable:
+<td><%= template.showFieldInIndex(item, field_name) %></td><%
+    if template.isStreamDeletable(brick) or template.isStreamUpdatable(brick):
         %>
 <td><input type="checkbox" name="qps-select" value="<%= brick.itemIDField.convertToString(item.id) %>"></td><%
     %>
@@ -41,17 +41,17 @@ for it in Cook.Repeat(brick):
 
 </table>
 
-<%= brick.template('inc_pages') %>
+<%= template('inc_pages', brick=brick) %>
 
 <div class="actionbuttons"><%
-if brick.isStreamUpdatable:
-    %><input type="submit"  name="qps-action:updateStream" value="Update"><%
-if brick.isStreamUnbindable:
+if template.isStreamUpdatable(brick):
+    %><input type="submit"  name="qps-action:updateItems" value="Update"><%
+if template.isStreamUnbindable(brick):
     %><input type="submit"  name="qps-action:unbindItems" value="Unbind selected"><%
-if brick.isStreamDeletable:
+if template.isStreamDeletable(brick):
     %><input type="submit"  name="qps-action:deleteItems" value="Delete selected"><%
 %></div>
 
 </form>
 
-<%= brick.template('inc_bottom') %>
+<%= template('inc_bottom', brick=brick) %>
