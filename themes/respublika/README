@@ -1,0 +1,14 @@
+This is "respublika" theme, originally designed by yoyo for
+"Respublika.Ru" project.
+
+To install this theme you should:
+
+1. Copy content of "static" dir somethere into web root.
+2. Add two attributes to Edit class (derived from qps.qEdit.EditBase):
+
+class Edit(qps.qEdit.EditBase):
+    staticPrefix = "/location/of/static/dir" 
+    staticLogo = None
+
+staticLogo defines path to 218x85 image file. It can be None, by
+default there isn't any logo included.

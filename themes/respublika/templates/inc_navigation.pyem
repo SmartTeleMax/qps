@@ -1,8 +1,8 @@
 <table border=0 cellpadding=0 cellspacing=0 width=218 bgcolor=#F0F1F2><%
-if template.edit.staticLogoName:
+if template.edit.staticLogo:
     %>
 <tr bgcolor="#E1E4E6"><td width="218" bgcolor="#e1e4e6">
-<a href="<%= template.edit.prefix %>/"><img src="<%= template.edit.staticPrefix %>/<%= template.edit.staticLogoName %>" border="0" width="218" height="85"></a>
+<a href="<%= template.edit.prefix %>/"><img src="<%= template.edit.staticLogo %>" border="0" width="218" height="85"></a>
 </td></tr><%
 %>
 <tr bgcolor="#E1E4E6"><td width="100%" style="padding: 12px 12px 12px 12px;">
