@@ -1,5 +1,5 @@
 <td class="name"><%= getattr(brick, 'title', name) %>:</td>
 <td width="100%"><%
 if value:
-    %><img src="<%= edPrefix %><%= quoteHTML(value.path) %>">
+    %><img src="<%= edPrefix %><%= quoteHTML(value.path) %>"><%
 %></td>
