@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.3 2004/03/19 15:29:52 ods Exp $
+# $Id: qps_create_site,v 1.4 2004/03/19 17:00:27 ods Exp $
 
 import sys, os
 sys.path.append('..')  # let it work without installation
@@ -12,6 +12,10 @@ def indent(text, level=1):
 
 def escapeSQ(text):
     return text.replace("'", r"\'")
+
+def mkdir(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
 SITE_TMPL = '''\
 %(setlocale)s\
@@ -71,9 +75,13 @@ try:
     site_root, = args
 except ValueError:
     parser.error('incorrect number of arguments')
+
 site_root = os.path.normpath(os.path.abspath(site_root))
 make_dir = os.path.normpath(site_root+'/www')
-make_templates_dir = os.path.normpath(site_root+'/make-templates')
+make_templates_dir = os.path.normpath(site_root+'/templates')
+code_dir = os.path.normpath(site_root+'/code')
+
+map(mkdir, (site_root, make_dir, make_templates_dir, code_dir))
 
 if options.locale is None:
     setlocale = ''
