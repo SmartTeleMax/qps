@@ -35,7 +35,7 @@ class Site(qps.qSite.Site):
     host = 'localhost'
 
     dbCharset = 'utf-8'
-    templateCharset = 'koi8-r'
+    templateCharset = 'utf-8'
     clientCharset = 'utf-8'
 
     dbParams = {
