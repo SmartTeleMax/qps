@@ -1,3 +1,16 @@
 <span class=t11b id=db1><%= getattr(brick, 'title', name) %>: </span><br><span class=s3>&nbsp;</span><br><%
 if value:
-    %><img src="<%= value.path %>" border="0"><br><span class=s3>&nbsp;</span><br>
+    %><img src="<%= value.path %>" border="0"><br><span class=s3>&nbsp;</span><br><%
+if not brick.fieldToThumb:
+    %><table cellspacing=0 cellpadding=0><tr valing="middle"><td>
+<span class=a12 id=db1>удалить</span></td><td><input type="checkbox" name="<%= name %>-delete"></td></tr></table><span class=s3>&nbsp;</span><br><%
+%>
+<table cellspacing=0 cellpadding=3>
+  <tr>
+    <td class="t11" id="db1">Файл:</td><td><input type="file" name="<%= name %>-body" class=a12></td>
+  </tr>
+  <tr>
+    <td class="t11" id="db1">Ссылка:</td><td><input type="text" name="<%= name %>-url" class=a12></td>
+  </tr>
+</table><%
+%>
