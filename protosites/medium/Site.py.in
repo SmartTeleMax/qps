@@ -1,0 +1,18 @@
+# $Id: Site.py.in,v 1.11 2004/05/31 17:56:24 ods Exp $
+#import locale
+#locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+from qps import qSite
+
+class Site(qSite.Site):
+
+    host = 'localhost'
+    title = %(`title`)s
+    makeRoot = %(`make_dir`)s
+    templateDirs = [%(`make_templates_dir`)s]
+    #templateCharset = 'utf-8'
+    #clientCharset = 'utf-8'
+    #dbCharset = 'utf-8'
+    from streamDescriptions import streamDescriptions, virtualStreamRules
+    from fieldDescriptions import defaultItemIDField, itemIDFields, \
+                                  itemFieldsOrder, itemFields, itemExtFields
+    dbParams = {'user': 'test', 'db': 'test', 'passwd': 'secret'}
