@@ -15,7 +15,7 @@ if styleSheetURL:
 <%
 logoURL = getattr(brick, 'logoURL', None)
 if logoURL:
-    %><a href="<%= brick.edPrefix+'/' %>"><img src="<%= quoteHTML(logoURL) %>" alt="Редакторский интерфейс &quot;<%= brick.site.title %>&quot;"><%
+    %><a href="<%= brick.edPrefix+'/' %>"><img src="<%= quoteHTML(logoURL) %>" alt="Editor interface of &quot;<%= brick.site.title %>&quot;"><%
 %>
 </td>
 <td width="80%">
