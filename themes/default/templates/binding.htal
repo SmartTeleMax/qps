@@ -35,7 +35,6 @@ next page &gt;&gt;</a>
 <table>
 
 <tr>
-<th>ID</th>
 <tal:block tal:repeat="field_name brick.bindingIndexFields">
 <th tal:define="field_type brick.allItemFields[field_name]"
     tal:content="field_type.indexTitle">Field title</th>
@@ -44,9 +43,6 @@ next page &gt;&gt;</a>
 </tr>
 
 <tr tal:repeat="item brick">
-<td><a href="#" tal:attributes="href brick.edPrefix+item.path()"
-                tal:content="item.id"
-                tal:omit-tag="not brick.itemIDField.linkThrough">Item ID</a></td>
 <td tal:repeat="field_name brick.bindingIndexFields"
     tal:content="structure brick.showFieldInIndex(item, field_name, allow_edit=0)">
 Field value</td>

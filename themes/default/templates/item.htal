@@ -18,12 +18,6 @@
 <strong tal:condition="fieldErrors">Warning! Document was not saved due to errors in one or more fields.</strong>
 
 <form tal:attributes="action brick.edPrefix+(brick.isNew and brick.stream.path() or brick.path())" method="POST" enctype="multipart/form-data">
-<tal:block tal:condition="brick.isNew and not brick.stream.itemIDField.omitForNew">
-<tal:block tal:condition="fieldErrors.has_key('id')">
-<strong tal:content="fieldErrors['id']">Error message</strong><br>
-</tal:block>
-<tal:block tal:replace="structure brick.showField('id')">ID field content</tal:block>
-</tal:block>
 
 <div tal:repeat="field_name brick.allowedFields">
 <tal:block tal:replace="structure brick.showField(field_name)">Field content</tal:block>

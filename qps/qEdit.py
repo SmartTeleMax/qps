@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.2 2004/04/07 12:17:13 ods Exp $
+# $Id: qEdit.py,v 1.3 2004/04/07 13:13:30 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -43,7 +43,7 @@ class MakedEditObject(qWebUtils.MakedObject):
         stream = obj.stream
         item_fields = stream.allItemFields
         itemFieldsOrder = []
-        for field_name in stream.itemFieldsOrder:
+        for field_name in ['id']+stream.itemFieldsOrder:
             field_type = item_fields[field_name]
             perms = self.edUser.getPermissions(field_type.permissions)
             if 'w' in perms or 'r' in perms and \
@@ -60,7 +60,7 @@ class MakedEditObject(qWebUtils.MakedObject):
         item_fields = stream.allStreamFields
         itemFieldsOrder = []
         if self.edUser.checkPermission('x', stream.permissions):
-            for field_name in stream.itemFieldsOrder+\
+            for field_name in ['id']+stream.itemFieldsOrder+\
                     getattr(stream, 'joinFields', {}).keys():
                 field_type = item_fields[field_name]
                 if self.edUser.checkPermission('r',
@@ -129,15 +129,9 @@ class MakedEditObject(qWebUtils.MakedObject):
 
     def showField(self, name):
         '''Return representation of field in editor interface'''
-
-        object = self.object
-
-        if name=='id':
-            field_type = object.stream.itemIDField
-        else:
-            field_type = object.stream.allItemFields[name]
-            
-        stream_perms = self.edUser.getPermissions(object.stream.permissions)
+        obj = self.object
+        field_type = obj.stream.allItemFields[name]
+        stream_perms = self.edUser.getPermissions(obj.stream.permissions)
         perms = self.edUser.getPermissions(field_type.permissions)
         if 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
@@ -151,14 +145,9 @@ class MakedEditObject(qWebUtils.MakedObject):
 
     def showFieldInIndex(self, item, name, allow_edit=1):
         '''Return representation of field in stream'''
-
-        object = item.stream
-        if name=='id':
-            field_type = object.itemIDField
-        else:
-            field_type = object.allStreamFields[name]
-
-        stream_perms = self.edUser.getPermissions(object.permissions)
+        obj = item.stream
+        field_type = obj.allStreamFields[name]
+        stream_perms = self.edUser.getPermissions(obj.permissions)
         perms = self.edUser.getPermissions(field_type.indexPermissions)
         if allow_edit and 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
@@ -346,7 +335,8 @@ class EditBase:
         else:
             fields_to_store = []
             for field_name, field_type in item.stream.allItemFields.items():
-                if user.checkPermission('w', field_type.permissions):
+                if field_name!='id' and \
+                        user.checkPermission('w', field_type.permissions):
                     fields_to_store.append(field_name)
             item.store(fields_to_store)
             if item.existsInStream():

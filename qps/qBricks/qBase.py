@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.8 2004/03/16 15:56:20 ods Exp $
+# $Id: qBase.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 
 '''Base brick classes'''
 
@@ -234,6 +234,7 @@ class Stream(Brick):
     def allItemFields(self):
         '''Returns all bricks fields'''
         result = self.itemFields.copy()
+        result['id'] = self.itemIDField
         result.update(self.itemExtFields)
         return result
     allItemFields = qUtils.CachedAttribute(allItemFields)
@@ -313,13 +314,15 @@ class Stream(Brick):
         else:
             virtual_param_names = []
         for field_name, field_type in self.allItemFields.items():
-            if field_name in virtual_param_names:
-                value = getattr(self, field_name)
-            elif defaults.has_key(field_name):
-                value = field_type.convertFromCode(defaults[field_name], item)
-            else:
-                value = field_type.getDefault(item)
-            setattr(item, field_name, value)
+            if field_name!='id':
+                if field_name in virtual_param_names:
+                    value = getattr(self, field_name)
+                elif defaults.has_key(field_name):
+                    value = field_type.convertFromCode(defaults[field_name],
+                                                       item)
+                else:
+                    value = field_type.getDefault(item)
+                setattr(item, field_name, value)
         return item
 
     def makeAction(self):
