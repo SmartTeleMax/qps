@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# $Id: $
 
 import sys, os
 
@@ -24,6 +25,7 @@ import locale
 locale.setlocale(locale.LC_ALL, '%(locale)s')
 
 '''
+
 STREAM_DESCS_IMPORTS = '''\
 from qps.qUtils import DictRecord
 '''
@@ -41,8 +43,9 @@ streamDescriptions = {
     #'sql_stream_example': DictRecord(
     #    title='SQL stream example',
     #    tableName='stream_table',
-    #    condition='',
+    #    condition='',  # raw SQL condition to place into WHERE clause
     #    order='id',
+    #    indexNum=10,   # number of items on page
     #    streamCat='sql_stream_template_category',
     #    streamClass='qps.qBricks.qSQL.SQLStream',
     #    permissions=[('editor', 'rwxcd'), ('all', 'rx')]),
