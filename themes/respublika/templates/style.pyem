@@ -53,3 +53,18 @@ h1, h2, h3, h4 {display: inline }
 #dg1 {color: #849072}
 #dg2 {color: #2D4122}
 #dg3 {color: #3D5132}
+
+#notify {
+    font: bold 17px/16px tahoma;
+    letter-spacing: -1;
+    padding: 5px;
+    background-color: #a0aab1;
+    border: 1px solid #354750;
+    position: fixed;
+    _position: absolute;
+    z-index: 3;
+    color: white;
+    right: 2px;
+    top: 2px;
+    _top: expression(eval(document.body.scrollTop+2));
+}

@@ -23,6 +23,7 @@ if brick.site.clientCharset:
   </head>
 
 <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<div id="notify" style="display: none;"></div>
 <table cellpadding=12 cellspacing=0 height="100%">
 <tr valign="top">
 <!-- nav -->
@@ -49,7 +50,7 @@ if template.isNew:
     %><%= brick.stream.path() %><%
 else:
     %><%= brick.path() %><%
-%>" method="POST" enctype="multipart/form-data">
+%>" method="POST" enctype="multipart/form-data" onsubmit="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста подождите.'; n.style.display='';">
 <input type="hidden" name="order" value="<%= brick.stream.order %>">
 <input type="hidden" name="page" value="<%= brick.stream.page %>">
 
