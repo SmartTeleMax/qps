@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.22 2004/06/29 08:52:47 corva Exp $
+# $Id: qEdit.py,v 1.23 2004/07/02 07:46:17 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -41,8 +41,8 @@ class RenderHelper(qWebUtils.RenderHelper):
         itemFieldsOrder = []
         for field_name, field_type in item.fields.iteritems():
             perms = self.user.getPermissions(field_type.permissions)
-            if 'w' in perms or 'r' in perms and \
-                    not (self.isNew and field_type.omitForNew):
+            if ('w' in perms or 'r' in perms) and \
+                   not (self.isNew and field_type.omitForNew):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
