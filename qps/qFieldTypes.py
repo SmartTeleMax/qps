@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.24 2004/07/23 12:48:09 ods Exp $
+# $Id: qFieldTypes.py,v 1.25 2004/07/27 12:59:07 ods Exp $
 
 '''Classes for common field types'''
 
@@ -924,6 +924,7 @@ class CONTAINER(AgregateFieldType):
         return '.'.join([name, subname])
 
     def convertFromCode(self, value, item=None):
+        # XXX Looks like broken. Need to test it
         result = self.dictClass()
         for key in self.itemFieldsOrder:
             field_type = self.itemFields[key]
