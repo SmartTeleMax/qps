@@ -1,0 +1,39 @@
+<%= brick.template('inc_top') %>
+
+<h1><%= brick.site.title %> :: <%= brick.stream.title %> :: <%= getattr(brick, 'title', brick.id) %></h1>
+
+<%
+errors = globals().get('fieldErrors', {})
+if errors:
+    %><div class="errornotice">ATTENTION! Information is not stored due to error in one or more fields. See error message(s) below.</div>
+
+<%
+%>
+<form action="<%= brick.edPrefix+(brick.isNew and brick.stream.path() or brick.path()) %>" method="POST" enctype="multipart/form-data">
+
+<table class="data" width="100%">
+<%
+for field_name in brick.allowedFields:
+    error = errors.get(field_name)
+    if error:
+        %>
+<tr class="errormessage"><td clospan="2"><%= error %></td></tr><%
+    %>
+<tr class="field">
+<td><%= brick.showField(field_name) %></td></tr>
+<%
+%>
+</table>
+
+<div class="actionbuttons">
+<%
+if brick.isNew:
+    %><input type="submit" name="qps-action:createItem" value="Create"><%
+else:
+    %><input type="submit" name="qps-action:updateItem" value="Update"><%
+%>
+</div>
+
+</form>
+
+<%= brick.template('inc_bottom') %>
