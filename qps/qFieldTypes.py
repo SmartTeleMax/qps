@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.30 2004/08/23 10:48:55 corva Exp $
+# $Id: qFieldTypes.py,v 1.31 2004/08/23 12:13:27 corva Exp $
 
 '''Classes for common field types'''
 
@@ -844,8 +844,14 @@ class THUMBNAIL(IMAGE):
     resizeFilter = property(resizeFilter)
     
     def convertFromForm(self, form, name, item):
-        image = image_orig = getattr(getattr(item, self.fieldToThumb, None),
-                                     '_image', None)
+        if self.fieldToThumb:
+            # we have field to thumbnail
+            image = image_orig = getattr(
+                getattr(item, self.fieldToThumb, None), '_image', None)
+        else:
+            # field thumbnails itself
+            image = image_orig = getattr(
+                IMAGE.convertFromForm(self, form, name, item), '_image', None)
 
         if image and self.width and self.height:
             image = self.thumbnail(image)
