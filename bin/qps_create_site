@@ -1,11 +1,15 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.8 2004/03/23 15:27:54 ods Exp $
+# $Id: qps_create_site,v 1.9 2004/03/23 16:19:45 ods Exp $
 
 import sys, os, shutil
 sys.path.append('..')  # let it work without installation
 from qps.qUtils import interpolateString
 
 python_executable = os.path.normpath(sys.executable)
+if os.name=='win32':
+    python_cgi_executable = python_executable+' -u'
+else:
+    python_cgi_executable = python_executable
 
 def mkdir(path):
     if not os.path.isdir(path):
