@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.6 2004/04/26 18:01:12 corva Exp $
+# $Id: qFieldTypes.py,v 1.7 2004/05/06 14:27:33 ods Exp $
 
 '''Classes for common field types'''
 
@@ -36,7 +36,7 @@ class FieldType:
     # showField in binding view
     showInBinding    = 0
     linkThrough      = 1
-
+    
     default     = ''                            # default value
     permissions = [('all', 'rw')] # permissions for item view
     indexPermissions = [] # permission for stream view
@@ -70,9 +70,9 @@ class FieldType:
             value = self.convertToForm(value)
         namespace = global_namespace.copy()
         namespace.update({'name': name, 'title': name, 'value': value,
-                          'item': item})
+                          'item': item, 'brick': self})
         template = self.getTemplate(template_type, template_getter)
-        return template(self, namespace)
+        return template(namespace)
 
     def getTemplate(self, template_type, template_getter, template_class=None):
         template_class = template_class or self.__class__
