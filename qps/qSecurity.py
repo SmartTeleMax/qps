@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.33 2004/03/16 15:48:21 ods Exp $
+# $Id: qSecurity.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
 
 '''Function to check permissions'''
 
@@ -129,6 +129,7 @@ class BasicAuthHandler:
 class CookieAuthHandler:
     usersStream = None # name of users stream
     authCookieName = "qpsuser" # name for auth cookie
+    
     def authCookiePath(self):
         return self.prefix
     authCookiePath = qUtils.CachedAttribute(authCookiePath)
@@ -151,15 +152,15 @@ class CookieAuthHandler:
                                      ('login', 'passwd', 'perm_login')]
 
         if not login:
-            obj = self.prepareObject(self.site, user)
             if objs[-1]:
                 path = objs[-1].path()
             else:
                 path = '/'
+            template = self.renderHelperClass(self, user)
             response.setContentType('text/html',
                                     charset=self.getClientCharset(request))
-            response.write(obj.template('login', path=path))
-            raise self.EndOfRequest
+            response.write(template('login', brick=self.site, path=path))
+            raise self.EndOfRequest()
         elif passwd:
             stream = self.site.retrieveStream(self.usersStream)
             user = stream.getUser(login)
