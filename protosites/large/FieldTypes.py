@@ -4,7 +4,8 @@ import qps.qFieldTypes as FT
 try:
     import stripogram
 except ImportError:
-    pass
+    STRING_FILTERED = STRING
+    TEXT_FILTERED = TEXT
 else:
     # STRING_FILTERED and TEXT_FILTERED fields are possible
     # if stripogram module presents.
