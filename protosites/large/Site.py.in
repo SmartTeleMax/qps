@@ -23,8 +23,7 @@ else:
 class Site(qps.qSite.Site):
     # fields configuration
     
-    from fieldDescriptions import itemFields, itemFieldsOrder, \
-         itemExtFields, itemIDFields
+    from fieldDescriptions import fields
     from streamDescriptions import streamDescriptions
     from virtualStreamRules import virtualStreamRules
     defaultItemIDField = qps.qFieldTypes.INTEGER_AUTO_ID()

@@ -1,7 +1,5 @@
 import FieldTypes as FT
 
-itemFieldsOrder = ['title']
-itemFields = {
-    'title': FT.STRING(title=u"Name",
-                       indexPermissions=[('all', 'r')]),
-    }
+fields = FT.FieldDescriptions([
+    ('title', FT.STRING(title=u"Name", indexPermissions=[('all', 'r')]))
+    ])
