@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.9 2004/06/07 12:51:50 ods Exp $
+# $Id: qFieldTypes.py,v 1.11 2004/06/08 11:38:02 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1031,7 +1031,9 @@ class ARRAY(AgregateFieldType):
 class FieldDescriptions(object):
     """Storage for fields config, common usage:
 
-    fields = FieldDescriptions(config)
+    fields = FieldDescriptions([field1_name, field1_type_class(...),
+                                field2_name, field2_type_class(...),
+                                ...])
 
     id = fields['id']
     for field_name, field_type in fields:
