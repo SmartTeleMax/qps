@@ -1,15 +1,9 @@
-# $Id: qStatic.py,v 1.4 2004/03/16 15:56:20 ods Exp $
+# $Id: qStatic.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 
 '''Classes for hardcoded bricks'''
 
 from qps import qFieldTypes
 import qBase
-
-
-class DefaultItemFields(dict):
-    '''Dictionary-like object with STRING value for any key'''
-    def __getitem__(self, field_name):
-        return self.get(field_name, qFieldTypes.STRING)
 
 
 class StaticItem(qBase.Item):
@@ -33,11 +27,19 @@ class StaticStream(qBase.Stream):
     itemClass = StaticItem
     itemListSpec = []
     tableName = None
-    itemFields = DefaultItemFields()
 
     def retrieve(self, ignoreStatus=0):
-        if not self._retrieved:
-            map(self.addItem, self.itemListSpec)
+        if not self._retrieved or ignoreStatus:
+            self.itemList = items = []
+            for id, others in self.itemListSpec:
+                # XXX createItemFromCode? It will be usefull for ZODB-like
+                # storages too.
+                item = self.itemClass(self.site, self, id)
+                for field_name, value in others.iteritems():
+                    item.initFieldFromCode(field_name, value)
+                item.retrieveExtFields()
+                item._retrieved = 1
+                items.append(item)
             self._retrieved = 1
 
     def retrieveItem(self, item_id):
@@ -49,13 +51,6 @@ class StaticStream(qBase.Stream):
 
     def clear(self):
         pass
-
-    def addItem(self, (id, init_values)):
-        item = self.itemClass(self.site, self, id)
-        item.__dict__.update(init_values)
-        item.retrieveExtFields()
-        item._retrieved = 1
-        self.itemList.append(item)
 
     def countItems(self, ignoreStatus=0):
         return len(self)

@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.3 2004/06/04 10:09:14 ods Exp $
+# $Id: qBase.py,v 1.4 2004/06/07 12:35:54 ods Exp $
 
 '''Base brick classes'''
 
@@ -67,6 +67,10 @@ class Item(Brick):
             self.stream = stream
         self.permissions = stream.permissions
 
+    def fields(self):
+        return self.stream.fields
+    fields = qUtils.CachedAttribute(fields)
+
     def __eq__(self, other):
         # Note that the same objects taken from different streams are not
         # equal!
@@ -86,7 +90,7 @@ class Item(Brick):
 
     def initFieldFromCode(self, field_name, value):
         '''Initialize field from code'''
-        field_type = self.stream.allStreamFields[field_name]
+        field_type = self.stream.indexFields[field_name]
         value = field_type.convertFromCode(value, item=self)
         setattr(self, field_name, value)
 
@@ -96,16 +100,18 @@ class Item(Brick):
         successful).'''
         errors = {}
         if names is None:
-            names = self.stream.allItemFields.keys()
+            names = self.fields.keys()
         for field_name in names:
-            field_type = self.stream.allItemFields[field_name]
-            if field_type.initFromForm:
-                try:
-                    value = field_type.convertFromForm(form, field_name, self)
-                except field_type.InvalidFieldContent, exc:
-                    errors[field_name] = exc.message
-                else:
-                    setattr(self, field_name, value)
+            if field_name!='id':
+                field_type = self.fields[field_name]
+                if field_type.initFromForm:
+                    try:
+                        value = field_type.convertFromForm(form, field_name,
+                                                           self)
+                    except field_type.InvalidFieldContent, exc:
+                        errors[field_name] = exc.message
+                    else:
+                        setattr(self, field_name, value)
         return errors
 
     def make(self, maker=None, maker_params={}):
@@ -188,34 +194,13 @@ class Stream(Brick):
     type = 'stream'
     itemClass = Item
     storeHandler = StoreHandler()
-    itemFieldsOrder = []
-    itemFields = {}
-    itemExtFields = {}
-    class _ItemIDFieldFromSite(object):
-        def __get__(self, inst, cls):
-            if inst is None:
-                return self
-            return inst.site.defaultItemIDField
-    itemIDField = _ItemIDFieldFromSite()
 
     def __init__(self, site, id, page=0, **kwargs):
         Brick.__init__(self, site, id)
-        # updating stream parameters (first round)
+        # updating stream parameters
         self.__dict__.update(kwargs)
-        if self.tableName:
-            self.itemFieldsOrder = site.itemFieldsOrder.get(
-                self.tableName, self.itemFieldsOrder)
-            self.itemFields = site.itemFields.get(
-                self.tableName, self.itemFields)
-            self.itemExtFields = site.itemExtFields.get(
-                self.tableName, self.itemExtFields)
-            self.itemIDField = site.itemIDFields.get(
-                self.tableName, self.itemIDField)
-        # XXX Implement joinFields as descriptor in SQLStream
-        if hasattr(self, 'joinTable'):
-            self.joinFields = site.itemFields.get(self.joinTable, {})
-        # updating stream parameters (second round)
-        self.__dict__.update(kwargs)
+        # XXX Why page is checked here and not in PagedStreamLoader?  Anyway,
+        # this check is incomplete.
         if page<1:
             page = 1
         self.page = page
@@ -224,6 +209,15 @@ class Stream(Brick):
         # XXX Change to self.virtual.applyToStream(self)
         if hasattr(self, 'virtual'):
             self.addToCondition(self.virtual.condition(self))
+
+    def fields(self):
+        return self.site.fields[self.tableName]
+    fields = qUtils.CachedAttribute(fields)
+
+    def joinFields(self):
+        # XXX is {} is good enough?
+        return self.site.fields.get(self.joinTable, {})
+    joinFields = qUtils.CachedAttribute(joinFields)
 
     def __eq__(self, other):
         return self is other or \
@@ -250,24 +244,17 @@ class Stream(Brick):
         self.retrieve()
         return iter(self.itemList)
 
-    def allItemFields(self):
-        '''Returns all bricks fields'''
-        result = self.itemFields.copy()
-        result['id'] = self.itemIDField
-        result.update(self.itemExtFields)
-        return result
-    allItemFields = qUtils.CachedAttribute(allItemFields)
-
-    def allStreamFields(self):
-        # XXX Override it in SQLStream to add joinFields support
-        join_fields = getattr(self, 'joinFields', {})
-        if join_fields:
-            result = self.allItemFields.copy()
-            result.update(join_fields)
-            return result
-        else:
-            return self.allItemFields
-    allStreamFields = qUtils.CachedAttribute(allStreamFields)
+    def indexFields(self):
+        #XXX# # XXX Override it in SQLStream to add joinFields support
+        #XXX# join_fields = getattr(self, 'joinFields', {})
+        #XXX# if join_fields:
+        #XXX#     result = self.fields.copy()
+        #XXX#     result.update(join_fields)
+        #XXX#     return result
+        #XXX# else:
+        #XXX#     return self.allItemFields
+        return self.fields
+    indexFields = qUtils.CachedAttribute(indexFields)
 
     def virtualRules(self):
         result = []
@@ -332,7 +319,7 @@ class Stream(Brick):
             virtual_param_names = self.virtual.itemParamNames
         else:
             virtual_param_names = []
-        for field_name, field_type in self.allItemFields.items():
+        for field_name, field_type in self.fields.iteritems():
             if field_name!='id':
                 if field_name in virtual_param_names:
                     value = getattr(self, field_name)

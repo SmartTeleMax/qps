@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.2 2004/06/03 19:13:14 corva Exp $
+# $Id: qSQL.py,v 1.3 2004/06/04 10:09:14 ods Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -24,7 +24,7 @@ class SQLItem(qBase.Item):
         # XXX This code would be faster in place of use
         # another solution - adding optional field_names argument
         fields = {}
-        for field_name, field_type in self.stream.itemFields.items():
+        for field_name, field_type in self.fields.iteritems():
             if field_type.storeControl!='never':
                 fields[field_name] = field_type.convertToDB(
                     getattr(self, field_name),
@@ -127,7 +127,7 @@ class SQLItem(qBase.Item):
                                         self.sqlCondition())
         if join_fields:
             param_value = getattr(self.stream, self.stream.virtual.paramName)
-            join_field_type = self.stream.allItemFields[self.stream.joinField]
+            join_field_type = self.fields[self.stream.joinField]
             param_db_value = join_field_type.itemField.convertToDB(param_value,
                                                                    self)
             id_db_value = self.stream.itemIDField.convertToDB(self.id, self)
@@ -181,7 +181,7 @@ class SQLStream(qBase.Stream):
         '''Return parts of query to retrieve stream items. Can be overriden in
         child class.'''
         table = self.tableName
-        fields = ["%s.%s" % (table, f) for f in ['id']+self.itemFields.keys()]
+        fields = ["%s.%s" % (table, f) for f in self.fields.keys()]
         condition = self.condition
         group = self.group
         if hasattr(self, 'joinTemplate'):

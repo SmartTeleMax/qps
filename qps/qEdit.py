@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.15 2004/06/07 12:09:16 ods Exp $
+# $Id: qEdit.py,v 1.16 2004/06/07 12:58:23 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -39,10 +39,8 @@ class RenderHelper(qWebUtils.RenderHelper):
     def allowedFields(self, item):
         # assume item.type=='item'
         stream = item.stream
-        item_fields = stream.allItemFields
         itemFieldsOrder = []
-        for field_name in ['id']+stream.itemFieldsOrder:
-            field_type = item_fields[field_name]
+        for field_name, field_type in stream.fields.iteritems():
             perms = self.user.getPermissions(field_type.permissions)
             if 'w' in perms or 'r' in perms and \
                     not (self.isNew and field_type.omitForNew):
@@ -51,12 +49,9 @@ class RenderHelper(qWebUtils.RenderHelper):
 
     def allowedIndexFields(self, stream):
         # assume stream.type=='stream':
-        item_fields = stream.allStreamFields
         itemFieldsOrder = []
         if self.user.checkPermission('x', stream.permissions):
-            for field_name in ['id']+stream.itemFieldsOrder+\
-                    getattr(stream, 'joinFields', {}).keys():
-                field_type = item_fields[field_name]
+            for field_name, field_type in stream.indexFields.iteritems():
                 if self.user.checkPermission('r', field_type.indexPermissions):
                     itemFieldsOrder.append(field_name)
         return itemFieldsOrder
@@ -75,7 +70,7 @@ class RenderHelper(qWebUtils.RenderHelper):
     def isStreamUnbindable(self, stream):
         return hasattr(stream, 'joinField') and \
                 self.user.checkPermission('w',
-                    stream.allItemFields[stream.joinField].indexPermissions)
+                    stream.fields[stream.joinField].indexPermissions)
 
     def isStreamCreatable(self, stream):
         return self.user.checkPermission('c', stream.permissions)
@@ -85,10 +80,8 @@ class RenderHelper(qWebUtils.RenderHelper):
 
     def bindingIndexFields(self, stream):
         # assume stream.type=='stream':
-        item_fields = stream.allItemFields
         itemFieldsOrder = []
-        for field_name in ['id']+stream.itemFieldsOrder:
-            field_type = item_fields[field_name]
+        for field_name, field_type in stream.fields.iteritems():
             if field_type.showInBinding and \
                    self.user.checkPermission('r', field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
@@ -96,7 +89,7 @@ class RenderHelper(qWebUtils.RenderHelper):
 
     def showField(self, item, name):
         '''Return representation of field in editor interface'''
-        field_type = item.stream.allItemFields[name]
+        field_type = item.fields[name]
         stream_perms = self.user.getPermissions(item.stream.permissions)
         perms = self.user.getPermissions(field_type.permissions)
         if 'w' in stream_perms and 'w' in perms:
@@ -171,22 +164,19 @@ class EditBase:
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
 
-    def allowedFields(self, stream, user):
+    def storableFields(self, stream, user):
         itemFieldsOrder = []
-        item_fields = stream.allItemFields
-        for field_name in stream.itemFieldsOrder:
-            field_type = item_fields[field_name]
-            if user.checkPermission('w', field_type.permissions):
+        for field_name, field_type in stream.fields.iteritems():
+            if field_name!='id' and \
+                    user.checkPermission('w', field_type.permissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def allowedStreamFields(self, stream, user):
+    def storableIndexFields(self, stream, user):
         itemFieldsOrder = []
-        item_fields = stream.allStreamFields
-        for field_name in stream.itemFieldsOrder+\
-                getattr(stream, 'joinFields', {}).keys():
-            field_type = item_fields[field_name]
-            if user.checkPermission('w', field_type.indexPermissions):
+        for field_name, field_type in stream.indexFields.iteritems():
+            if field_name!='id' and \
+                    user.checkPermission('w', field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
@@ -259,7 +249,7 @@ class EditBase:
         if not (stream.itemIDField.omitForNew or errors) and item.exists()==1:
             raise self.ClientError(403, self.existing_id_error)
         errors.update(item.initFieldsFromForm(
-                        form, names=self.allowedFields(stream, user)))
+                        form, names=self.storableFields(stream, user)))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',
@@ -282,7 +272,7 @@ class EditBase:
         if not user.checkPermission('w', item.stream.permissions):
             raise self.ClientError(403, self.edit_denied_error)
         errors = item.initFieldsFromForm(
-                    form, names=self.allowedFields(item.stream, user))
+                    form, names=self.storableFields(item.stream, user))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',
@@ -291,7 +281,7 @@ class EditBase:
                                   fieldErrors=errors)
         else:
             fields_to_store = []
-            for field_name, field_type in item.stream.allItemFields.items():
+            for field_name, field_type in item.fields.iteritems():
                 if field_name!='id' and \
                         user.checkPermission('w', field_type.permissions):
                     fields_to_store.append(field_name)
@@ -330,7 +320,7 @@ class EditBase:
         (item.id, name) and "qps-new:%s:%s" % (item.id, name).'''
         if not user.checkPermission('w', stream.permissions):
             raise self.ClientError(403, self.edit_denied_error)
-        updatable_fields = self.allowedStreamFields(stream, user)
+        updatable_fields = self.storableIndexFields(stream, user)
         item_fields = stream.allStreamFields
         if updatable_fields:
             item_id_strs = {}  # simulating set
@@ -383,7 +373,7 @@ class EditBase:
         field_name = getattr(stream, 'joinField', None)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        field_type = stream.allItemFields[field_name]
+        field_type = stream.fields[field_name]
         if not (user.checkPermission('w', stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
@@ -440,7 +430,7 @@ class EditBase:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        field_type = bound_stream.allItemFields[field_name]
+        field_type = bound_stream.fields[field_name]
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
@@ -482,7 +472,7 @@ class EditBase:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        field_type = bound_stream.allItemFields[field_name]
+        field_type = bound_stream.fields[field_name]
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
