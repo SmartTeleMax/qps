@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
+# $Id: qUtils.py,v 1.2 2004/03/19 14:34:47 ods Exp $
 
 '''Miscellaneous utilities'''
 
@@ -142,6 +142,15 @@ class ReadAliasAttribute(object):
         if inst is None:
             return self
         return getattr(inst, self.name)
+
+
+class AliasAttribute(ReadAliasAttribute):
+
+    def __set__(self, inst, value):
+        setattr(inst, self.name, value)
+
+    def __delete__(self, inst):
+        delattr(inst, self.name)
 
 
 class DictRecord(dict):
