@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.11 2004/06/08 11:38:02 corva Exp $
+# $Id: qFieldTypes.py,v 1.12 2004/06/08 12:49:23 ods Exp $
 
 '''Classes for common field types'''
 
@@ -1029,24 +1029,26 @@ class ARRAY(AgregateFieldType):
 
 
 class FieldDescriptions(object):
-    """Storage for fields config, common usage:
+    """Storage for fields config.
+    
+    Usage:
 
-    fields = FieldDescriptions([field1_name, field1_type_class(...),
-                                field2_name, field2_type_class(...),
-                                ...])
+        fields = FieldDescriptions([field1_name, field1_type_class(...),
+                                    field2_name, field2_type_class(...),
+                                    ...])
 
-    id = fields['id']
-    for field_name, field_type in fields:
-        pass
-    for field_name, field_type in fields.iteritems():
-        pass
-    for field_name in fields.iterkeys():
-        pass
+        id = fields['id']
+        for field_name, field_type in fields:
+            pass
+        for field_name, field_type in fields.iteritems():
+            pass
+        for field_name in fields.iterkeys():
+            pass
 
-    Class also defines two attributes:
+        Class also defines two attributes:
 
-    external - FieldDescriptions object of external fields config (storable)
-    main - same for main fields"""
+        external  - FieldDescriptions object for external fields (storable)
+        main      - the same for main fields"""
     
     def __init__(self, config):
         self._config = config
@@ -1086,5 +1088,27 @@ class FieldDescriptions(object):
         return FieldDescriptions(
             [(fn, ft) for fn, ft in self._config if not hasattr(ft, 'store')])
     main = qUtils.CachedAttribute(main)
+
+
+class FieldDescriptionsRepository:
+    '''Wraps config (dictionary) values with FieldDescriptions class.
+    
+    Usage:
+        fieldDescriptions = FieldDescriptionsRepository({
+            'table1': [
+                ('field1_name', field1_type_class(...),
+                ...
+            ],
+            ...
+        })
+    '''
+    def __init__(self, config):
+        self._config = config
+        self._cache = {}
+    def __getattr__(self, table):
+        if not self._cache.has_key(table):
+            self._cache[table] = FieldDescriptions(self._config[table])
+        return self._cache[table]
+
 
 # vim: ts=8 sts=4 sw=4 ai et
