@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.12 2005/02/21 10:27:13 corva Exp $
+# $Id: qModifiers.py,v 1.1 2005/03/16 13:45:46 corva Exp $
 
 '''Brick modifiers classes'''
 
@@ -28,6 +28,10 @@ class StreamModifier(object):
 
 class ItemPathModifier(StreamModifier):
     """Modifies an item's path method.
+    
+    WARNING!  This modifier breaks consistency of path() and PathParser,
+    so almost any site with it will be broken.  Use ItemPathModifier
+    only if you know what you are doing.
     
     Usage:
 
