@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.11 2004/05/31 17:56:24 ods Exp $
+# $Id: Site.py.in,v 1.1 2004/06/04 08:43:35 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -13,6 +13,5 @@ class Site(qSite.Site):
     #clientCharset = 'utf-8'
     #dbCharset = 'utf-8'
     from streamDescriptions import streamDescriptions, virtualStreamRules
-    from fieldDescriptions import defaultItemIDField, itemIDFields, \
-                                  itemFieldsOrder, itemFields, itemExtFields
+    from fieldDescriptions import fields
     dbParams = {'user': 'test', 'db': 'test', 'passwd': 'secret'}

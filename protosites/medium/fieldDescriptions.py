@@ -1,43 +1,26 @@
-# $Id: fieldDescriptions.py,v 1.2 2004/06/04 11:46:40 ods Exp $
+# $Id: fieldDescriptions.py,v 1.3 2004/06/09 09:23:46 ods Exp $
 from qps import qFieldTypes as FT
 
 
-defaultItemIDField = FT.INTEGER_AUTO_ID()
+fields = FT.FieldDescriptionsRepository({
 
-itemIDFields = {
-    '*rubrics*' : FT.STRING_ID(),
-}
+    '*rubrics*': [
+        ('id',      FT.STRING_ID()),
+        ('title',   FT.STRING(title='Title',
+                              indexPermissions=[('all', 'r')])),
+        ('docs',    FT.EXT_VIRTUAL_REFERENCE(
+                              title='Documents',
+                              templateStream='docs',
+                              indexPermissions=[('all', 'r')])),
+    ],
 
-itemFieldsOrder = {
-    '*rubrics*' : ['title', 'docs'],
-    'docs'      : ['rubric', 'title', 'body'],
-}
+    'docs': [
+        ('id',      FT.INTEGER_AUTO_ID()),
+        ('rubric',  FT.FOREIGN_DROP(title='Rubric', stream='rubrics',
+                                    extraOption='(no rubric)')),
+        ('title',   FT.STRING(title='Title',
+                              indexPermissions=[('all', 'r')])),
+        ('body',    FT.TEXT(title='Body text')),
+    ],
 
-
-itemFields = {
-
-    '*rubrics*': {
-        'title' : FT.STRING(title='Title',
-                            indexPermissions=[('all', 'r')]),
-    },
-
-    'docs': {
-        'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics',
-                                  extraOption='(no rubric)'),
-        'title' : FT.STRING(title='Title',
-                            indexPermissions=[('all', 'r')]),
-        'body'  : FT.TEXT(title='Body text'),
-    },
-
-}
-
-itemExtFields={
-
-    '*rubrics*': {
-        'docs'  : FT.EXT_VIRTUAL_REFERENCE(
-                                title='Documents',
-                                templateStream='docs',
-                                indexPermissions=[('all', 'r')]),
-    },
-
-}
+})
