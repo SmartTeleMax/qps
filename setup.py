@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: $
+# $Id: setup.py,v 1.7 2004/03/23 14:58:35 ods Exp $
 
 from distutils.core import Command, setup
 from distutils.command.build import build
@@ -68,7 +68,7 @@ def rglob(where, dir):
     for root, dirs, files in os.walk(dir):
         if 'CVS' in dirs:
             dirs.remove('CVS')
-        files = [file for file in files
+        files = [os.path.join(root, file) for file in files
                  if not (file.startswith('.') or file.endswith('~'))]
         result.append((os.path.join(where, root), files))
     return result
