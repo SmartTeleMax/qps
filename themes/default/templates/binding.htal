@@ -49,8 +49,8 @@ Field value</td>
 <td tal:define="id_str brick.itemIDField.convertToString(item.id); checked isBound(item) and 'checked'">
 <input type="hidden" name="qps-old" tal:condition="checked"
        tal:attributes="value id_str">
-<input type="checkbox" name="qps-new"
-       tal:attributes="value id_str; checked checked">
+<input name="qps-new"
+       tal:attributes="type boundElementType; value id_str; checked checked">
 </td>
 </tr>
 
