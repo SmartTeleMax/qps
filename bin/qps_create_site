@@ -1,9 +1,17 @@
 #!/usr/bin/python
-# $Id: $
+# $Id: qps_create_site,v 1.3 2004/03/19 15:29:52 ods Exp $
 
 import sys, os
+sys.path.append('..')  # let it work without installation
+from qps.qUtils import interpolateString
 
 python_executable = os.path.normpath(sys.executable)
+
+def indent(text, level=1):
+    return '\n'.join([' '*4*level+line for line in text.split('\n')])
+
+def escapeSQ(text):
+    return text.replace("'", r"\'")
 
 SITE_TMPL = '''\
 %(setlocale)s\
@@ -12,17 +20,17 @@ from qps import qSite
 
 class Site(qSite.Site):
 
-    title = '%(title)s'
-    makeRoot = '%(root)s/www'
-    templateDirs = ['%(root)s/templates']
-%(stream_descs)s\
-%(field_descs)s\
-%(db_params)s
+    title = '%(escapeSQ(title))s'
+    makeRoot = '%(escapeSQ(make_dir))s'
+    templateDirs = ['%(escapeSQ(make_templates_dir))s']
+%(indent(stream_descs))s\
+%(indent(field_descs))s\
+%(indent(db_params))s
 '''
 
 LOCALE_TMPL = '''\
 import locale
-locale.setlocale(locale.LC_ALL, '%(locale)s')
+locale.setlocale(locale.LC_ALL, '%(escapeSQ(options.locale))s')
 
 '''
 
@@ -51,3 +59,23 @@ streamDescriptions = {
     #    permissions=[('editor', 'rwxcd'), ('all', 'rx')]),
 }
 '''
+
+from optparse import OptionParser
+parser = OptionParser(usage='%prog [options] site_root')
+parser.add_option('-f', '--force', action='store_true', dest='force',
+                  help='overwrite existing files')
+parser.add_option('-l', '--locale', dest='locale',
+                  metavar='LOCALE', help='set locale for site to LOCALE')
+(options, args) = parser.parse_args()
+try:
+    site_root, = args
+except ValueError:
+    parser.error('incorrect number of arguments')
+site_root = os.path.normpath(os.path.abspath(site_root))
+make_dir = os.path.normpath(site_root+'/www')
+make_templates_dir = os.path.normpath(site_root+'/make-templates')
+
+if options.locale is None:
+    setlocale = ''
+else:
+    setlocale = interpolateString(LOCALE_TMPL, vars())
