@@ -1,5 +1,5 @@
 #!%(python_executable)s
-# $Id: $
+# $Id: make.py.in,v 1.1 2004/03/22 14:45:55 ods Exp $
 
 import os, logging, sys
 from getopt import getopt
@@ -17,12 +17,12 @@ for opt, arg in opts:
             name, value = arg.split('=', 1)
             value = eval(value, {'__builtinds__': {}})
         except ValueError:
-            sys.exit('Incorrect value for option -p: %r' % arg)
+            sys.exit('Incorrect value for option -p: %%r' %% arg)
         else:
             params[name] = value
 args = args or ['/']
 for arg in args:
     obj = path_parser(arg)[-1]
     if obj is None:
-        sys.exit('Object with path %r not found' % arg)
+        sys.exit('Object with path %%r not found' %% arg)
     obj.make(maker_params=params)
