@@ -48,7 +48,7 @@ next page &gt;&gt;</a>
                 tal:content="item.id"
                 tal:omit-tag="not brick.itemIDField.linkThrough">Item ID</a></td>
 <td tal:repeat="field_name brick.bindingIndexFields"
-    tal:content="structure brick.showFieldInIndex(item, field_name)">
+    tal:content="structure brick.showFieldInIndex(item, field_name, allow_edit=0)">
 Field value</td>
 <td tal:define="id_str brick.itemIDField.convertToString(item.id); checked isBound(item) and 'checked'">
 <input type="hidden" name="qps-old" tal:condition="checked"

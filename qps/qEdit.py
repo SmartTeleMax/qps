@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
+# $Id: qEdit.py,v 1.2 2004/04/07 12:17:13 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -149,7 +149,7 @@ class MakedEditObject(qWebUtils.MakedObject):
                                self.getFieldTemplate,
                                self.fieldGlobalNamespace)
 
-    def showFieldInIndex(self, item, name):
+    def showFieldInIndex(self, item, name, allow_edit=1):
         '''Return representation of field in stream'''
 
         object = item.stream
@@ -160,7 +160,7 @@ class MakedEditObject(qWebUtils.MakedObject):
 
         stream_perms = self.edUser.getPermissions(object.permissions)
         perms = self.edUser.getPermissions(field_type.indexPermissions)
-        if 'w' in stream_perms and 'w' in perms:
+        if allow_edit and 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
             template_type = 'view'
