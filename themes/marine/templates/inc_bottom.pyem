@@ -1,0 +1,11 @@
+<!-- inc_bottom -->
+</td></tr>
+<%
+if template.user:
+    %><tr><td>
+Current login: <%= quoteHTML(template.user.login) %> <a href="<%= template.edit.prefix %>/?qps-action%3AreAuth=1&user=<%= quoteHTML(template.user.login) %>">change</a>
+</td></tr><%
+%>
+</table>
+</body>
+</html>
