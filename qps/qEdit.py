@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.23 2004/07/02 07:46:17 corva Exp $
+# $Id: qEdit.py,v 1.24 2004/09/15 23:23:36 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -40,7 +40,9 @@ class RenderHelper(qWebUtils.RenderHelper):
         # assume item.type=='item'
         itemFieldsOrder = []
         for field_name, field_type in item.fields.iteritems():
-            perms = self.user.getPermissions(field_type.permissions)
+            perms = self.user.getPermissions(
+                self.isNew and field_type.createPermissions or
+                field_type.permissions)
             if ('w' in perms or 'r' in perms) and \
                    not (self.isNew and field_type.omitForNew):
                 itemFieldsOrder.append(field_name)
@@ -90,7 +92,9 @@ class RenderHelper(qWebUtils.RenderHelper):
         '''Return representation of field in editor interface'''
         field_type = item.fields[name]
         stream_perms = self.user.getPermissions(item.stream.permissions)
-        perms = self.user.getPermissions(field_type.permissions)
+        perms = self.user.getPermissions(self.isNew and
+                                         field_type.createPermissions or
+                                         field_type.permissions)
         if 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
@@ -163,12 +167,14 @@ class EditBase:
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
 
-    def storableFields(self, item, user):
+    def storableFields(self, item, user, isNew=0):
         itemFieldsOrder = []
         id_field_name = item.fields.idFieldName
         for field_name, field_type in item.fields.iteritems():
             if field_name!=id_field_name and \
-                    user.checkPermission('w', field_type.permissions):
+                    user.checkPermission('w', isNew and
+                                         field_type.createPermissions or
+                                         field_type.permissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
@@ -252,7 +258,7 @@ class EditBase:
         if not (id_field_type.omitForNew or errors) and item.exists()==1:
             raise self.ClientError(403, self.existing_id_error)
         errors.update(item.initFieldsFromForm(
-                        form, names=self.storableFields(item, user)))
+                        form, names=self.storableFields(item, user, isNew=1)))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',

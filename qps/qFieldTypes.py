@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.31 2004/08/23 12:13:27 corva Exp $
+# $Id: qFieldTypes.py,v 1.32 2004/09/14 15:02:28 corva Exp $
 
 '''Classes for common field types'''
 
@@ -41,6 +41,8 @@ class FieldType(object):
     templateCat = None
     default     = ''                            # default value
     permissions = [('all', 'rw')] # permissions for item view
+    # permissions for item create stage
+    createPermissions  = qUtils.ReadAliasAttribute('permissions')
     indexPermissions = [] # permission for stream view
     layout      = _LayoutDict()                 # used in field template
     title       = '?'
