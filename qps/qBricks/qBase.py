@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.10 2005/01/19 23:44:33 corva Exp $
+# $Id: qBase.py,v 1.11 2005/02/15 15:24:37 corva Exp $
 
 '''Base brick classes'''
 
@@ -186,8 +186,6 @@ class Stream(Brick):
     type = 'stream'
     itemClass = Item
     storeHandler = qEvents.StoreHandler()
-    itemModifiers = []
-    features = [] # names of applied modifiers
 
     def __init__(self, site, id, page=0, modifiers=[], **kwargs):
         Brick.__init__(self, site, id)
@@ -203,6 +201,8 @@ class Stream(Brick):
         # XXX Change to self.virtual.applyToStream(self)
         if hasattr(self, 'virtual'):
             self.addToCondition(self.virtual.condition(self))
+        self.itemModifiers = []
+        self.features = []
         for modifier in modifiers:
             modifier(self)
             self.features.append(modifier.__class__.__name__)
