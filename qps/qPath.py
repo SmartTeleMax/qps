@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.2 2004/06/09 06:42:42 corva Exp $
+# $Id: qPath.py,v 1.3 2004/06/29 08:54:15 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -78,8 +78,8 @@ class FilteredStreamLoader(PagedStreamLoader):
     '''WARNING! This is expirimental class. Its known to contain security
     vulnerabilities. Use it in your own risk.'''
     
-    def __call__(self, stream_id):
-        stream = PagedStreamLoader.__call__(self, stream_id)
+    def __call__(self, stream_id, **params):
+        stream = PagedStreamLoader.__call__(self, stream_id, **params)
         item = stream.createNewItem() # we need something to pass into
                                       # convert from form
 
@@ -104,7 +104,9 @@ class FilteredStreamLoader(PagedStreamLoader):
 
         if conds:
             # we dont need paged stream anymore
-            stream = self.site.streamFactory(stream_id, **self.params)
+            _params = self.params.copy()
+            _params.update(params)
+            stream = self.site.streamFactory(stream_id, **_params)
             for cond in conds:
                 stream.addToCondition(cond)
         return stream 
