@@ -24,7 +24,7 @@
 <a tal:omit-tag="brick.page==1" href="#"
    tal:attributes="href '?page=%s' % (brick.page-1)">
 &lt;&lt;previous page</a> |
-page <span tal:replace="brick.page">No</span> |
+page <span tal:replace="brick.page">No</span> (<span tal:replace="len(brick)">No</span> items) |
 <a tal:omit-tag="len(brick)<brick.indexNum" href="#"
    tal:attributes="href '?page=%s' % (brick.page+1)">
 next page &gt;&gt;</a>
