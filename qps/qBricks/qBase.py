@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.4 2004/06/07 12:35:54 ods Exp $
+# $Id: qBase.py,v 1.5 2004/06/08 15:32:22 ods Exp $
 
 '''Base brick classes'''
 
@@ -86,7 +86,7 @@ class Item(Brick):
 
     def path(self):
         return '%s%s.html' % (self.stream.path(),
-                              self.stream.itemIDField.convertToString(self.id))
+                              self.fields['id'].convertToString(self.id))
 
     def initFieldFromCode(self, field_name, value):
         '''Initialize field from code'''
@@ -166,19 +166,19 @@ class Item(Brick):
     # --- External fields ---
     def retrieveExtFields(self):
         if not self._ext_fields_retrieved:
-            for field_name, field_type in self.stream.itemExtFields.items():
+            for field_name, field_type in self.fields.external.iteritems():
                 value = field_type.retrieve(item=self)
                 setattr(self, field_name, value)
             self._ext_fields_retrieved = 1
 
     def storeExtField(self, field_name):
-        field_type = self.stream.itemExtFields[field_name]
+        field_type = self.fields.external[field_name]
         field_type.store(getattr(self, field_name), item=self)
 
     def storeExtFields(self, names=None):
         '''For each external field store it, if its listed in names.  By
         default store all external fields.'''
-        for field_name, field_type in self.stream.itemExtFields.items():
+        for field_name, field_type in self.fields.external.items():
             if field_type.storeControl!='never' and \
                     (field_type.storeControl=='always' or \
                      names is None or field_name in names):
@@ -215,8 +215,12 @@ class Stream(Brick):
     fields = qUtils.CachedAttribute(fields)
 
     def joinFields(self):
-        # XXX is {} is good enough?
-        return self.site.fields.get(self.joinTable, {})
+        import qps.qFieldTypes
+        default = qps.qFieldTypes.FieldDescriptions([])
+        if hasattr(self, 'joinTable'):
+            return self.site.fields.get(self.joinTable, default)
+        else:
+            return default
     joinFields = qUtils.CachedAttribute(joinFields)
 
     def __eq__(self, other):

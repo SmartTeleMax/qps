@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.3 2004/06/04 10:09:14 ods Exp $
+# $Id: qSQL.py,v 1.4 2004/06/08 15:32:22 ods Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -11,11 +11,10 @@ from qps import qUtils
 class SQLItem(qBase.Item):
     def initFieldsFromDB(self, row):
         '''Initialize item fields from DB row'''
-        field_types = self.stream.allStreamFields
+        fields = self.stream.indexFields
         for field_name, db_value in row.items():
-            if field_types.has_key(field_name):
-                value = field_types[field_name].convertFromDB(db_value,
-                                                              item=self)
+            if fields.has_key(field_name):
+                value = fields[field_name].convertFromDB(db_value, item=self)
                 setattr(self, field_name, value)
 
     def prepareFieldsForDB(self):
@@ -33,8 +32,7 @@ class SQLItem(qBase.Item):
 
     def prepareJoinFieldsForDB(self):
         fields = {}
-        for field_name, field_type in \
-                getattr(self.stream, 'joinFields', {}).items():
+        for field_name, field_type in self.stream.joinFields.items():
             if field_type.storeControl!='never':
                 fields[field_name] = field_type.convertToDB(
                     getattr(self, field_name),
@@ -46,7 +44,7 @@ class SQLItem(qBase.Item):
         return "%s.id=%s" % \
                (self.stream.tableName,
                 self.dbConn.convert(
-                    self.stream.itemIDField.convertToDB(self.id, self)))
+                    self.fields['id'].convertToDB(self.id, self)))
 
     def exists(self, ignoreStatus=0):
         '''Return True if item exists in DB and False otherwise'''
@@ -102,7 +100,7 @@ class SQLItem(qBase.Item):
         join_fields = self.prepareJoinFieldsForDB()
         # remove from fields read-only fields
         for field_name in fields.keys():
-            field_type = self.stream.allStreamFields[field_name]
+            field_type = self.stream.indexFields[field_name]
             if field_type.storeControl=='never' or \
                     (field_type.storeControl!='always' and \
                      names is not None and field_name not in names):
@@ -169,7 +167,7 @@ class SQLStream(qBase.Stream):
 
     def createItemFromDB(self, db_row):
         # For internal use: create item from dictionary of fields
-        id = self.itemIDField.convertFromDB(db_row['id'], self)
+        id = self.fields['id'].convertFromDB(db_row['id'], self)
         del db_row['id']
         item = self.itemClass(self.site, self, id)
         item.initFieldsFromDB(db_row)
@@ -181,14 +179,14 @@ class SQLStream(qBase.Stream):
         '''Return parts of query to retrieve stream items. Can be overriden in
         child class.'''
         table = self.tableName
-        fields = ["%s.%s" % (table, f) for f in self.fields.keys()]
+        fields = ["%s.%s" % (table, f) for f in self.fields.main.keys()]
         condition = self.condition
         group = self.group
         if hasattr(self, 'joinTemplate'):
             table = qUtils.interpolateString(self.joinTemplate, {'brick': self})
             condition = self.dbConn.join([condition,
                                           getattr(self, 'joinCondition', '')])
-            if hasattr(self, 'joinFields'):
+            if self.joinFields:
                 fields += ["%s.%s" % (self.joinTable, f) \
                            for f in self.joinFields.keys()]
         return table, fields, condition, self.group
