@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.3 2004/06/09 06:42:42 corva Exp $
+# $Id: qSecurity.py,v 1.4 2004/06/29 08:53:28 corva Exp $
 
 '''Function to check permissions'''
 
@@ -152,7 +152,7 @@ class CookieAuthHandler:
         login, passwd, perm_login = [form.getfirst(name) for name in \
                                      ('login', 'passwd', 'perm_login')]
 
-        if not login:
+        if not (login and passwd):
             if objs[-1]:
                 path = objs[-1].path()
             else:
@@ -162,7 +162,7 @@ class CookieAuthHandler:
                                     charset=self.getClientCharset(request))
             response.write(template('login', brick=self.site, path=path))
             raise self.EndOfRequest()
-        elif passwd:
+        elif login and passwd:
             stream = self.site.retrieveStream(self.usersStream)
             user = stream.getUser(login)
 
