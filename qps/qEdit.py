@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.18 2004/06/09 06:42:42 corva Exp $
+# $Id: qEdit.py,v 1.19 2004/06/09 07:17:41 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -237,17 +237,17 @@ class EditBase:
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
         errors = {}
-        if_field_type = stream.fields['id']
-        if if_field_type.omitForNew:
+        id_field_type = stream.fields['id']
+        if id_field_type.omitForNew:
             item_id = None
         else:
             try:
-                item_id = if_field_type.convertFromForm(form, 'id')
-            except if_field_type.InvalidFieldContent, exc:
+                item_id = id_field_type.convertFromForm(form, 'id')
+            except id_field_type.InvalidFieldContent, exc:
                 errors['id'] = exc.message
-                item_id = if_field_type.getDefault()
+                item_id = id_field_type.getDefault()
         item = stream.createNewItem(item_id)
-        if not (if_field_type.omitForNew or errors) and item.exists()==1:
+        if not (id_field_type.omitForNew or errors) and item.exists()==1:
             raise self.ClientError(403, self.existing_id_error)
         errors.update(item.initFieldsFromForm(
                         form, names=self.storableFields(stream, user)))

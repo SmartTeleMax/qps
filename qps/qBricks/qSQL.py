@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.7 2004/06/09 09:02:06 corva Exp $
+# $Id: qSQL.py,v 1.8 2004/06/09 10:01:43 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -250,7 +250,7 @@ class SQLStream(qBase.Stream):
                     self.dbConn.IN('id', item_ids))
                 number_of_deleted = cursor.rowcount
             tnx.close()
-            self.storeHandler.handleItemsDelete(self, items_ids)
+            self.storeHandler.handleItemsDelete(self, item_ids)
         return number_of_deleted
 
 # vim: ts=8 sts=4 sw=4 ai et
