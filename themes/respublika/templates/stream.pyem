@@ -69,7 +69,7 @@ if brick:
 <%= template.showFieldInIndex(item, field) %>
         </td><%
         %>
-        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= item.fields['id'].convertToString(item.id) %>"></center>
+        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= item.fields.id.convertToString(item.id) %>"></center>
         </td>
     </tr><%
     %>
