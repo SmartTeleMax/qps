@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.8 2004/06/04 08:57:28 corva Exp $
+# $Id: qFieldTypes.py,v 1.9 2004/06/07 12:51:50 ods Exp $
 
 '''Classes for common field types'''
 
@@ -1026,5 +1026,55 @@ class ARRAY(AgregateFieldType):
         return FieldType.show(self, item, name, template_type, template_getter,
                               namespace)
 
+
+class FieldDescriptions(object):
+    """Storage for fields config, common usage:
+
+    fields = FieldDescriptions(config)
+
+    id = fields['id']
+    for field_name, field_type in fields:
+        pass
+    for field_name, field_type in fields.iteritems():
+        pass
+    for field_name in fields.iterkeys():
+        pass
+
+    Class also defines two attributes:
+
+    external - FieldDescriptions object of external fields config (storable)
+    main - same for main fields"""
+    
+    def __init__(self, config):
+        self.__config = config
+
+    def __repr__(self):
+        return repr(self.__config)
+
+    def __iter__(self):
+        return iter(self.__config)
+
+    def __getitem__(self, name):
+        return self.__config_dict[name]
+
+    def iterkeys(self):
+        return self.__config_dict.iterkeys()
+
+    def iteritems(self):
+        return self.__config_dict.iteritems()
+
+    def __config_dict(self):
+        return dict(self.__config)
+    __config_dict = qUtils.CachedAttribute(__config_dict)
+
+    def external(self):
+        return FieldDescriptions(
+            [(fn, ft) for fn, ft in self.__config if hasattr(ft, 'store')])
+    external = qUtils.CachedAttribute(external)
+
+    def main(self):
+        return FieldDescriptions(
+            [(fn, ft) for fn, ft in self.__config if not hasattr(ft, 'store')])
+    main = qUtils.CachedAttribute(main)
 
 # vim: ts=8 sts=4 sw=4 ai et
