@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.41 2004/12/10 18:22:52 corva Exp $
+# $Id: qFieldTypes.py,v 1.42 2005/01/20 00:06:03 corva Exp $
 
 '''Classes for common field types'''
 
@@ -170,6 +170,30 @@ class STRING_ID(STRING):
     showInBinding = 1
 
 
+class UNIQUE_STRING(STRING):
+    """Unique string value for a table's column. Useful for database column
+    described as UNIQUE INDEX"""
+
+    unique_error = "%(brick.title)s is already used, try a different one."
+    
+    def convertFromForm(self, form, name, item=None):
+        value = STRING.convertFromForm(self, form, name, item)
+
+        from qps.qDB.qSQL import Query, Param
+        conn = item.dbConn
+        query = Query("%s=" % name, Param(value))
+        if item.exists():
+            query = conn.join([query, Query("%s !=" % item.fields.idFieldName,
+                                            Param(item.id))])
+
+        row = conn.selectRow(item.stream.tableName, [name], query)
+        if row:
+            message = qps.qUtils.interpolateString(self.unique_error,
+                                                   {'brick': self})
+            raise self.InvalidFieldContent(message)
+        return value
+
+    
 class NUMBER(FieldType):
 
     type = None
