@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.5 2004/04/07 19:02:15 corva Exp $
+# $Id: qFieldTypes.py,v 1.6 2004/04/26 18:01:12 corva Exp $
 
 '''Classes for common field types'''
 
@@ -932,11 +932,11 @@ class CONTAINER(AgregateFieldType):
                 result[key] = field_type.convertFromString(field)
         return result
 
-    def convertToString(self, value):
+    def convertToString(self, value, item=None):
         seq = []
         for key, field in value.items():
             field_type = self.itemFields[key]
-            seq.append((key, field_type.convertToString(field)))
+            seq.append((key, field_type.convertToString(field, item)))
         return self._join(seq)
 
     def convertFromForm(self, form, name, item=None):
@@ -1002,8 +1002,8 @@ class ARRAY(AgregateFieldType):
         return self._filter([self.itemField.convertFromString(field)
                              for field in self._split(string)], item)
 
-    def convertToString(self, value):
-        return self._join([self.itemField.convertToString(field)
+    def convertToString(self, value, item=None):
+        return self._join([self.itemField.convertToString(field, item)
                            for field in value])
 
     def convertFromForm(self, form, name, item=None):
