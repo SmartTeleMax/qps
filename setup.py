@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# $Id: $
 
 from distutils.core import Command, setup
 from distutils.command.build import build
@@ -94,7 +95,7 @@ setup(name='QPS',
                    'QPS-%s.tar.gz?download' % qps.__version__,
       packages=['qps', 'qps.qDB', 'qps.qBricks'],
       scripts=['bin/qps_create_site'],
-      data_files=rglob('share/QPS', 'themes'),
+      data_files=rglob('share/QPS', 'themes')+rglob('share/QPS', 'protosites'),
       cmdclass={
         'build'         : qps_build,
         'build_pydoc'   : qps_build_pydoc,
