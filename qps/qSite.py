@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.3 2004/04/02 12:25:40 ods Exp $
+# $Id: qSite.py,v 1.4 2004/04/05 10:58:27 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -35,10 +35,11 @@ class Site(object):
                     'delete': 'all'}
 
     def globalNamespace(cls):
-        import cgi, urllib
-        return {'quoteHTML'     : lambda s: cgi.escape(s, 1),
-                'quoteFormField': urllib.quote_plus,
-                'quoteURLPath'  : urllib.quote}
+        from PPA.Template import Cook
+        return {'quoteHTML'     : Cook.quoteHTML,
+                'quoteFormField': Cook.quoteFormField,
+                'quoteURLPath'  : Cook.quoteURLPath,
+                'Cook'          : Cook}
     globalNamespace = qUtils.CachedClassAttribute(globalNamespace)
     
     templateDirs = []
