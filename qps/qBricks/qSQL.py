@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.10 2004/06/29 09:02:45 corva Exp $
+# $Id: qSQL.py,v 1.11 2004/07/01 19:38:03 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -22,8 +22,6 @@ class SQLItem(qBase.Item):
         '''Reverse for initFieldsFromDB: return dictionary with current values
         of fields suitable to store in DB, fields param is a FieldDescriptions
         object'''
-        # XXX This code would be faster in place of use
-        # another solution - adding optional field_names argument
         result = {}
         for field_name, field_type in fields.iteritems():
             if field_type.storeControl!='never':
@@ -102,9 +100,12 @@ class SQLItem(qBase.Item):
             # INSERT
             id_field_type = self.fields.id
             id_field_name = self.fields.idFieldName
-            # XXX fields already have id field from prepareFieldsForDB
-            #if not (id_field_type.omitForNew and self.id is None):
-            #    fields[id_field_name] = id_field_type.convertToDB(self.id,self)
+            
+            if not fields.has_key(id_field_name) and \
+               (not (id_field_type.omitForNew and self.id is None) or \
+                not id_field_ytpe.omitForNew):
+                fields[id_field_name] = id_field_type.convertToDB(self.id,self)
+                
             cursor = self.dbConn.insert(self.stream.tableName, fields)
 
             if id_field_type.omitForNew and self.id is None:
