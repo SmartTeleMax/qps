@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.21 2004/06/18 23:30:33 corva Exp $
+# $Id: qEdit.py,v 1.22 2004/06/29 08:52:47 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -165,7 +165,7 @@ class EditBase:
 
     def storableFields(self, item, user):
         itemFieldsOrder = []
-        id_field_name = stream.fields.idFieldName
+        id_field_name = item.fields.idFieldName
         for field_name, field_type in item.fields.iteritems():
             if field_name!=id_field_name and \
                     user.checkPermission('w', field_type.permissions):
