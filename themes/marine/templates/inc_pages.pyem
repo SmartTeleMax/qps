@@ -1,17 +1,18 @@
 <%
-if brick.indexNum!=0 and len(brick)==brick.indexNum:
+if brick.indexNum!=0 and (brick.page>1 or len(brick)==brick.indexNum):
+    query_prefix = globals().get('query_prefix', '')
     %><!-- inc_pages -->
 <table class="pages" width="100%"><tr>
 <td align="left"><%
     if brick.page>1:
-        %><a href="?page=<%= brick.page-1 %>">&lt;&lt; prev</a><%
+        %><a href="?<%= quoteHTML(query_prefix) %>page=<%= brick.page-1 %>">&lt;&lt; prev</a><%
     else:
         %>&lt;&lt; prev<%
     %></td>
 <td>page <%= brick.page %></td>
 <td align="right"><%
     if len(brick)==brick.indexNum:
-        %><a href="?page=<%= brick.page+1 %>">next &gt;&gt;</a><%
+        %><a href="?<%= quoteHTML(query_prefix) %>page=<%= brick.page+1 %>">next &gt;&gt;</a><%
     else:
         %>next &gt;&gt;<%
     %></td>
