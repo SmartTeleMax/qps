@@ -9,8 +9,15 @@ if brick.layout.has_key('size'):
 if brick.extra_option:
     %><option value=""><%= brick.extra_option %></option>
 <%
-for item in stream:
-    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(item.id)) %>"<%= value and item.id==value.id and ' selected' or '' %>><%= brick.getLabel(item) %></option>
+for cur_item in stream:
+    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(cur_item.id)) %>"<%= value and cur_item.id==value.id and ' selected' or '' %>><%= brick.getLabel(cur_item) %></option>
+<%
+if value and value not in stream:
+    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(value.id)) %>" selected><%= brick.getLabel(value) %></option>
 <%
 %></select>
-</td>    
+<%
+if not isNew and stream.indexNum!=0 and len(stream)>=stream.indexNum:
+    %><a href="<%= quoteHTML('%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (edPrefix, stream.path(), item.path(), name)) %>">more &gt;&gt;</a>
+<%
+%></td>    

@@ -1,14 +1,17 @@
 <%
 field_suffix = '%s:%s' % (item.stream.itemIDField.convertToString(item.id), name)
 if value:
-    %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= stream.itemIDField.convertToString(value) %>"><%
+    %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= stream.itemIDField.convertToString(value.id) %>"><%
 %>
 <select name="qps-new:<%= field_suffix %>">
 <%
 if brick.extra_option:
     %><option value=""><%= brick.extra_option %></option>
 <%
-for item in stream:
-    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(item.id)) %>"<%= value and item.id==value.id and ' selected' or '' %>><%= brick.getLabel(item) %></option>
+for cur_item in stream:
+    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(cur_item.id)) %>"<%= value and cur_item.id==value.id and ' selected' or '' %>><%= brick.getLabel(cur_item) %></option>
+<%
+if value and value not in stream:
+    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(value.id)) %>" selected><%= brick.getLabel(value) %></option>
 <%
 %></select>
