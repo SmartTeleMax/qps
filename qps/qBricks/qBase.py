@@ -1,24 +1,10 @@
-# $Id: qBase.py,v 1.9 2004/07/07 15:07:57 corva Exp $
+# $Id: qBase.py,v 1.10 2005/01/19 23:44:33 corva Exp $
 
 '''Base brick classes'''
 
 import weakref, logging
 logger = logging.getLogger(__name__)
-from qps import qUtils
-
-
-class StoreHandler(object):
-    "Base class for store handlers"
-    
-    def handleItemStore(self, item, fields):
-        """Method is called after item was stored. Item is item object,
-        fields is a list of stored fields names"""
-        pass
-    
-    def handleItemsDelete(self, stream, items_ids):
-        """Is called after group of items was deleted. Stream is instance of
-        corresponding stream, items_ids is a list of deleted items ids"""
-        pass
+from qps import qUtils, qEvents
 
 
 class Brick(object):
@@ -50,7 +36,7 @@ class Item(Brick):
     type = 'item'
     _ext_fields_retrieved = 0
 
-    def __init__(self, site, stream, id):
+    def __init__(self, site, stream, id, modifiers=[]):
         '''site      - see Brick
            stream    - stream in which this item is defined
            id        - item id
@@ -66,6 +52,8 @@ class Item(Brick):
         else:
             self.stream = stream
         self.permissions = stream.permissions
+        for modifier in modifiers:
+            modifier(self)
 
     def fields(self):
         return self.stream.fields
@@ -197,9 +185,11 @@ class Stream(Brick):
 
     type = 'stream'
     itemClass = Item
-    storeHandler = StoreHandler()
+    storeHandler = qEvents.StoreHandler()
+    itemModifiers = []
+    features = [] # names of applied modifiers
 
-    def __init__(self, site, id, page=0, **kwargs):
+    def __init__(self, site, id, page=0, modifiers=[], **kwargs):
         Brick.__init__(self, site, id)
         # updating stream parameters
         self.__dict__.update(kwargs)
@@ -213,6 +203,9 @@ class Stream(Brick):
         # XXX Change to self.virtual.applyToStream(self)
         if hasattr(self, 'virtual'):
             self.addToCondition(self.virtual.condition(self))
+        for modifier in modifiers:
+            modifier(self)
+            self.features.append(modifier.__class__.__name__)
 
     def fields(self):
         return self.site.fields[self.tableName]
@@ -281,7 +274,8 @@ class Stream(Brick):
             if not hasattr(self, 'retrieveItemCache'):
                 self.retrieveItemCache = {}
             if not self.retrieveItemCache.has_key(str(item_id)):
-                item = self.itemClass(self.site, self, item_id)
+                item = self.itemClass(self.site, self, item_id,
+                                      self.itemModifiers)
                 if item.retrieve()!=1:
                     item = None
                 self.retrieveItemCache[str(item_id)] = item
@@ -313,7 +307,7 @@ class Stream(Brick):
             return param_item
 
     def createNewItem(self, item_id=None):
-        item = self.itemClass(self.site, self, item_id)
+        item = self.itemClass(self.site, self, item_id, self.itemModifiers)
         defaults = self.brickDefaults
         if hasattr(self, 'virtual'):
             virtual_param_names = self.virtual.itemParamNames
