@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.2 2004/06/29 08:34:47 corva Exp $
+# $Id: qSQL.py,v 1.3 2004/07/05 10:38:23 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -310,7 +310,7 @@ class Connection(object):
 
     def delete(self, table, condition):
         '''Construct and execute SQL DELETE command and return cursor.'''
-        query = 'DELETE FROM '+table
+        query = Query('DELETE FROM '+table)
         if condition:
             query += ' WHERE '+condition
         return self.execute(query)
