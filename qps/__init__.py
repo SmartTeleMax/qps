@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.10 2004/10/07 13:54:44 ods Exp $
+# $Id: __init__.py,v 1.11 2004/10/07 13:58:29 ods Exp $
 
 '''Q Publishing System
 (c) 2000-2004 Sergey Barbarash, Oleg Broytmann, Pavel Barykin, Alexey
@@ -18,13 +18,5 @@ def configLogger(
         handler.setFormatter(formatter)
         logging.root.addHandler(handler)
     logging.root.setLevel(level)
-
-from mx.Misc.LazyModule import LazyModule
-
-qVirtual = LazyModule('qVirtual', locals(), globals())
-qMake = LazyModule('qMake', locals(), globals())
-qSite = LazyModule('qSite', locals(), globals())
-qEdit = LazyModule('qEdit', locals(), globals())
-qHTTP = LazyModule('qHTTP', locals(), globals())
 
 # vim: ts=8 sts=4 sw=4 ai et:
