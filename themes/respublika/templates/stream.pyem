@@ -53,9 +53,11 @@ if brick:
         <td nowrap style="height: 2em;">
         <span class=t11><%= field_type.indexTitle %></span>
         </td><%
-    %>
+    if template.isStreamDeletable(brick):
+        %>
         <td align="center"><span class=t11b id=y1>[x]</span>
-        </td>
+        </td><%
+    %>
     </tr>
 <!-- /field titles --><%
     for repeat in Cook.Repeat(brick):
@@ -68,9 +70,11 @@ if brick:
         <td bgcolor=#F0F1F2>
 <%= template.showFieldInIndex(item, field) %>
         </td><%
-        %>
+        if template.isStreamDeletable(brick):
+            %>
         <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= item.fields.id.convertToString(item.id) %>"></center>
-        </td>
+        </td><%
+        %>
     </tr><%
     %>
 </table>
@@ -83,7 +87,7 @@ if brick:
     if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
         %>
 &nbsp; <input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
-    if'd' in template.getPermissions(brick):
+    if template.isStreamDeletable(brick):
         %>&nbsp; <input type="submit" name="qps-action:deleteItems" value="Удалить"><%
     %>
 </td></tr><%
