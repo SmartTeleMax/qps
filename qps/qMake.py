@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.3 2004/04/12 16:08:53 ods Exp $
+# $Id: qMake.py,v 1.4 2004/04/27 14:33:57 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -138,9 +138,10 @@ class Maker(BaseMaker):
 
     def do_make(self, brick):
         obj = self.prepareObject(brick)
-        data = obj.template(self.getTemplateName(brick))
         fp = self.writer.getFP(self.path(brick))
-        fp.write(data)
+        namespace = obj.globalNamespace.copy()
+        template = self.template_getter(self.getTemplateName(brick))
+        template.interpret(fp, namespace, {'brick': obj, '__object__': obj})
         fp.close()
 
 
