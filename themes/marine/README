@@ -6,5 +6,8 @@ apache's Alias directive) it to somewere under site root.
 For example:
 
 class Edit(qEdit.Edit):
+    templateDirs = ['/usr/share/QPS/themes/marine/templates']
+    fieldTemplateDirs = ['/usr/share/QPS/themes/marine/templates/fields']
     styleSheetURL = '/edit-style.css'
     logoURL = '/logo.png'
+    # ...
