@@ -1,0 +1,11 @@
+<%
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
+for item in stream:
+    if item in value:
+        %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= item.fields['id'].convertToString(item.id) %>"><%
+    %>
+<nobr><input type="checkbox" name="qps-new:<%= field_suffix %>" value="<%= item.fields['id'].convertToString(item.id) %>"<%
+    if item in value:
+        %> checked<%
+    %>> <%= brick.getLabel(item) %></nobr><br><%
+%>
