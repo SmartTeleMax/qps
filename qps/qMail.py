@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.6 2004/03/16 15:48:21 ods Exp $
+# $Id: qMail.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
 
 '''Mail utilities'''
 
@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 # but make thing like that somewhere in your code if you are going to
 # use charsets not listed in email module.
 # email.Charset.add_charset('koi8-r', email.Charset.BASE64, None, None)
+
 
 # senders
 
@@ -23,6 +24,7 @@ class Sender:
     def send(self, message):
         "Sends message (inst of email.Message)"
         raise NotImplementedError # this is abstract class and abstract method
+
 
 class SendmailSender(Sender):
     '''Sendmail sender'''
@@ -40,6 +42,7 @@ class SendmailSender(Sender):
         sendmail.write(message.as_string())
         sendmail.close()
 
+
 class SMTPSender(Sender):
     '''SMTP sender'''
 
@@ -55,12 +58,12 @@ class SMTPSender(Sender):
         smtp.sendmail(message['from'], message['to'], message.as_string())
         smtp.close()
 
+
 # composers
 
 class Composer:
-    '''Base class for all composers'''
-
     charset = 'ascii' # message charset
+    contentType = 'text/plain'
     defaultHeaders = {} # default headers, appended to all composed messages
     messageClass = email.Message.Message # message class
 
@@ -72,41 +75,31 @@ class Composer:
         '''Takes message body and headers as named params,
         replace "-" with "_" in headers names. Returns email.Message.Message
         object'''
-        if self.charset:
-            # subject is an internationalized header, should be quoted
-            from email.Header import Header
-            Subject = Header(Subject, self.charset)
-            message = self.messageClass(body, _charset=self.charset)
-        else:
-            message = self.messageClass(body)
 
+        body = isinstance(body, unicode) and body.encode(self.charset) or body
+        message = self.messageClass()
+        message.set_payload(body, self.charset)
+        message.set_type(self.contentType)
+
+        from email.Header import Header
         headers = self.defaultHeaders.copy()
         headers.update(kwargs)
+        headers['Subject'] = Subject
         for name, value in headers.items():
-            message[name.replace('_', '-')] = value
-
-        message['Subject'] = Subject
+            message[name.replace('_', '-')] = Header(value, self.charset)
 
         return message
 
-class NonMultipartComposer(Composer):
-    '''Non Multipart messages composer'''
-
-    messageClass = email.MIMEText.MIMEText
 
 # functions
-#
 
-def send(mfrom, mto, subject, body, composer=NonMultipartComposer(),
+def send(mfrom, mto, subject, body, composer=Composer(),
          sender=SendmailSender()):
     message = composer.compose(body, From=mfrom, To=mto, Subject=subject)
     return sender.send(message)
-
  
-def send_huge_mail(mfrom, mto, subject, body):
-    composer = NonMultipartComposer()
-    sender = SendmailSender(options="-odq")
-
+def send_huge_mail(mfrom, mto, subject, body, composer = Composer(),
+                   sender=SendmailSender(options="-odq")):
     message = composer.compose(body, From=mfrom, To=mto, Subject=subject,
                                Precedence='bulk')
     return sender.send(message)
