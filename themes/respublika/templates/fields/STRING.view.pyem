@@ -1,0 +1,3 @@
+<span class=t11b id=db1><%= brick.title %>:</span>
+<span class=s9>&nbsp;</span><br>
+<input type="hidden" name="<%= name %>" value="<%= quoteHTML(value) %>" <%= brick.layout %> class=a12><span class=a12><%= value %></span>

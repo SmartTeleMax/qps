@@ -1,7 +1,8 @@
-# $Id: qFieldTypes.py,v 1.154 2004/03/16 15:48:20 ods Exp $
+# $Id: qFieldTypes.py,v 1.17 2004/06/18 14:57:31 ods Exp $
 
 '''Classes for common field types'''
 
+from __future__ import generators
 import types, os, re, sys, weakref, logging
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class _LayoutDict(dict):
         return ' '.join(['%s="%s"' % t for t in self.items()])
 
 
-class FieldType:
+class FieldType(object):
     '''Base class for all field types'''
     # storeControl:
     #   None        - store if user has sufficient priveleges
@@ -36,7 +37,8 @@ class FieldType:
     # showField in binding view
     showInBinding    = 0
     linkThrough      = 1
-
+    
+    templateCat = None
     default     = ''                            # default value
     permissions = [('all', 'rw')] # permissions for item view
     indexPermissions = [] # permission for stream view
@@ -70,33 +72,29 @@ class FieldType:
             value = self.convertToForm(value)
         namespace = global_namespace.copy()
         namespace.update({'name': name, 'title': name, 'value': value,
-                          'item': item})
+                          'item': item, 'brick': self})
         template = self.getTemplate(template_type, template_getter)
-        return template(self, namespace)
+        return template(namespace)
 
-    def getTemplate(self, template_type, template_getter, template_class=None):
-        template_class = template_class or self.__class__
-        if not template_class.__dict__.has_key('_templates'):
-            template_class._templates = {}
-        if not template_class._templates.has_key(template_type):
-            from qWebUtils import TemplateNotFoundError
-            try:
-                template = template_getter(
-                    '%s.%s' % (template_class.__name__, template_type))
-            except TemplateNotFoundError:
-                for base_class in template_class.__bases__:
-                    try:
-                        template = self.getTemplate(template_type,
-                                template_getter, template_class=base_class)
-                    except TemplateNotFoundError:
-                        pass
+    def getTemplate(self, template_type, template_getter):
+        if self.templateCat is not None:
+            # Such templates MUST exist and MUST NOT be cached in class
+            return template_getter('%s.%s' % (self.templateCat, template_type))
+        from qWebUtils import TemplateNotFoundError
+        for cls in self.__class__.__mro__:
+            if not cls.__dict__.has_key('_templates'):
+                cls._templates = {}
+            if not cls._templates.has_key(template_type):
+                try:
+                    template = template_getter(
+                                    '%s.%s' % (cls.__name__, template_type))
+                except TemplateNotFoundError:
+                    if cls is FieldType:
+                        raise
                     else:
-                        break
-                else:
-                    raise TemplateNotFoundError(
-                        '%s.%s' % (template_class.__name__, template_type))
-            template_class._templates[template_type] = template
-        return template_class._templates[template_type]
+                        continue
+                cls._templates[template_type] = template
+            return cls._templates[template_type]
 
     def _identity(self, value, item=None): return value
     convertToDB = convertToForm = _identity
@@ -160,6 +158,9 @@ class STRING_ID(STRING):
     pattern = '^[0-9a-zA-Z_]+$'
     not_match_error_message = 'ID can contain latin alfanumeric characters '\
                               'and underscore only'
+    permissions = [('all', 'rw')]
+    indexPermissions = [('all', 'r')]
+    showInBinding = 1
 
     def convertFromForm(self, form, name, item=None):
         value = STRING.convertFromForm(self, form, name, item)
@@ -211,6 +212,9 @@ class INTEGER(NUMBER):
 class INTEGER_AUTO_ID(INTEGER):
     title = 'ID'
     omitForNew = 1
+    permissions = [('all', '')]
+    indexPermissions = [('all', 'r')]
+    showInBinding = 1
 
 
 class PASSWORD(FieldType):
@@ -314,12 +318,15 @@ class SELECT(DROP):
     layout = _LayoutDict({'size': 5, 'multiple': 'multiple'})
     default = []
     fieldSeparator = ','
-    itemIDField = STRING()  # must be the same as itemIDField of stream
     def convertToDB(self, value, item=None):
+        stream = item.site.retrieveStream(self.stream,
+                                tag=item.site.transmitTag(item.stream.tag))
         return self.fieldSeparator.join(
-                        map(self.itemIDField.convertToString, value)+[''])
+                        map(stream.fields['id'].convertToString, value)+[''])
     def convertFromDB(self, value, item=None):
-        return map(self.itemIDField.convertFromString,
+        stream = item.site.retrieveStream(self.stream,
+                                tag=item.site.transmitTag(item.stream.tag))
+        return map(stream.fields['id'].convertFromString,
                    value.split(self.fieldSeparator)[:-1])
     def convertFromForm(self, form, name, item=None): 
         return form.getlist(self.name)
@@ -349,7 +356,7 @@ class LazyItem:
 
     def __getattr__(self, name):
         if name in ('_item', '__del__'): # XXX Avoid unlimited recursion due
-                                         # to bug in decriptiors
+                                         # to bug in descriptors
                                          # implementation in 2.2
             raise AttributeError(name)
         return getattr(self._item, name)
@@ -374,8 +381,8 @@ class GettedLazyItem(LazyItem):
 
 class FOREIGN_DROP(FieldType):
     proxyClass = RetrievedLazyItem
-    extra_option = None
-    missing_id = None # representation of missing value in DB (default is NULL)
+    extraOption = None
+    missingID = None # representation of missing value in DB (default is NULL)
     default = None
     labelTemplate = '%(quoteHTML(getattr(brick, "title", brick.id)))s'
 
@@ -392,15 +399,15 @@ class FOREIGN_DROP(FieldType):
                                    value)
 
     def convertFromDB(self, value, item):
-        if value!=self.missing_id:
+        if value!=self.missingID:
             return self.proxyClass(item.site, self._stream_params(item),
                                    value)
     
     def convertToDB(self, value, item=None):
         if value: # calls LazyItem.__nonzero__ that checks for None
-            return value.stream.itemIDField.convertToDB(value.id, item)
+            return value.stream.fields['id'].convertToDB(value.id, item)
         else:
-            return self.missing_id
+            return self.missingID
 
     def convertFromForm(self, form, name, item):
         value = form.getfirst(name, '')
@@ -408,8 +415,7 @@ class FOREIGN_DROP(FieldType):
             stream = self._retrieve_stream(item)
             return self.proxyClass(item.site,
                                    self._stream_params(item),
-                                   stream.itemIDField.convertFromString(value)
-                                   )
+                                   stream.fields['id'].convertFromString(value))
 
     def getLabel(self, item):
         namespace = item.site.globalNamespace.copy()
@@ -442,8 +448,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
             item_ids = value.split(self.fieldSeparator)
             stream = self._retrieve_stream(item)
             return self.convertFromCode(
-                        map(stream.itemIDField.convertFromString, item_ids),
-                        item)
+                    map(stream.fields['id'].convertFromString, item_ids), item)
         else:
             return []
 
@@ -451,8 +456,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         value = form.getlist(name)
         stream = self._retrieve_stream(item)
         return self.convertFromCode(
-                    map(stream.itemIDField.convertFromString, value),
-                    item)
+                    map(stream.fields['id'].convertFromString, value), item)
 
     def convertToDB(self, value, item=None):
         item_ids = [FOREIGN_DROP.convertToString(self, item.id)
@@ -463,8 +467,8 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         views = [FOREIGN_DROP.getLabel(self, i)
                  for i in value]
         return ', '.join(views)
-       
 
+        
 class FOREIGN(FOREIGN_DROP):
     proxyClass = RetrievedLazyItem
 
@@ -647,6 +651,7 @@ class EXT_VIRTUAL_REFERENCE(FieldType):
     def getDefault(self, item=None):
         return self.retrieve(item)
 
+
 class IMAGE(FieldType, ExtFieldTypeMixIn):
 
     editRoot = None
@@ -772,6 +777,7 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
             if image:
                 os.remove(self.editRoot+image.path)
 
+
 class RESTRICTED_IMAGE(IMAGE):
 
     maxWidth = None
@@ -806,6 +812,63 @@ class RESTRICTED_IMAGE(IMAGE):
         return value
 
 
+class THUMBNAIL(IMAGE):
+    
+    fieldToThumb = None
+    width = 0  # define correct sizes of thumbnail
+    height = 0
+
+    def resizeFilter(self):
+        import PIL.Image
+        return PIL.Image.BILINEAR
+    resizeFilter = property(resizeFilter)
+    
+    def convertFromForm(self, form, name, item):
+        image = image_orig = getattr(getattr(item, self.fieldToThumb, None),
+                                     '_image', None)
+
+        if image and self.width and self.height:
+            image = self.thumbnail(image)
+            from cStringIO import StringIO
+            fp = StringIO()
+            image.save(fp, image_orig.format)
+            fp.seek(0)
+            return self._Image(self, item, fp.read(),
+                               getattr(getattr(item, name), 'path', None))
+        else:
+            return self._Image(self, item)
+
+    def thumbnail(self, image):
+        w,h = image.size
+        logger.debug('orig image: %sx%s', w, h)
+
+        if float(h)/w > float(self.height)/self.width:
+            size = (self.width, self.width*h/w)
+            image = image.resize(size, self.resizeFilter)
+            w,h = image.size
+            logger.debug('resized image: %sx%s', w, h)
+            rect = (0,
+                    (h-self.height)/2,
+                    self.width,
+                    (h-self.height)/2+self.height
+                    )
+            logger.debug('crop frame: %s', str(rect))
+            image = image.crop(rect)
+        else:
+            size = (self.height*w/h, self.height)
+            image = image.resize(size)
+            w,h = image.size
+            logger.debug('resized image: %sx%s', w, h)
+            rect = ((w-self.width)/2,
+                    0,
+                    (w-self.width)/2+self.width,
+                    self.height
+                    )
+            logger.debug('crop frame: %s', str(rect))
+            image = image.crop(rect)
+        return image
+
+    
 class AgregateFieldType(FieldType):
 
     def _unescape(self, string):
@@ -867,11 +930,11 @@ class CONTAINER(AgregateFieldType):
                 result[key] = field_type.convertFromString(field)
         return result
 
-    def convertToString(self, value):
+    def convertToString(self, value, item=None):
         seq = []
         for key, field in value.items():
             field_type = self.itemFields[key]
-            seq.append((key, field_type.convertToString(field)))
+            seq.append((key, field_type.convertToString(field, item)))
         return self._join(seq)
 
     def convertFromForm(self, form, name, item=None):
@@ -937,8 +1000,8 @@ class ARRAY(AgregateFieldType):
         return self._filter([self.itemField.convertFromString(field)
                              for field in self._split(string)], item)
 
-    def convertToString(self, value):
-        return self._join([self.itemField.convertToString(field)
+    def convertToString(self, value, item=None):
+        return self._join([self.itemField.convertToString(field, item)
                            for field in value])
 
     def convertFromForm(self, form, name, item=None):
@@ -960,6 +1023,98 @@ class ARRAY(AgregateFieldType):
         namespace['subfields'] = subfields
         return FieldType.show(self, item, name, template_type, template_getter,
                               namespace)
+
+
+class FieldDescriptions(object):
+    """Storage for fields config.
+    
+    Usage:
+
+        fields = FieldDescriptions([field1_name, field1_type_class(...),
+                                    field2_name, field2_type_class(...),
+                                    ...])
+
+        id = fields['id']
+        for field_name, field_type in fields:
+            pass
+        for field_name, field_type in fields.iteritems():
+            pass
+        for field_name in fields.iterkeys():
+            pass
+
+        Class also defines two attributes:
+
+        external  - FieldDescriptions object for external fields (storable)
+        main      - the same for main fields"""
+    
+    def __init__(self, config):
+        self._config = config
+
+    def __repr__(self):
+        return repr(self._config)
+
+    def __nonzero__(self):
+        return self._config and True or False
+
+    def __iter__(self):
+        return iter(self._config)
+
+    def __getitem__(self, name):
+        return self._config_dict[name]
+
+    def has_key(self, name):
+        return self._config_dict.has_key(name)
+
+    def iteritems(self):
+        return iter(self._config)
+
+    def iterkeys(self):
+        for fn, ft in self:
+            yield fn
+
+    def items(self):
+        return self._config[:]
+
+    def keys(self):
+        return [fn for fn, ft in self]
+
+    def _config_dict(self):
+        return dict(self._config)
+    _config_dict = qUtils.CachedAttribute(_config_dict)
+
+    def has_key(self, field_name):
+        return self._config_dict.has_key(field_name)
+
+    def external(self):
+        return FieldDescriptions(
+            [(fn, ft) for fn, ft in self._config if hasattr(ft, 'store')])
+    external = qUtils.CachedAttribute(external)
+
+    def main(self):
+        return FieldDescriptions(
+            [(fn, ft) for fn, ft in self._config if not hasattr(ft, 'store')])
+    main = qUtils.CachedAttribute(main)
+
+
+class FieldDescriptionsRepository:
+    '''Wraps config (dictionary) values with FieldDescriptions class.
+    
+    Usage:
+        fieldDescriptions = FieldDescriptionsRepository({
+            'table1': [
+                ('field1_name', field1_type_class(...),
+                ...
+            ],
+            ...
+        })
+    '''
+    def __init__(self, config):
+        self._config = config
+        self._cache = {}
+    def __getitem__(self, table):
+        if not self._cache.has_key(table):
+            self._cache[table] = FieldDescriptions(self._config[table])
+        return self._cache[table]
 
 
 # vim: ts=8 sts=4 sw=4 ai et

@@ -1,10 +1,24 @@
-# $Id: qBase.py,v 1.8 2004/03/16 15:56:20 ods Exp $
+# $Id: qBase.py,v 1.6 2004/06/09 06:53:32 corva Exp $
 
 '''Base brick classes'''
 
 import weakref, logging
 logger = logging.getLogger(__name__)
 from qps import qUtils
+
+
+class StoreHandler(object):
+    "Base class for store handlers"
+    
+    def handleItemStore(self, item, fields):
+        """Method is called after item was stored. Item is item object,
+        fields is a list of stored fields names"""
+        pass
+    
+    def handleItemsDelete(self, stream, items_ids):
+        """Is called after group of items was deleted. Stream is instance of
+        corresponding stream, items_ids is a list of deleted items ids"""
+        pass
 
 
 class Brick(object):
@@ -53,23 +67,34 @@ class Item(Brick):
             self.stream = stream
         self.permissions = stream.permissions
 
+    def fields(self):
+        return self.stream.fields
+    fields = qUtils.CachedAttribute(fields)
+
+    def indexFields(self):
+        return self.stream.indexFields
+    indexFields = qUtils.CachedAttribute(indexFields)
+
     def __eq__(self, other):
         # Note that the same objects taken from different streams are not
         # equal!
-        return self is other or \
-                (self.__class__ is other.__class__ and \
-                 self.stream==other.stream and self.id==other.id)
+        if self is other:
+            return 1
+        elif self.__class__ is other.__class__:
+            return self.stream==other.stream and self.id==other.id
+        else:
+            return NotImplemented
 
     def __ne__(self, other):
         return not (self==other)
 
     def path(self):
         return '%s%s.html' % (self.stream.path(),
-                              self.stream.itemIDField.convertToString(self.id))
+                              self.fields['id'].convertToString(self.id))
 
     def initFieldFromCode(self, field_name, value):
         '''Initialize field from code'''
-        field_type = self.stream.allStreamFields[field_name]
+        field_type = self.indexFields[field_name]
         value = field_type.convertFromCode(value, item=self)
         setattr(self, field_name, value)
 
@@ -79,16 +104,18 @@ class Item(Brick):
         successful).'''
         errors = {}
         if names is None:
-            names = self.stream.allItemFields.keys()
+            names = self.fields.keys()
         for field_name in names:
-            field_type = self.stream.allItemFields[field_name]
-            if field_type.initFromForm:
-                try:
-                    value = field_type.convertFromForm(form, field_name, self)
-                except field_type.InvalidFieldContent, exc:
-                    errors[field_name] = exc.message
-                else:
-                    setattr(self, field_name, value)
+            if field_name!='id':
+                field_type = self.fields[field_name]
+                if field_type.initFromForm:
+                    try:
+                        value = field_type.convertFromForm(form, field_name,
+                                                           self)
+                    except field_type.InvalidFieldContent, exc:
+                        errors[field_name] = exc.message
+                    else:
+                        setattr(self, field_name, value)
         return errors
 
     def make(self, maker=None, maker_params={}):
@@ -129,8 +156,8 @@ class Item(Brick):
 
     def store(self, names=None):
         '''Store data of item (new or existing)'''
-        # XXX store external fields here?
-        raise NotImplementedError()
+        self.storeExtFields(names)
+        self.stream.storeHandler.handleItemStore(self, names)
 
     def touch(self):
         '''Touch the item (i.e. mark as its updated and need to be remaked)'''
@@ -143,19 +170,19 @@ class Item(Brick):
     # --- External fields ---
     def retrieveExtFields(self):
         if not self._ext_fields_retrieved:
-            for field_name, field_type in self.stream.itemExtFields.items():
+            for field_name, field_type in self.fields.external.iteritems():
                 value = field_type.retrieve(item=self)
                 setattr(self, field_name, value)
             self._ext_fields_retrieved = 1
 
     def storeExtField(self, field_name):
-        field_type = self.stream.itemExtFields[field_name]
+        field_type = self.fields[field_name]
         field_type.store(getattr(self, field_name), item=self)
 
     def storeExtFields(self, names=None):
         '''For each external field store it, if its listed in names.  By
         default store all external fields.'''
-        for field_name, field_type in self.stream.itemExtFields.items():
+        for field_name, field_type in self.fields.external.iteritems():
             if field_type.storeControl!='never' and \
                     (field_type.storeControl=='always' or \
                      names is None or field_name in names):
@@ -169,34 +196,15 @@ class Stream(Brick):
     '''Base class for streams'''
 
     type = 'stream'
-    itemFieldsOrder = []
-    itemFields = {}
-    itemExtFields = {}
-    class _ItemIDFieldFromSite(object):
-        def __get__(self, inst, cls):
-            if inst is None:
-                return self
-            return inst.site.defaultItemIDField
-    itemIDField = _ItemIDFieldFromSite()
+    itemClass = Item
+    storeHandler = StoreHandler()
 
     def __init__(self, site, id, page=0, **kwargs):
         Brick.__init__(self, site, id)
-        # updating stream parameters (first round)
+        # updating stream parameters
         self.__dict__.update(kwargs)
-        if self.tableName:
-            self.itemFieldsOrder = site.itemFieldsOrder.get(
-                self.tableName, self.itemFieldsOrder)
-            self.itemFields = site.itemFields.get(
-                self.tableName, self.itemFields)
-            self.itemExtFields = site.itemExtFields.get(
-                self.tableName, self.itemExtFields)
-            self.itemIDField = site.itemIDFields.get(
-                self.tableName, self.itemIDField)
-        # XXX Implement joinFields as descriptor in SQLStream
-        if hasattr(self, 'joinTable'):
-            self.joinFields = site.itemFields.get(self.joinTable, {})
-        # updating stream parameters (second round)
-        self.__dict__.update(kwargs)
+        # XXX Why page is checked here and not in PagedStreamLoader?  Anyway,
+        # this check is incomplete.
         if page<1:
             page = 1
         self.page = page
@@ -205,6 +213,19 @@ class Stream(Brick):
         # XXX Change to self.virtual.applyToStream(self)
         if hasattr(self, 'virtual'):
             self.addToCondition(self.virtual.condition(self))
+
+    def fields(self):
+        return self.site.fields[self.tableName]
+    fields = qUtils.CachedAttribute(fields)
+
+    def joinFields(self):
+        import qps.qFieldTypes
+        default = qps.qFieldTypes.FieldDescriptions([])
+        if hasattr(self, 'joinTable'):
+            return self.site.fields.get(self.joinTable, default)
+        else:
+            return default
+    joinFields = qUtils.CachedAttribute(joinFields)
 
     def __eq__(self, other):
         return self is other or \
@@ -231,23 +252,17 @@ class Stream(Brick):
         self.retrieve()
         return iter(self.itemList)
 
-    def allItemFields(self):
-        '''Returns all bricks fields'''
-        result = self.itemFields.copy()
-        result.update(self.itemExtFields)
-        return result
-    allItemFields = qUtils.CachedAttribute(allItemFields)
-
-    def allStreamFields(self):
-        # XXX Override it in SQLStream to add joinFields support
-        join_fields = getattr(self, 'joinFields', {})
-        if join_fields:
-            result = self.allItemFields.copy()
-            result.update(join_fields)
-            return result
-        else:
-            return self.allItemFields
-    allStreamFields = qUtils.CachedAttribute(allStreamFields)
+    def indexFields(self):
+        #XXX# # XXX Override it in SQLStream to add joinFields support
+        #XXX# join_fields = getattr(self, 'joinFields', {})
+        #XXX# if join_fields:
+        #XXX#     result = self.fields.copy()
+        #XXX#     result.update(join_fields)
+        #XXX#     return result
+        #XXX# else:
+        #XXX#     return self.allItemFields
+        return self.fields
+    indexFields = qUtils.CachedAttribute(indexFields)
 
     def virtualRules(self):
         result = []
@@ -312,14 +327,16 @@ class Stream(Brick):
             virtual_param_names = self.virtual.itemParamNames
         else:
             virtual_param_names = []
-        for field_name, field_type in self.allItemFields.items():
-            if field_name in virtual_param_names:
-                value = getattr(self, field_name)
-            elif defaults.has_key(field_name):
-                value = field_type.convertFromCode(defaults[field_name], item)
-            else:
-                value = field_type.getDefault(item)
-            setattr(item, field_name, value)
+        for field_name, field_type in self.fields.iteritems():
+            if field_name!='id':
+                if field_name in virtual_param_names:
+                    value = getattr(self, field_name)
+                elif defaults.has_key(field_name):
+                    value = field_type.convertFromCode(defaults[field_name],
+                                                       item)
+                else:
+                    value = field_type.getDefault(item)
+                setattr(item, field_name, value)
         return item
 
     def makeAction(self):
@@ -357,7 +374,7 @@ class Stream(Brick):
 
     # --- External fields ---
     def deleteExtFields(self, item_ids):
-        for field_name, field_type in self.itemExtFields.items():
+        for field_name, field_type in self.fields.external.iteritems():
             field_type.delete(item_ids, stream=self)
 
 

@@ -1,0 +1,3 @@
+<a tal:content="value and '&gt;&gt;' or default"
+   tal:omit-tag="not value"
+   tal:attributes="href edPrefix+(value and value.path() or '')">&mdash;</a>

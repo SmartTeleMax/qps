@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.24 2004/03/16 15:48:21 ods Exp $
+# $Id: qVirtual.py,v 1.5 2004/06/09 06:42:42 corva Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -17,7 +17,7 @@ from qUtils import CachedAttribute, interpolateString
 #   itemParamNames  - list of parameters to be initialized in item (default is
 #                     [paramName])
 
-class CommonVirtualStream:
+class VirtualRule:
     '''Class for rules of virtual streams with single parameter.  Stream ID is
     formed as prefix+'/'+item_id_from_paramStream.  Default value for prefix is
     stream_id_of_paramStream.'''
@@ -50,18 +50,18 @@ class CommonVirtualStream:
     def match(self, site, stream_path, tag=None):
         parts = stream_path.split('/')
         if len(parts)>=2 and '/'.join(parts[:-1])==self.prefix:
-            params = self.streamParams.copy()
             param_stream = site.retrieveStream(self.paramStream,
                                                tag=site.transmitTag(tag))
             try:
-                param_item_id = param_stream.itemIDField.convertFromString(
-                                                                    parts[-1])
+                param_item_id = \
+                    param_stream.fields['id'].convertFromString(parts[-1])
             except ValueError:
                 return
             param_item = param_stream.retrieveItem(param_item_id)
             if param_item is None:
                 # no such item
                 return
+            params = self.streamParams.copy()
             params[self.paramName] = param_item
             if self.titleTemplate is not None:
                 params['title'] = interpolateString(self.titleTemplate, params)
@@ -79,14 +79,16 @@ class CommonVirtualStream:
                              for name in self.itemParamNames])
         # XXX We must convert field with convertToDB
         # But there are problems with following code when many-to-many relation
-        # is used. Try allStreamFields then use getattr(stream,
-        # name).stream.itemIDField?
+        # is used. Try indexFields then use getattr(stream,
+        # name).stream.fields['id']?
         #return conn.join(
         #        ['%s=%s' % (name,
         #                    conn.convert(
-        #                        stream.allStreamFields[name].convertToDB(
+        #                        stream.indexFields[name].convertToDB(
         #                                            getattr(stream, name))))
         #         for name in self.itemParamNames])
 
+
+CommonVirtualStream = VirtualRule
 
 # vim: ts=8 sts=4 sw=4 ai et

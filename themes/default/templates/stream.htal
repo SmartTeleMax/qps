@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Editor interface for
+<tal:block tal:replace="brick.site.host">Host name</tal:block>:
+<tal:block tal:replace="brick.title">Stream title</tal:block>
+</head>
+<body tal:define="perms template.getPermissions(brick)">
+
+<h1><a href="#" tal:attributes="href template.edit.prefix+'/'">Editor interface</a> for
+<a href="#" tal:attributes="href 'http://%s/' % brick.site.host"
+            tal:content="brick.site.title">Site name</a>:
+<span tal:replace="brick.title">Stream title</span></h1>
+
+<a href="#" tal:condition="'c' in perms"
+            tal:attributes="href template.edit.prefix+brick.path()+'?qps-action%3AnewItem=1'">Create new</a>
+<a href="#" tal:condition="hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField])"
+            tal:attributes="href template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()">Change binding</a>
+
+<form action="" method="POST"
+      tal:attributes="action template.edit.prefix+brick.path()"
+      tal:omit-tag="not brick">
+<div tal:condition="brick.indexNum!=0">
+<a tal:omit-tag="brick.page==1" href="#"
+   tal:attributes="href '?page=%s' % (brick.page-1)">
+&lt;&lt;previous page</a> |
+page <span tal:replace="brick.page">No</span> (<span tal:replace="len(brick)">No</span> items) |
+<a tal:omit-tag="len(brick)<brick.indexNum" href="#"
+   tal:attributes="href '?page=%s' % (brick.page+1)">
+next page &gt;&gt;</a>
+</div>
+
+<tal:block tal:condition="brick">
+<table>
+
+<tr>
+<tal:block tal:repeat="field_name template.allowedIndexFields(brick)">
+<th tal:define="field_type brick.indexFields[field_name]"
+    tal:content="field_type.indexTitle">Field title</th>
+</tal:block>
+<th>X</th>
+</tr>
+
+<tr tal:repeat="item brick">
+<td tal:repeat="field_name template.allowedIndexFields(brick)"
+    tal:content="structure template.showFieldInIndex(item, field_name)">
+Field value</td>
+<td><input type="checkbox" name="qps-select"
+           tal:attributes="value item.fields['id'].convertToString(item.id)"></td>
+</tr>
+
+</table>
+
+<input tal:condition="template.isStreamUpdatable(brick)"
+       type="submit" name="qps-action:updateItems" value="Update"/>
+<input tal:condition="hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField])"
+       type="submit" name="qps-action:unbindItems" value="Unbind selected"/>
+<input type="submit" name="qps-action:deleteItems" value="Delete selected"/>
+
+</tal:block>
+
+<div tal:condition="not brick">The stream is empty</div>
+
+</form>
+
+</body>
+</html>

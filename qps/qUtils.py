@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.16 2004/03/16 15:48:21 ods Exp $
+# $Id: qUtils.py,v 1.2 2004/03/19 14:34:47 ods Exp $
 
 '''Miscellaneous utilities'''
 
@@ -115,6 +115,24 @@ class CachedAttribute(object):
         return result
 
 
+class CachedClassAttribute(object):
+
+    def __init__(self, method, name=None):
+        self.method = method
+        self.name = name or method.__name__
+
+    def __get__(self, inst, cls):
+        try:
+            result = self.method(cls)
+            setattr(cls, self.name, result)
+        except:
+            # XXX It's a bug in Python 2.2: any exception is replaced with
+            # AttributeError
+            logger.exception('Error in CachedClassAttribute:')
+            raise
+        return result
+
+
 class ReadAliasAttribute(object):
 
     def __init__(self, name):
@@ -124,6 +142,15 @@ class ReadAliasAttribute(object):
         if inst is None:
             return self
         return getattr(inst, self.name)
+
+
+class AliasAttribute(ReadAliasAttribute):
+
+    def __set__(self, inst, value):
+        setattr(inst, self.name, value)
+
+    def __delete__(self, inst):
+        delattr(inst, self.name)
 
 
 class DictRecord(dict):

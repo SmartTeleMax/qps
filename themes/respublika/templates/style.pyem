@@ -1,0 +1,55 @@
+A:active {text-decoration: none}
+A:link {text-decoration: none}
+A:visited {text-decoration: none}
+A:hover {text-decoration: none}
+P { display: block; margin-top: 0px; margin-bottom: 0px} 
+
+FORM {display: inline }
+//INPUT{display: inline}
+h1, h2, h3, h4 {display: inline }
+
+.t10 {font: 10px/12px tahoma; letter-spacing: 0}
+.t10b {font: bold 10px/12px tahoma; letter-spacing: 0}
+.t11 {font: 11px/14px tahoma; letter-spacing: 0}
+.t11b {font: bold 11px/12px tahoma; letter-spacing: 0}
+.t12 {font: 12px/16px tahoma; letter-spacing: 0}
+.t12b {font: bold 12px/14px tahoma; letter-spacing: 0}
+.t14 {font: 14px/18px tahoma; letter-spacing: 0}
+.t15b {font: bold 17px/17px tahoma; letter-spacing: -1}
+.t18b {font: bold 17px/16px tahoma; letter-spacing: -1}
+.v10 {font: 10px/14px verdana; letter-spacing: 0}
+.v102 {font: 10px/14px verdana; letter-spacing: -1}
+.v10b {font: bold 10px/12px verdana; letter-spacing: 0}
+
+
+.a14b {font: bold 15px/18px arial; letter-spacing: 0}
+.a12 {font: 12px/15px arial; letter-spacing: 0}
+
+
+.s1 {font: 1px/1px arial } 
+.s2 {font: 2px/2px arial }
+.s3 {font: 3px/3px arial }
+.s4 {font: 4px/4px arial }
+.s5 {font: 5px/5px arial }
+.s6 {font: 6px/6px arial }
+.s9 {font: 9px/9px arial }
+.s12 {font: 12px/12px arial }
+.s18 {font: 18px/18px arial }
+.s24 {font: 24px/24px arial }
+
+.link {cursor: pointer; cursor: hand;}
+
+#lb {color: #F2F4F6}
+#lb2 {color: #CBD5DA}
+#lb3 {color: #A0AAAF}
+#db1 {color: #485962}
+#y1 {color: #C17700}
+#db2 {color: #6A7B83}
+#w {color: #FFFFFF}
+#lg {color: #F4F7F1}
+#lg1 {color: #DBE5CC}
+#lg2 {color: #EBEFE3}
+#dg {color: #717C5D}
+#dg1 {color: #849072}
+#dg2 {color: #2D4122}
+#dg3 {color: #3D5132}

@@ -1,0 +1,32 @@
+#!%(python_cgi_executable)s
+# $Id: edit.py.in,v 1.2 2004/03/24 12:18:46 ods Exp $
+
+import qps, os, logging
+qps.configLogger(level=logging.INFO)
+from PPA.HTTP.CGI import Adapter
+from qps import qEdit
+from Site import Site
+
+
+class Edit(qEdit.Edit):
+
+    prefix = ''
+    templateDirs = [%(`edit_templates_dir`)s]
+    fieldTemplateDirs = [%(`field_templates_dir`)s]
+    securityGroupTable = {
+        'editors': ['editor1_login', 'editor2_login'],
+    }
+
+
+class Main(Adapter):
+
+    def __init__(self):
+        self.__edit = Edit(Site())
+
+    def handle(self, request, response):
+        self.__edit.handle(request, response)
+
+
+handle = Main()
+if __name__=='__main__':
+    handle()

@@ -1,0 +1,7 @@
+<%
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
+%>
+<span class=a12>
+<input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= quoteHTML(value) %>">
+<input type="text" name="qps-new:<%= field_suffix %>" value="<%= quoteHTML(value) %>" <%= brick.layout %>>
+</span>

@@ -1,0 +1,8 @@
+<nobr><%
+if value:
+    %><a href="<%= edPrefix + value.path() %>"><span class=t12 id=db1>&gt;&gt;</span></a><%
+    if getattr(brick, "showCountItemsInIndex", 0) and value.countItems():
+        %> <span class=t12 id=db1> (<%= value.countItems() %>)</span><%
+else:
+    %><span class=t12 id=db1>&mdash;</span><%
+%></nobr>

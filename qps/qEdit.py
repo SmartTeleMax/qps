@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.172 2004/03/16 15:48:20 ods Exp $
+# $Id: qEdit.py,v 1.20 2004/06/10 11:24:15 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -9,133 +9,105 @@ from os.path import dirname, abspath
 logger = logging.getLogger(__name__)
 import qWebUtils, qSite, qHTTP, qUtils, qCommands, qPath, qSecurity
 
-class MakedEditObject(qWebUtils.MakedObject):
-    "Wrapper class to add templating tools to made object for editor interface"
-    
-    def __init__(self, object, template_getter,
-                 field_template_getter, global_namespace={}, **kwargs):
-        qWebUtils.MakedObject.__init__(self, object, template_getter,
-                                       global_namespace, **kwargs)
-        self.getFieldTemplate = field_template_getter
+
+class RenderHelper(qWebUtils.RenderHelper):
+    def __init__(self, edit, user, isNew=0, **kwargs):
+        qWebUtils.RenderHelper.__init__(self, edit)
+        self.edit = edit
+        self.user = user
+        self.isNew = isNew
+        self.__dict__.update(kwargs)
 
     def fieldGlobalNamespace(self):
-        namespace = self.globalNamespace.copy()
-        namespace['edPrefix'] = self.edPrefix
-        namespace['edUser'] = self.edUser
+        namespace = self.edit.globalNamespace.copy()
+        namespace['edPrefix'] = self.edit.prefix
+        namespace['edUser'] = self.user
         namespace['isNew'] = self.isNew
         return namespace
     fieldGlobalNamespace = qUtils.CachedAttribute(fieldGlobalNamespace)
 
     def allowedStreams(self):
-        site = self.object.site
+        site = self.edit.site
         streams = []
         for stream_id, stream_conf in site.streamDescriptions.items():
-            if self.edUser.checkPermission('x',
-                                           stream_conf.get('permissions', [])):
+            if self.user.checkPermission('x',
+                                         stream_conf.get('permissions', [])):
                 streams.append(site.streamFactory(stream_id, tag='edit'))
         return streams
     allowedStreams = qUtils.CachedAttribute(allowedStreams)
 
-    def getAllowedFields(self, obj=None):
-        if obj is None:
-            obj = self.object
-        # assume obj.type=='item'
-        stream = obj.stream
-        item_fields = stream.allItemFields
+    def allowedFields(self, item):
+        # assume item.type=='item'
         itemFieldsOrder = []
-        for field_name in stream.itemFieldsOrder:
-            field_type = item_fields[field_name]
-            perms = self.edUser.getPermissions(field_type.permissions)
+        for field_name, field_type in item.fields.iteritems():
+            perms = self.user.getPermissions(field_type.permissions)
             if 'w' in perms or 'r' in perms and \
                     not (self.isNew and field_type.omitForNew):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
-    allowedFields = qUtils.CachedAttribute(getAllowedFields)
 
-    def getAllowedIndexFields(self, obj=None):
-        if obj is None:
-            obj = self.object
-        # assume obj.type=='stream':
-        stream = obj
-        item_fields = stream.allStreamFields
+    def allowedIndexFields(self, stream):
+        # assume stream.type=='stream':
         itemFieldsOrder = []
-        if self.edUser.checkPermission('x', stream.permissions):
-            for field_name in stream.itemFieldsOrder+\
-                    getattr(stream, 'joinFields', {}).keys():
-                field_type = item_fields[field_name]
-                if self.edUser.checkPermission('r',
-                                               field_type.indexPermissions):
+        if self.user.checkPermission('x', stream.permissions):
+            for field_name, field_type in stream.indexFields.iteritems():
+                if self.user.checkPermission('r', field_type.indexPermissions):
                     itemFieldsOrder.append(field_name)
         return itemFieldsOrder
-    allowedIndexFields = qUtils.CachedAttribute(getAllowedIndexFields)
 
-    def checkIfStreamUpdatable(self, obj=None):
-        if obj is None:
-            obj = self.object
-            allowedIndexFields = self.allowedIndexFields
-        else:
-            allowedIndexFields = self.getAllowedIndexFields(obj)
-        # assume obj.type=='stream':
-        stream = obj
-        if self.edUser.checkPermission('w', stream.permissions):
-            item_fields = stream.allStreamFields
+    def isStreamUpdatable(self, stream):
+        # assume stream.type=='stream':
+        allowedIndexFields = self.allowedIndexFields(stream)
+        if self.user.checkPermission('w', stream.permissions):
+            item_fields = stream.indexFields
             for field_name in allowedIndexFields:
                 field_type = item_fields[field_name]
-                if self.edUser.checkPermission('w',
-                                               field_type.indexPermissions):
+                if self.user.checkPermission('w', field_type.indexPermissions):
                     return 1
         return 0
-    isStreamUpdatable = qUtils.CachedAttribute(checkIfStreamUpdatable)
 
-    def getBindingIndexFields(self, obj=None):
-        if obj is None:
-            obj = self.object
-        # assume self.object.type=='stream':
-        stream = obj
-        item_fields = stream.allItemFields
+    def isStreamUnbindable(self, stream):
+        return hasattr(stream, 'joinField') and \
+                self.user.checkPermission('w',
+                    stream.fields[stream.joinField].indexPermissions)
+
+    def isStreamCreatable(self, stream):
+        return self.user.checkPermission('c', stream.permissions)
+
+    def isStreamDeletable(self, stream):
+        return self.user.checkPermission('d', stream.permissions)
+
+    def bindingIndexFields(self, stream):
+        # assume stream.type=='stream':
         itemFieldsOrder = []
-        for field_name in stream.itemFieldsOrder:
-            field_type = item_fields[field_name]
+        for field_name, field_type in stream.fields.iteritems():
             if field_type.showInBinding and \
-                    self.edUser.checkPermission('r', field_type.permissions):
+                   self.user.checkPermission('r', field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
-    bindingIndexFields = qUtils.CachedAttribute(getBindingIndexFields)
 
-    def showField(self, name):
+    def showField(self, item, name):
         '''Return representation of field in editor interface'''
-
-        object = self.object
-
-        if name=='id':
-            field_type = object.stream.itemIDField
-        else:
-            field_type = object.stream.allItemFields[name]
-            
-        stream_perms = self.edUser.getPermissions(object.stream.permissions)
-        perms = self.edUser.getPermissions(field_type.permissions)
+        field_type = item.fields[name]
+        stream_perms = self.user.getPermissions(item.stream.permissions)
+        perms = self.user.getPermissions(field_type.permissions)
         if 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
             template_type = 'view'
         else:
             return ''
-        return field_type.show(self, name, template_type,
-                               self.getFieldTemplate,
-                               self.fieldGlobalNamespace)
+        return field_type.show(item, name, template_type,
+                               self.edit.getFieldTemplate,
+                               self.fieldGlobalNamespace) # XXX namespace
 
-    def showFieldInIndex(self, item, name):
+    def showFieldInIndex(self, item, name, allow_edit=1):
         '''Return representation of field in stream'''
-
-        object = item.stream
-        if name=='id':
-            field_type = object.itemIDField
-        else:
-            field_type = object.allStreamFields[name]
-
-        stream_perms = self.edUser.getPermissions(object.permissions)
-        perms = self.edUser.getPermissions(field_type.indexPermissions)
-        if 'w' in stream_perms and 'w' in perms:
+        stream = item.stream
+        field_type = stream.indexFields[name]
+        stream_perms = self.user.getPermissions(stream.permissions)
+        perms = self.user.getPermissions(field_type.indexPermissions)
+        if allow_edit and 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
             template_type = 'view'
@@ -143,21 +115,19 @@ class MakedEditObject(qWebUtils.MakedObject):
             return ''
         template_type = 'index-' + template_type
         return field_type.show(item, name, template_type,
-                               self.getFieldTemplate,
-                               self.fieldGlobalNamespace)
+                               self.edit.getFieldTemplate,
+                               self.fieldGlobalNamespace) # XXX namespace
 
-    def getPermissions(self, obj=None):
-        if obj is None:
-            obj = self.object
-        return self.edUser.getPermissions(obj.permissions)
+    def getPermissions(self, obj):
+        return self.user.getPermissions(obj.permissions)
 
     getFieldPermissions = getPermissions
 
 
 class EditBase:
     '''Base class for editor interface'''
-    proxyClass = MakedEditObject # class of object wrapper
     streamLoaderClass = qPath.PagedStreamLoader
+    renderHelperClass = RenderHelper
     
     prefix = '/ed'
     templateDirs = ['%s/templates/default' % dirname(abspath(__file__))]
@@ -193,22 +163,19 @@ class EditBase:
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
 
-    def allowedFields(self, stream, user):
+    def storableFields(self, item, user):
         itemFieldsOrder = []
-        item_fields = stream.allItemFields
-        for field_name in stream.itemFieldsOrder:
-            field_type = item_fields[field_name]
-            if user.checkPermission('w', field_type.permissions):
+        for field_name, field_type in item.fields.iteritems():
+            if field_name!='id' and \
+                    user.checkPermission('w', field_type.permissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def allowedStreamFields(self, stream, user):
+    def storableIndexFields(self, stream, user):
         itemFieldsOrder = []
-        item_fields = stream.allStreamFields
-        for field_name in stream.itemFieldsOrder+\
-                getattr(stream, 'joinFields', {}).keys():
-            field_type = item_fields[field_name]
-            if user.checkPermission('w', field_type.indexPermissions):
+        for field_name, field_type in stream.indexFields.iteritems():
+            if field_name!='id' and \
+                    user.checkPermission('w', field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
@@ -225,18 +192,11 @@ class EditBase:
         self.dispatch(request, response, field_name_prefix='qps-action:',
                       objs=objs, user=user)
 
-    def prepareObject(self, obj, user, isNew=0):
-        return self.proxyClass(obj,
-                               template_getter=self.getTemplate,
-                               field_template_getter=self.getFieldTemplate,
-                               global_namespace=self.globalNamespace,
-                               edUser=user, edPrefix=self.prefix, isNew=isNew)
-
     def showBrick(self, request, response, obj, user, isNew=0, **kwargs):
-        obj = self.prepareObject(obj, user, isNew)
+        template = self.renderHelperClass(self, user, isNew)
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
-        response.write(obj.template(obj.type, **kwargs))
+        response.write(template(obj.type, brick=obj, **kwargs))
 
     def cmd_defaultCommand(self, request, response, form, objs, user):
         '''Default action: show brick.'''
@@ -264,7 +224,7 @@ class EditBase:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
-        item = stream.createNewItem(stream.itemIDField.getDefault())
+        item = stream.createNewItem(stream.fields['id'].getDefault())
         self.showBrick(request, response, item, user, isNew=1)
 
     def do_createItem(self, request, response, form, objs, user):
@@ -276,19 +236,20 @@ class EditBase:
         if not user.checkPermission('c', stream.permissions):
             raise self.ClientError(403, self.create_denied_error)
         errors = {}
-        if stream.itemIDField.omitForNew:
+        id_field_type = stream.fields['id']
+        if id_field_type.omitForNew:
             item_id = None
         else:
             try:
-                item_id = stream.itemIDField.convertFromForm(form, 'id')
-            except stream.itemIDField.InvalidFieldContent, exc:
+                item_id = id_field_type.convertFromForm(form, 'id')
+            except id_field_type.InvalidFieldContent, exc:
                 errors['id'] = exc.message
-                item_id = stream.itemIDField.getDefault()
+                item_id = id_field_type.getDefault()
         item = stream.createNewItem(item_id)
-        if not (stream.itemIDField.omitForNew or errors) and item.exists()==1:
+        if not (id_field_type.omitForNew or errors) and item.exists()==1:
             raise self.ClientError(403, self.existing_id_error)
         errors.update(item.initFieldsFromForm(
-                        form, names=self.allowedFields(stream, user)))
+                        form, names=self.storableFields(item, user)))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',
@@ -311,7 +272,7 @@ class EditBase:
         if not user.checkPermission('w', item.stream.permissions):
             raise self.ClientError(403, self.edit_denied_error)
         errors = item.initFieldsFromForm(
-                    form, names=self.allowedFields(item.stream, user))
+                    form, names=self.storableFields(item, user))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',
@@ -320,8 +281,9 @@ class EditBase:
                                   fieldErrors=errors)
         else:
             fields_to_store = []
-            for field_name, field_type in item.stream.allItemFields.items():
-                if user.checkPermission('w', field_type.permissions):
+            for field_name, field_type in item.fields.iteritems():
+                if field_name!='id' and \
+                        user.checkPermission('w', field_type.permissions):
                     fields_to_store.append(field_name)
             item.store(fields_to_store)
             if item.existsInStream():
@@ -334,7 +296,7 @@ class EditBase:
         "qps-select" form field.'''
         if not user.checkPermission('d', stream.permissions):
             raise self.ClientError(403, self.delete_denied_error)
-        item_ids = map(stream.itemIDField.convertFromString,
+        item_ids = map(stream.fields['id'].convertFromString,
                        form.getlist('qps-select'))
         if item_ids:
             try:
@@ -351,15 +313,15 @@ class EditBase:
         self.deleteItems(stream, form, user)
         raise self.SeeOther(self.prefix+stream.path())
 
-    def updateStream(self, stream, form, user):
+    def updateItems(self, stream, form, user):
         '''Method to update several items of stream at once.  Only changed
         fields are updated.  Names for fields are rewriten (in sense of
         field_type.convertFromForm()) from "name" to "qps-old:%s:%s" %
         (item.id, name) and "qps-new:%s:%s" % (item.id, name).'''
         if not user.checkPermission('w', stream.permissions):
             raise self.ClientError(403, self.edit_denied_error)
-        updatable_fields = self.allowedStreamFields(stream, user)
-        item_fields = stream.allStreamFields
+        updatable_fields = self.storableIndexFields(stream, user)
+        item_fields = stream.indexFields
         if updatable_fields:
             item_id_strs = {}  # simulating set
             for name in form.keys():
@@ -370,7 +332,7 @@ class EditBase:
                     item_id_strs[parts[1]] = 1
             for item_id_str in item_id_strs.keys():
                 changed_fields = []
-                item_id = stream.itemIDField.convertFromString(item_id_str)
+                item_id = stream.fields['id'].convertFromString(item_id_str)
                 item = stream.retrieveItem(item_id)
                 if item is None:  # Somebody deleted it :)
                     continue
@@ -388,18 +350,18 @@ class EditBase:
                             changed_fields.append(field_name)
                     except field_type.InvalidFieldContent, exc:
                         logger.warning(
-                                'Error in updateStream for field %s: %s',
-                                field_name, exc)
+                                'Error in updateItems for field %s: %s',
+                                field_name, exc.message)
                 if changed_fields:
                     item.store(changed_fields)
 
-    def do_updateStream(self, request, response, form, objs, user):
+    def do_updateItems(self, request, response, form, objs, user):
         '''Update several items of stream.  The path corresponds to stream, of
         which items are updated.'''
         stream = objs[-1]
         if stream.type!='stream':
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        self.updateStream(stream, form, user)
+        self.updateItems(stream, form, user)
         raise self.SeeOther(self.prefix+stream.path())
     
     def do_unbindItems(self, request, response, form, objs, user):
@@ -411,12 +373,12 @@ class EditBase:
         field_name = getattr(stream, 'joinField', None)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        field_type = stream.allItemFields[field_name]
+        field_type = stream.fields[field_name]
         if not (user.checkPermission('w', stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
         binding_to_item = getattr(stream, stream.virtual.paramName)
-        item_ids = map(stream.itemIDField.convertFromString,
+        item_ids = map(stream.fields['id'].convertFromString,
                        form.getlist('qps-select'))
         for item_id in item_ids:
             item = stream.retrieveItem(item_id)
@@ -448,28 +410,38 @@ class EditBase:
         if bound.type=='stream':
             field_name = getattr(bound, 'joinField', None)
             binding_to_item = getattr(bound, bound.virtual.paramName)
-            isBound = lambda item: binding_to_item in getattr(item, field_name)
+            is_bound = lambda item: binding_to_item in getattr(item, field_name)
             bound_stream = bound
+            bound_element_type = "checkbox"
         elif bound.type=='item':
             field_name = form.getfirst('field')
             binding_to_item = bound
-            isBound = lambda item: item in getattr(binding_to_item, field_name)
+            field = getattr(binding_to_item, field_name)
+            try:
+                iter(field)
+            except TypeError: # field is not a sequence
+                is_bound = lambda item: item==field
+                bound_element_type = "radio"
+            else:             # field is a sequence
+                is_bound = lambda item: item in field
+                bound_element_type = "checkbox"
             bound_stream = bound.stream
         else:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        field_type = bound_stream.allItemFields[field_name]
+        field_type = bound_stream.fields[field_name]
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
-        obj = self.prepareObject(template_stream, user)
+        template = self.renderHelperClass(self, user)
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
-        response.write(obj.template('binding', item=binding_to_item,
-                                    fieldName=field_name,
-                                    bound=bound, boundPath=bound_path,
-                                    isBound=isBound))
+        response.write(template('binding', brick=template_stream,
+                                item=binding_to_item, fieldName=field_name,
+                                bound=bound, boundPath=bound_path,
+                                isBound=is_bound,
+                                boundElementType=bound_element_type))
 
     def do_updateBinding(self, request, response, form, objs, user):
         '''Store new binding.  The path corresponds to template stream (stream
@@ -491,25 +463,22 @@ class EditBase:
         if bound.type=='stream':
             field_name = getattr(bound, 'joinField', None)
             binding_to_item = getattr(bound, bound.virtual.paramName)
-            isBound = lambda item: binding_to_item in getattr(item, field_name)
             bound_stream = bound
         elif bound.type=='item':
             field_name = form.getfirst('field')
             binding_to_item = bound
-            isBound = lambda item: item in getattr(binding_to_item, field_name)
             bound_stream = bound.stream
         else:
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        field_type = bound_stream.allItemFields[field_name]
+        field_type = bound_stream.fields[field_name]
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
-        old_ids = map(template_stream.itemIDField.convertFromString,
-                      form.getlist('qps-old'))
-        new_ids = map(template_stream.itemIDField.convertFromString,
-                      form.getlist('qps-new'))
+        convert = template_stream.fields['id'].convertFromString
+        old_ids = map(convert, form.getlist('qps-old'))
+        new_ids = map(convert, form.getlist('qps-new'))
         if bound.type=='stream':  # direct binding
             for item_id in old_ids:
                 if item_id not in new_ids:
@@ -527,17 +496,29 @@ class EditBase:
                     setattr(item, field_name, values)
                     item.store([field_name])
         else:  # reverse binding
-            values = list(getattr(bound, field_name))
-            for item_id in old_ids:
-                if item_id not in new_ids:
-                    values = [value for value in values if value.id!=item_id]
-            for item_id in new_ids:
-                if item_id not in old_ids:
-                    item = template_stream.retrieveItem(item_id)
-                    values.append(item)
-            if values!=getattr(bound, field_name):
-                setattr(bound, field_name, values)
-                bound.store()
+            field = getattr(bound, field_name)
+            try:
+                iter(field)
+            except TypeError: # field is not a sequence
+                new_id = new_ids and new_ids[0] or None
+                value = field
+                if new_id and (not value or value.id != new_id):
+                    setattr(bound, field_name,
+                            template_stream.retrieveItem(new_id))
+                    bound.store([field_name])
+            else:             # field is a sequence
+                values = list(field)
+                for item_id in old_ids:
+                    if item_id not in new_ids:
+                        values = [value for value in values
+                                  if value.id!=item_id]
+                for item_id in new_ids:
+                    if item_id not in old_ids:
+                        item = template_stream.retrieveItem(item_id)
+                        values.append(item)
+                if values!=getattr(bound, field_name):
+                    setattr(bound, field_name, values)
+                    bound.store([field_name])
         raise self.SeeOther(
             '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % \
                             (self.prefix, template_stream.path(), bound.path(),

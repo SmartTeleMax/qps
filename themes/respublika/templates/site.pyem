@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <title>Редактура <%= brick.title %></title><%
+if brick.site.clientCharset:
+    %>
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
+%>
+<style>
+<%= template('style', brick=brick) %>
+</style>
+
+  </head>
+
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%">
+<tr valign="top">
+<!-- nav -->
+<td width="218" bgcolor="#e1e4e6">
+<%= template('inc_navigation', brick=brick) %>
+</td>
+<!-- /nav -->
+
+<!-- right -->
+<td width="100%">
+
+<script>
+function toggleTable(id) {
+    table = document.getElementById(id);
+    rows = table.tBodies[0].rows;
+
+    for (var i=1; i < rows.length; i++) {
+        e = rows.item(i);
+
+        if (e.style.display) {
+            e.style.display = '';
+        } else {
+            e.style.display = 'none';
+        }
+    }
+}
+</script>
+
+<div align="center">
+
+</div>
+
+</td>
+<!-- /right -->
+</tr>
+</table>
+</body>
+</html>

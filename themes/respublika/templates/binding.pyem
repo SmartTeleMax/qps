@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Редактура <%= brick.site.title + ': ' + getattr(item, 'title', item.id) + ': ' + brick.title %></title><%
+if brick.site.clientCharset:
+    %>
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
+%>
+<style>
+<%= template('style', brick=brick) %>
+</style>
+</head>
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%" width="100%">
+<tr valign="top">
+<td width="100%">
+<div align="center">
+
+<form action="<%= template.edit.prefix + brick.path() %>" method="POST">
+<input type="hidden" name="bound" value="<%= boundPath %>">
+<input type="hidden" name="field" value="<%= fieldName %>">
+<input type="hidden" name="page" value="<%= brick.page %>">
+
+<table border="0" bgcolor="#000000" cellspacing="0" cellpadding="0" width=100%>
+<tr><td>
+
+<table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
+<!-- header -->
+<tr><td bgcolor="#354750">
+<span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)</b><br></span>
+</td></tr>
+<!-- /header -->
+
+<%= template('inc_browse', brick=brick, uri='?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (boundPath, fieldName)) %>
+
+<tr bgcolor="#E1E4E6"><td>
+<table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6><%
+for repeat in Cook.Repeat(brick):
+    item = repeat.value
+    if repeat.isFirst:
+        %>
+<tr bgcolor="#A0AAB1"><%
+        for field_name in template.bindingIndexFields(brick):
+            field_type = brick.fields[field_name]
+            %>
+<td nowrap style="height: 2em;"><span class=t11><%= field_type.indexTitle %></span></td><%
+        %>
+<td nowrap></td>
+</tr><%
+    %>
+<tr valign="top"><%
+    for field_name in template.bindingIndexFields(brick):
+        field_type = brick.fields[field_name]
+        %>
+<td bgcolor=#F0F1F2><%= template.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
+    id_str = item.fields['id'].convertToString(item.id)
+    checked = isBound(item) and 'checked'
+    %>
+<td bgcolor=#F0F1F2><%
+    if checked:
+        %><input type="hidden" name="qps-old" value="<%= id_str %>"><%
+    %><input type="<%= boundElementType %>" name="qps-new" value="<%= id_str %>"<%
+    if checked:
+        %> checked<%
+    %>></td></tr><%
+%>
+</table>
+
+<table width="100%">
+<tr><td align="right"><input type="submit" name="qps-action:updateBinding" value="Привязать"></td></tr>
+</table>
+
+</td></tr>
+
+<%= template('inc_browse', brick=brick, uri='?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (boundPath, fieldName)) %>
+
+</table>
+</td></tr>
+
+</table>
+
+</form>
+
+</div>
+</td>
+</tr>
+</table>
+</body>
+</html>

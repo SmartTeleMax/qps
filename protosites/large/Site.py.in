@@ -1,0 +1,75 @@
+from mx.Misc.LazyModule import LazyModule
+import logging
+
+import qps, qps.qSite
+
+# auto-exec code
+
+siteRoot = '%(site_root)s'
+loglevel = logging.INFO
+
+try:
+    import _apache
+except ImportError:
+    qps.configLogger(level=loglevel)
+else:
+    handler = logging.StreamHandler(
+        open(siteRoot+'/logs/modpython.log', 'a')
+        )
+    qps.configLogger(level=loglevel, handler=handler)
+
+# site
+
+class Site(qps.qSite.Site):
+    # fields configuration
+    
+    from fieldDescriptions import fields
+    from streamDescriptions import streamDescriptions
+    from virtualStreamRules import virtualStreamRules
+    defaultItemIDField = qps.qFieldTypes.INTEGER_AUTO_ID()
+    
+    # site configuration
+
+    title = u"%(title)s"
+    host = 'localhost'
+
+    dbCharset = 'utf-8'
+    templateCharset = 'utf-8'
+    clientCharset = 'utf-8'
+
+    dbParams = {
+        'db': 'test',
+        'user': 'test',
+        'passwd': 'test'
+        }
+
+    # templates configuration
+
+    makeRoot = '%(make_dir)s'
+    makeSock = siteRoot + '/var/make.sock'
+    templateDirs = ['%(make_templates_dir)s']
+    siteMakers = ['Maker', 'StreamsMaker']
+
+    globalNamespace = qps.qSite.Site.globalNamespace
+    globalNamespace.update(
+        {'Cook': LazyModule('Cook', locals(), globals())}
+        )
+
+    def getMakerClass(self, makerClassName):
+        '''Import makerClass from Make module if short name (without dots)
+        is gived'''
+        
+        if '.' not in makerClassName:
+            makerClassName = "Make.%%s" %% makerClassName
+        makerClass = qps.qSite.Site.getMakerClass(self, makerClassName)
+        return makerClass
+
+    getWriterClass = getMakerClass
+
+    def streamFactory(self, stream_id, page=0, tag=None, **kwargs):
+        stream_id = '/'.join(
+            [x for x in stream_id.split('/') if not x.startswith('_')]
+            )
+        return qps.qSite.Site.streamFactory(self, stream_id, page=page,
+                                            tag=tag, **kwargs)
+    

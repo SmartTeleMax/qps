@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Editor interface for
+<tal:block tal:replace="brick.site.host">Host name</tal:block>:
+<tal:block tal:replace="brick.stream.title">Stream title</tal:block>:
+<tal:block tal:replace="template.isNew and 'new object' or getattr(brick, 'title', brick.id)">Item title</tal:block>
+</head>
+<body>
+
+<h1><a hreef="#" tal:attributes="href template.edit.prefix+'/'">Editor interface</a> for
+<a href="#" tal:attributes="href 'http://%s/' % brick.site.host"
+            tal:content="brick.site.title">Site name</a>:
+<a href="#" tal:attributes="href template.edit.prefix+brick.stream.path()"
+            tal:content="brick.stream.title">Stream title</a>:
+<span tal:replace="template.isNew and 'new object' or getattr(brick, 'title', brick.id)">Item title</span></h1>
+
+<strong tal:condition="fieldErrors">Warning! Document was not saved due to errors in one or more fields.</strong>
+
+<form tal:attributes="action template.edit.prefix+(template.isNew and brick.stream.path() or brick.path())" method="POST" enctype="multipart/form-data">
+
+<div tal:repeat="field_name template.allowedFields(brick)">
+<tal:block tal:replace="structure template.showField(brick, field_name)">Field content</tal:block>
+</div>
+
+<input type="submit" tal:attributes="name 'qps-action:' + (template.isNew and 'createItem' or 'updateItem'); value template.isNew and 'Create' or 'Update'">
+</form>
+
+</body>
+</html>

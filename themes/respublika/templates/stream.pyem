@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+      <title>Редактура <%= brick.site.title %>: <%= brick.title %> (<%= brick.id %>)</title><%
+if brick.site.clientCharset:
+    %>
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
+%>
+<style>
+<%= template('style', brick=brick) %>
+</style>
+   </head>
+
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%">
+<tr valign="top">
+<!-- nav -->
+<td width="218" bgcolor="#e1e4e6">
+<%= template('inc_navigation', brick=brick) %>
+</td>
+<!-- /nav -->
+
+<!-- right -->
+<td width="100%">
+
+<div align="center">
+<form action="<%= template.edit.prefix + brick.path() %>" method="POST">
+<table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
+<tr><td bgcolor="#354750">
+<span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
+</td></tr>
+
+<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
+
+<!-- новый элемент -->
+<tr bgcolor="#E1E4E6"><td align="right"><a href="<%= template.edit.prefix + brick.path() + '?qps-action:newItem=1' %>"><span class=t12b id=y1>Создть новый элемент</span></a><%
+if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
+    %>&nbsp; <span id=y1>|</span>&nbsp; <a href="<%= template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>" onclick="javascript:var new_window=window.open('<%= template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes'); return false;"><span class=t12b id=y1>Перевязать</span></a><%
+%></td></tr>
+<!-- /новый элемент -->
+
+<%
+if brick:
+    %>
+<tr bgcolor="#E1E4E6"><td>
+
+<table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6>
+<!-- fields titles -->
+    <tr bgcolor="#A0AAB1"><%
+    for field_name in template.allowedIndexFields(brick):
+        field_type = brick.indexFields[field_name]
+        %>
+        <td nowrap style="height: 2em;">
+        <span class=t11><%= field_type.indexTitle %></span>
+        </td><%
+    %>
+        <td align="center"><span class=t11b id=y1>[x]</span>
+        </td>
+    </tr>
+<!-- /field titles --><%
+    for repeat in Cook.Repeat(brick):
+        item = repeat.value
+        %>
+
+    <tr valign="top"><%
+        for field in template.allowedIndexFields(brick):
+            %>
+        <td bgcolor=#F0F1F2>
+<%= template.showFieldInIndex(item, field) %>
+        </td><%
+        %>
+        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= item.fields['id'].convertToString(item.id) %>"></center>
+        </td>
+    </tr><%
+    %>
+</table>
+
+</td></tr>
+<tr bgcolor="#E1E4E6"><td align="right"><%
+    if template.isStreamUpdatable(brick):
+        %>
+&nbsp; <input type="submit" name="qps-action:updateItems" value="Обновить"><%
+    if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
+        %>
+&nbsp; <input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
+    if'd' in template.getPermissions(brick):
+        %>&nbsp; <input type="submit" name="qps-action:deleteItems" value="Удалить"><%
+    %>
+</td></tr><%
+else:
+    %>
+<tr bgcolor="#E1E4E6"><td>
+    <span class=t11 id=db1>В базе нет элементов этого потока.</span>
+</td></tr><%
+%>
+
+<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
+
+</table>
+</form>
+</div>
+
+</td>
+<!-- /right -->
+</tr>
+</table>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.3 2004/03/16 15:56:20 ods Exp $
+# $Id: qSQL.py,v 1.8 2004/06/09 10:01:43 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -9,45 +9,34 @@ from qps import qUtils
 
 
 class SQLItem(qBase.Item):
-
     def initFieldsFromDB(self, row):
         '''Initialize item fields from DB row'''
-        field_types = self.stream.allStreamFields
+        fields = self.stream.indexFields
         for field_name, db_value in row.items():
-            if field_types.has_key(field_name):
-                value = field_types[field_name].convertFromDB(db_value,
-                                                              item=self)
+            if fields.has_key(field_name):
+                value = fields[field_name].convertFromDB(db_value, item=self)
                 setattr(self, field_name, value)
 
-    def prepareFieldsForDB(self):
+    def prepareFieldsForDB(self, fields):
         '''Reverse for initFieldsFromDB: return dictionary with current values
-        of fields suitable to store in DB'''
+        of fields suitable to store in DB, fields param is a FieldDescriptions
+        object'''
         # XXX This code would be faster in place of use
         # another solution - adding optional field_names argument
-        fields = {}
-        for field_name, field_type in self.stream.itemFields.items():
+        result = {}
+        for field_name, field_type in fields.iteritems():
             if field_type.storeControl!='never':
-                fields[field_name] = field_type.convertToDB(
+                result[field_name] = field_type.convertToDB(
                     getattr(self, field_name),
                     self)
-        return fields
-
-    def prepareJoinFieldsForDB(self):
-        fields = {}
-        for field_name, field_type in \
-                getattr(self.stream, 'joinFields', {}).items():
-            if field_type.storeControl!='never':
-                fields[field_name] = field_type.convertToDB(
-                    getattr(self, field_name),
-                    self)
-        return fields
+        return result
 
     def sqlCondition(self):
         '''Return SQL condition for this item'''
         return "%s.id=%s" % \
                (self.stream.tableName,
                 self.dbConn.convert(
-                    self.stream.itemIDField.convertToDB(self.id, self)))
+                    self.fields['id'].convertToDB(self.id, self)))
 
     def exists(self, ignoreStatus=0):
         '''Return True if item exists in DB and False otherwise'''
@@ -99,11 +88,11 @@ class SQLItem(qBase.Item):
 
     def store(self, names=None):
         '''Store data of item (new or existing) in DB'''
-        fields = self.prepareFieldsForDB()
-        join_fields = self.prepareJoinFieldsForDB()
+        fields = self.prepareFieldsForDB(self.fields.main)
+        join_fields = self.prepareFieldsForDB(self.stream.joinFields)
         # remove from fields read-only fields
         for field_name in fields.keys():
-            field_type = self.stream.allStreamFields[field_name]
+            field_type = self.indexFields[field_name]
             if field_type.storeControl=='never' or \
                     (field_type.storeControl!='always' and \
                      names is not None and field_name not in names):
@@ -111,14 +100,14 @@ class SQLItem(qBase.Item):
         tnx = self.dbConn.getTransaction()
         if not self.exists(1):
             # INSERT
-            if not (self.stream.itemIDField.omitForNew and self.id is None):
-                fields['id'] = self.stream.itemIDField.convertToDB(self.id,
-                                                                   self)
+            id_field_type = self.fields['id']
+            if not (id_field_type.omitForNew and self.id is None):
+                fields['id'] = id_field_type.convertToDB(self.id, self)
             cursor = self.dbConn.insert(self.stream.tableName, fields)
 
-            if self.stream.itemIDField.omitForNew and self.id is None:
+            if id_field_type.omitForNew and self.id is None:
                 # Auto-increment support
-                self.id = self.stream.itemIDField.convertFromDB(
+                self.id = id_field_type.convertFromDB(
                         self.dbConn.lastInsertID(self.stream.tableName, 'id'),
                         self)
             self._exists = 1
@@ -128,10 +117,10 @@ class SQLItem(qBase.Item):
                                         self.sqlCondition())
         if join_fields:
             param_value = getattr(self.stream, self.stream.virtual.paramName)
-            join_field_type = self.stream.allItemFields[self.stream.joinField]
+            join_field_type = self.fields[self.stream.joinField]
             param_db_value = join_field_type.itemField.convertToDB(param_value,
                                                                    self)
-            id_db_value = self.stream.itemIDField.convertToDB(self.id, self)
+            id_db_value = self.fields['id'].convertToDB(self.id, self)
             condition = '%s=%s AND %s=%s' % (
                                     join_field_type.idFieldName,
                                     self.dbConn.convert(id_db_value),
@@ -140,7 +129,10 @@ class SQLItem(qBase.Item):
             self.dbConn.update(self.stream.joinTable, join_fields, condition)
         self.storeExtFields(names)
         tnx.close()
-
+        # XXX should handler be called insude transaction?
+        # XXX May be just call inherited store?
+        self.stream.storeHandler.handleItemStore(self, names)
+        
     def delete(self):
         '''Delete item from DB'''
         self.stream.deleteItems([self.id])
@@ -148,7 +140,7 @@ class SQLItem(qBase.Item):
 
 class SQLStream(qBase.Stream):
     itemClass = SQLItem
-
+    
     def calculateLimits(self):
         '''Return limits for items retrieval (offset and number)'''
         if self.indexNum>0 and self.page>0:
@@ -167,7 +159,7 @@ class SQLStream(qBase.Stream):
 
     def createItemFromDB(self, db_row):
         # For internal use: create item from dictionary of fields
-        id = self.itemIDField.convertFromDB(db_row['id'], self)
+        id = self.fields['id'].convertFromDB(db_row['id'], self)
         del db_row['id']
         item = self.itemClass(self.site, self, id)
         item.initFieldsFromDB(db_row)
@@ -179,14 +171,14 @@ class SQLStream(qBase.Stream):
         '''Return parts of query to retrieve stream items. Can be overriden in
         child class.'''
         table = self.tableName
-        fields = ["%s.%s" % (table, f) for f in ['id']+self.itemFields.keys()]
+        fields = ["%s.%s" % (table, f) for f in self.fields.main.keys()]
         condition = self.condition
         group = self.group
         if hasattr(self, 'joinTemplate'):
             table = qUtils.interpolateString(self.joinTemplate, {'brick': self})
             condition = self.dbConn.join([condition,
                                           getattr(self, 'joinCondition', '')])
-            if hasattr(self, 'joinFields'):
+            if self.joinFields:
                 fields += ["%s.%s" % (self.joinTable, f) \
                            for f in self.joinFields.keys()]
         return table, fields, condition, self.group
@@ -258,6 +250,7 @@ class SQLStream(qBase.Stream):
                     self.dbConn.IN('id', item_ids))
                 number_of_deleted = cursor.rowcount
             tnx.close()
+            self.storeHandler.handleItemsDelete(self, item_ids)
         return number_of_deleted
 
 # vim: ts=8 sts=4 sw=4 ai et

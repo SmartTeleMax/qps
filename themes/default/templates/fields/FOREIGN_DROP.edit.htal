@@ -1,0 +1,12 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:
+<select name="" tal:attributes="name name; size brick.layout.get('size')">
+<option tal:condition="brick.extraOption"
+	tal:content="structure brick.extraOption" value="">Extra option label</option>
+<option tal:repeat="item stream"
+	tal:attributes="value item.fields['id'].convertToString(item.id); selected value and item.id==value.id and 'selected' or None"
+	tal:content="structure brick.getLabel(item)">Option label</option>
+<option tal:condition="value and value not in stream"
+	tal:attributes="value value.fields['id'].convertToString(value.id)" selected="selected"
+	tal:content="structure brick.getLabel(value)">Option label</option>
+</select>
+<a tal:condition="not isNew and stream.indexNum!=0 and len(stream)>=stream.indexNum" tal:attributes="href '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (edPrefix, stream.path(), item.path(), name)">more &gt;&gt;</a>

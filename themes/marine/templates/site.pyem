@@ -1,0 +1,13 @@
+<%= template('inc_top', brick=brick) %>
+
+<h1>Editor interface of <q><%= brick.site.title %></q></h1>
+
+<table class="centermenu">
+<%
+for stream in template.allowedStreams:
+    if not getattr(stream, 'showInMenu', 0):
+        %><tr><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td></tr>
+<%
+%></table>
+
+<%= template('inc_bottom', brick=brick) %>

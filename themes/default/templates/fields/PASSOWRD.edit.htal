@@ -1,0 +1,3 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:
+<input type="password" value="" tal:attributes="name name; size brick.layout.get('size')"/><br/>
+<input type="password" value="" tal:attributes="name name+'-confirm'"; size brick.layout.get('size')"/>

@@ -1,0 +1,23 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%">
+<%
+additional_attrs = ''
+if brick.layout.has_key('size'):
+    additional_attrs += ' size="%s"' % brick.layout['size']
+%><select name="<%= name %>"<%= additional_attrs %>>
+<%
+if brick.extraOption:
+    %><option value=""><%= brick.extraOption %></option>
+<%
+for cur_item in stream:
+    %><option value="<%= quoteHTML(cur_item.fields['id'].convertToString(cur_item.id)) %>"<%= value and cur_item.id==value.id and ' selected' or '' %>><%= brick.getLabel(cur_item) %></option>
+<%
+if value and value not in stream:
+    %><option value="<%= quoteHTML(value.fields['id'].convertToString(value.id)) %>" selected><%= brick.getLabel(value) %></option>
+<%
+%></select>
+<%
+if not isNew and stream.indexNum!=0 and len(stream)>=stream.indexNum:
+    %><a href="<%= quoteHTML('%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (edPrefix, stream.path(), item.path(), name)) %>">more &gt;&gt;</a>
+<%
+%></td>    

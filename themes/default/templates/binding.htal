@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Editor interface for
+<tal:block tal:replace="brick.site.host">Host name</tal:block>:
+<tal:block tal:replace="bound.title">Item title</tal:block> &lt;-&gt;
+<tal:block tal:replace="brick.title">Field stream title</tal:block>
+
+</head>
+<body>
+
+<h1><a href="#" tal:attributes="href template.edit.prefix+'/'">Editor interface</a> for
+<a href="#" tal:attributes="href 'http://%s/' % brick.site.host"
+            tal:content="brick.site.title">Site name</a>:
+Rebinding
+<a href="#" tal:attributes="href template.edit.prefix+brick.path()"
+            tal:content="brick.title">Field stream title</a> &lt;-&gt;
+<a href="#" tal:attributes="href template.edit.prefix+boundPath"
+            tal:content="bound.title">Item title</a></h1>
+
+<form action="" method="POST"
+      tal:attributes="action template.edit.prefix+brick.path()">
+<div tal:condition="brick.indexNum!=0">
+<a tal:omit-tag="brick.page==1" href="#"
+   tal:attributes="href '?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % (boundPath, fieldName, brick.page-1)">
+&lt;&lt;previous page</a> |
+page <span tal:replace="brick.page">No</span> |
+<a tal:omit-tag="len(brick)<brick.indexNum" href="#"
+   tal:attributes="href '?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % (boundPath, fieldName, brick.page+1)">
+next page &gt;&gt;</a>
+</div>
+<input type="hidden" name="bound" tal:attributes="value boundPath">
+<input type="hidden" name="field" tal:attributes="value fieldName">
+<input type="hidden" name="page" tal:attributes="value brick.page">
+
+<tal:block tal:condition="brick">
+<table>
+
+<tr>
+<tal:block tal:repeat="field_name template.bindingIndexFields(brick)">
+<th tal:define="field_type brick.allItemFields[field_name]"
+    tal:content="field_type.indexTitle">Field title</th>
+</tal:block>
+<th>X</th>
+</tr>
+
+<tr tal:repeat="item brick">
+<td tal:repeat="field_name template.bindingIndexFields(brick)"
+    tal:content="structure template.showFieldInIndex(item, field_name, allow_edit=0)">
+Field value</td>
+<td tal:define="id_str item.fields['id'].convertToString(item.id); checked isBound(item) and 'checked'">
+<input type="hidden" name="qps-old" tal:condition="checked"
+       tal:attributes="value id_str">
+<input name="qps-new"
+       tal:attributes="type boundElementType; value id_str; checked checked">
+</td>
+</tr>
+
+</table>
+
+<input type="submit" name="qps-action:updateBinding" value="Update binding"/>
+
+</tal:block>
+
+<div tal:condition="not brick">The stream is empty</div>
+
+</form>
+
+</body>
+</html>

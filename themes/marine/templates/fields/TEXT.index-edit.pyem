@@ -1,0 +1,6 @@
+<%
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
+if value:
+    %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= quoteHTML(value) %>"><%
+%>
+<textarea name="qps-new:<%= field_suffix %>"  cols="<%= min(brick.layout.get('cols', 30), 30) %>" rows="<%= min(brick.layout.get('rows', 5), 5) %>"><%= quoteHTML('%s' % (value,)) %></textarea></td>

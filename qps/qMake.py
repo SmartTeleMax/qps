@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.57 2004/03/16 15:48:21 ods Exp $
+# $Id: qMake.py,v 1.7 2004/06/04 09:40:29 corva Exp $
 
 '''Defines common maker classes'''
 
@@ -28,7 +28,22 @@ class AtomicWriteFile(file):
     def close(self):
         file.close(self)
         logger.info('Writing %r', self._real_path)
-        os.rename(self._tmp_path, self._real_path)
+        try:
+            os.rename(self._tmp_path, self._real_path)
+        except OSError, exc:
+            import errno
+            # Windows lacks atomic rename :(
+            if exc.errno==errno.EEXIST:
+                os.remove(self._real_path)
+                os.rename(self._tmp_path, self._real_path)
+            else:
+                raise
+
+    if not __debug__:
+        def __del__(self):
+            if not self.closed:
+                file.close(self)
+                os.remove(self._tmp_path)
 
 
 class Writer:
@@ -94,12 +109,14 @@ class BaseMaker:
 
 class Maker(BaseMaker):
 
-    proxyClass = qWebUtils.MakedObject
+    proxyClass = staticmethod(lambda x: x)
+    renderHelperClass = qWebUtils.RenderHelper
 
     def __init__(self, site, writer=None, template_getter=None, **params):
         BaseMaker.__init__(self, site, **params)
         self.writer = site.getWriter(writer)
-        self.template_getter = site.getTemplateGetter(template_getter)
+        self.getTemplate = site.getTemplateGetter(template_getter)
+        self.globalNamespace = site.globalNamespace
 
     def path(self, brick):
         return brick.path()
@@ -118,17 +135,21 @@ class Maker(BaseMaker):
         return '.'.join([streamCat, brick.type])
 
     def prepareObject(self, brick):
-        return self.proxyClass(brick, template_getter=self.template_getter,
-                               global_namespace=brick.site.globalNamespace)
+        return self.proxyClass(brick)
 
     def do_make(self, brick):
         obj = self.prepareObject(brick)
-        data = obj.template(self.getTemplateName(brick))
+        template = self.renderHelperClass(self)
+
+        namespace = self.globalNamespace.copy()
+        namespace['template'] = template
+        template = self.getTemplate(self.getTemplateName(brick))
+
         fp = self.writer.getFP(self.path(brick))
-        fp.write(data)
+        template.interpret(fp, namespace, {'brick': obj, '__object__': obj})
         fp.close()
 
-
+       
 class StreamsMaker(BaseMaker):
 
     def process(self, site):
@@ -180,18 +201,18 @@ class VirtualsMaker(BaseMaker):
 class ImagesMaker(Maker):
 
     def do_delete(self, item):
-        from FieldTypes import IMAGE
+        from qFieldTypes import IMAGE
         from glob import glob
-        for field_name, field_type in item.stream.itemExtFields.items():
+        for field_name, field_type in item.fields.external.iteritems():
             if isinstance(field_type, IMAGE):
                 image = getattr(item, field_name)
                 for old_path in glob(image.pattern+'.*'):
                     os.remove(old_path)
 
     def do_make(self, item):
-        from FieldTypes import IMAGE
+        from qFieldTypes import IMAGE
         from glob import glob
-        for field_name, field_type in item.stream.itemExtFields.items():
+        for field_name, field_type in item.fields.external.iteritems():
             if isinstance(field_type, IMAGE):
                 image = getattr(item, field_name)
                 if image:

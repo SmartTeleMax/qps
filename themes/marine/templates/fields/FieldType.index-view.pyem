@@ -1,0 +1,6 @@
+<%
+if brick.linkThrough:
+    %><a href="<%= '%s%s' % (edPrefix, item.path())  %>"><%
+%><%= quoteHTML('%s' % (value,)) %><%
+if brick.linkThrough:
+    %></a>

@@ -1,0 +1,6 @@
+<%
+if value:
+    %><%= brick.getLabel(value) %><%
+else:
+    %><%= brick.extraOption %><%
+%>

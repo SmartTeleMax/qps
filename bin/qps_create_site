@@ -1,0 +1,110 @@
+#!/usr/bin/python
+# $Id: qps_create_site,v 1.12 2004/04/22 11:23:36 corva Exp $
+
+import sys, os, shutil
+sys.path.append('..')  # let it work without installation
+from qps.qUtils import interpolateString
+
+python_executable = os.path.normpath(sys.executable)
+if os.name in ('win32', 'nt'):
+    python_cgi_executable = python_executable+' -u'
+else:
+    python_cgi_executable = python_executable
+
+def mkdir(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
+
+class SiteProtos:
+
+    def __init__(self, protos_dir):
+        self.protos_dir = protos_dir
+
+    def list(self):
+        for path in os.listdir(self.protos_dir):
+            if os.path.isfile(os.path.join(self.protos_dir, path, 'MANIFEST')):
+                yield os.path.basename(path)
+
+    def copy(self, proto, code_dir, vars, force=0):
+        proto_dir = os.path.join(protos_dir, proto)
+        manifest = []
+        fp = open(os.path.join(proto_dir, 'MANIFEST'))
+        for line in fp:
+            if not line.startswith('#'):
+                dst_tmpl, src = line.split()
+                dst = os.path.join(code_dir, dst_tmpl)
+                src = os.path.join(protos_dir, src)
+                if os.path.exists(dst):
+                    if not (force and os.path.isfile(dst)):
+                        raise RuntimeError('File %r already exists' % dst)
+                print 'Installing %r' % (dst_tmpl)
+                if os.path.isfile(src):
+                    self.copyFile(src, dst)
+                else:
+                    self.copyTemplate(src+'.in', dst, vars)
+
+    def copyFile(self, src, dst):
+        mkdir(os.path.dirname(dst))
+        shutil.copy(src, dst)
+
+    def copyTemplate(self, src, dst, vars):
+        mkdir(os.path.dirname(dst))
+        fp = open(src, 'rb')
+        body = fp.read()
+        fp.close()
+        body = interpolateString(body, vars)
+        fp = open(dst, 'wb')
+        fp.write(body)
+        fp.close()
+        shutil.copystat(src, dst)
+
+from optparse import OptionParser
+parser = OptionParser(usage='%prog [options] site_root')
+parser.add_option('-l', '--list', action='store_true', dest='list',
+                  help='list available site prototypes')
+parser.add_option('-f', '--force', action='store_true', dest='force',
+                  help='overwrite existing files')
+parser.add_option('-p', '--proto', dest='proto', default='tiny', # XXX
+                  help='choose site prototype')
+(options, args) = parser.parse_args()
+
+# look for protosites directory
+prefix = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+for share_dir in [prefix, os.path.join(prefix, 'share', 'QPS')]:
+    protos_dir = os.path.join(share_dir, 'protosites')
+    if os.path.isdir(protos_dir):
+        break
+else:
+    sys.exit('"protosites" directory not found. Make sure QPS is installed '\
+             'correctly')
+edit_templates_dir = os.path.join(share_dir, 'themes', 'default', 'templates')
+field_templates_dir = os.path.join(edit_templates_dir, 'fields')
+
+protos = SiteProtos(protos_dir)
+protos_list = protos.list()
+
+if options.list:
+    for proto in protos_list:
+        print proto
+    sys.exit()
+
+try:
+    site_root, = args
+except ValueError:
+    parser.error('incorrect number of arguments')
+
+if options.proto not in protos_list:
+    sys.exit('Site prototype %r not found' % options.proto)
+
+site_root = os.path.normpath(os.path.abspath(site_root))
+make_dir = os.path.normpath(site_root+'/www')
+make_templates_dir = os.path.normpath(site_root+'/templates')
+code_dir = os.path.normpath(site_root+'/code')
+
+map(mkdir, (site_root, make_dir, make_templates_dir, code_dir))
+title = 'Sample site created from %r prototype' % options.proto
+
+try:
+    protos.copy(options.proto, code_dir, vars(), options.force)
+except Exception, exc:
+    sys.exit(exc)

@@ -1,0 +1,2 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:
+<span tal:condition="value" tal:replace="structure brick.getLabel(value)">Option label</span><span tal:condition="not value" tal:replace="structure brick.extraOption">Extra option label</span>

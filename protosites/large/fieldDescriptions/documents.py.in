@@ -1,0 +1,28 @@
+import FieldTypes as FT
+
+fields = FT.FieldDescriptions(
+    [('title', FT.STRING(title=u"Title",
+                         indexPermissions=[('all', 'r')],
+                         showInBinding=1,
+                         showInFilterBar=1,
+                         searchable=1)),
+     ('date', FT.DATETIME(title=u"Date")),
+     ('lead', FT.TEXT(title=u"Lead", searchable=1)),
+     ('body', FT.TEXT(title=u"Text", searchable=1)),
+     ('image_preview', FT.RESTRICTED_IMAGE(
+                           title=u'Image preview',
+                           editRoot="%(make_dir)s",
+                           pathTemplate="/images/documents/%%(brick.splitId())s/preview",
+                           maxWidth=70
+                           )),
+     ('image', FT.RESTRICTED_IMAGE(
+                   title=u'Image',
+                   editRoot="%(make_dir)s",
+                   pathTemplate="/images/documents/%%(brick.splitId())s/image",
+                   maxWidth=200,
+                   )),
+     ('rubric', FT.FOREIGN_DROP(title=u"Rubric", stream="rubrics",
+                                permissions=[('all', 'rw')], handleStore=0)),
+     ('num', FT.ORDER_NUM(indexPermissions=[('all', 'rw')])),
+
+     ])

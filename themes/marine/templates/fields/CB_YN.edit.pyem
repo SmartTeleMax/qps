@@ -1,0 +1,2 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td><input type="checkbox" name="<%= name %>" value="y"<%= value and ' checked' or '' %>></td>

@@ -1,12 +1,11 @@
-# $Id: qSite.py,v 1.153 2004/03/16 15:48:21 ods Exp $
+# $Id: qSite.py,v 1.6 2004/06/09 07:17:41 ods Exp $
 
 '''Classes for site as collection of streams'''
 
 import types, sys, os, logging, weakref
 logger = logging.getLogger(__name__)
 
-import qBricks, qFieldTypes
-from qUtils import CachedAttribute, importObject, DictRecord
+import qBricks, qFieldTypes, qUtils
 
 
 class StreamNotFoundError(Exception):
@@ -20,28 +19,28 @@ class Site(object):
     '''Base class for site'''
 
     type = 'site'
-    forceUpdate = 0
     dbParams = {}
     streamDescriptions = None # Must be defined in child
     virtualStreamRules = []
-    defaultStreamConf = DictRecord(
+    defaultStreamConf = qUtils.DictRecord(
         condition='', order='', group='', indexNum=0,
         brickDefaults={}, permissions=[], streamMakers=[], itemMakers=[],
         # itemMakeAction(item) -> {'make'|'delete'|None}
         # switches the behavior of maker.process()
         itemMakeAction=lambda i: 'make')
-    defaultItemIDField = qFieldTypes.STRING(title='ID')
-    itemFieldsOrder = itemFields = itemExtFields = itemIDFields = {}
+    fields = qFieldTypes.FieldDescriptions([])
+
     title = host = None
     transmitTags = {'edit'  : 'edit',
                     'delete': 'all'}
 
-    def globalNamespace(self):
-        import cgi, urllib
-        return {'quoteHTML'     : lambda s: cgi.escape(s, 1),
-                'quoteFormField': urllib.quote_plus,
-                'quoteURLPath'  : urllib.quote}
-    globalNamespace = CachedAttribute(globalNamespace)
+    def globalNamespace(cls):
+        from PPA.Template import Cook
+        return {'quoteHTML'     : Cook.quoteHTML,
+                'quoteFormField': Cook.quoteFormField,
+                'quoteURLPath'  : Cook.quoteURLPath,
+                'Cook'          : Cook}
+    globalNamespace = qUtils.CachedClassAttribute(globalNamespace)
     
     templateDirs = []
     makeRoot = ''
@@ -86,7 +85,7 @@ class Site(object):
         # We need this dispatch method to hide magic with CachedAttribute from
         # user.
         return self.createDBConnection()
-    dbConn = CachedAttribute(dbConn)
+    dbConn = qUtils.CachedAttribute(dbConn)
 
     maxAliasDepth = 5
 
@@ -126,10 +125,10 @@ class Site(object):
         kwargs['tag'] = tag
 
         # apply tagParams from all configuration parts
-        result_conf = DictRecord()
+        result_conf = qUtils.DictRecord()
         for dict in self.defaultStreamConf, stream_conf, params, kwargs:
             tag_params = dict.get('tagParams', {}).get(tag, default_tag_params)
-            result_conf = DictRecord(result_conf, dict, tag_params)
+            result_conf = qUtils.DictRecord(result_conf, dict, tag_params)
 
         streamClassName = result_conf.streamClass
         if streamClassName:
@@ -196,17 +195,17 @@ class Site(object):
     def getStreamClass(self, streamClassName):
         '''Return class of stream with name streamClassName.  Name must be a
         valid attribute of site or in form <ModuleName>.<ClassName>'''
-        return importObject(streamClassName, self)
+        return qUtils.importObject(streamClassName, self)
 
     def getMakerClass(self, makerClassName):
         '''Return class of maker with name makerClassName.  Name must be a
         valid attribute of site or in form <ModuleName>.<ClassName>'''
-        return importObject(makerClassName, self)
+        return qUtils.importObject(makerClassName, self)
 
     def getWriterClass(self, writerClassName):
         '''Return class of maker with name writerClassName.  Name must be a
         valid attribute of site or in form <ModuleName>.<ClassName>'''
-        return importObject(writerClassName, self)
+        return qUtils.importObject(writerClassName, self)
 
     def getMaker(self, maker_desc, maker_params={}):
         if type(maker_desc) is str:

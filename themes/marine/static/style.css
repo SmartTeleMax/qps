@@ -1,0 +1,160 @@
+body {
+  background-color: #F4FAFF;
+  margin: 0;
+  padding: 0.3em;
+}
+
+form {
+  margin: 0;
+}
+
+img {
+  border: none;
+}
+
+table {
+  border: none;
+  border-spacing: 0;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+td {
+  padding: 0.3em;
+}
+
+table.topmenu tr td {
+  border: 1px solid #205F8A;
+  padding: 0.2em;
+  background-color: #FFFFFF;
+  color: #205F8A;
+  text-align: center;
+  font: bold 0.9em Tahoma, Arial, Helvetica, sans-serif;
+}
+
+.sitetitle {
+  color: #205F8A;
+  font: bold 1em Tahoma, Arial, Helvetica, sans-serif;
+}
+
+table.topmenu tr td a, .sitetitle a {
+  color: #205F8A;
+  text-decoration: none;
+}
+
+table.topmenu tr td a:hover, .sitetitle a:hover {
+  color: #CC0000;
+  text-decoration: underline;
+}
+
+table.centermenu tr td {
+  border: 1px solid #666666;
+  padding: 0.5em;
+  background-color: #FFFFFF;
+  text-align: left;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  color: #AA0000;
+}
+
+table.centermenu tr td a {
+  text-decoration: none;
+  color: #000000;
+}
+
+table.centermenu tr td a:hover {
+  text-decoration: underline;
+  color: #AA0000;
+}
+
+table.pages tr td {
+  font: bold 0.8em Tahoma, Arial, Helvetica, sans-serif;
+  padding: 0.3em;
+}
+
+table.pages tr td a {
+  color: #205F8A;
+}
+
+table.pages tr td a:hover {
+  color:#CC0000;
+}
+
+h1 {
+  font: bold 1em Tahoma, Arial, Helvetica, sans-serif;
+  border: 1px solid #205F8A;
+  background-color: #FFFFFF;
+}
+
+.actionlinks, .actionlinks a {
+  text-align: left;
+  font: bold 0.8em Tahoma, Helvetica, Arial, sans-serif;
+  color: #003366;
+  text-decoration: none;
+}
+
+.actionlinks a:hover {
+  text-decoration: underline;
+  color: #CC0000;
+}
+
+table.data {
+  border: 1px solid #4680A8;
+  text-align: left;
+}
+
+thead tr th {
+  background-color: #4680A8;
+  font: bold 0.8em Tahoma, Arial,  Helvetica, sans-serif;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+tr.odd {
+  background-color: #FFFFFF;
+}
+
+tr.even {
+  background-color: #F2F2F8;
+}
+
+table.data tbody tr td a {
+  color: #000000;
+  text-decoration: underline;
+}
+
+table.data tbody tr td a:hover {
+  color: #AA0000;
+}
+
+.actionbuttons {
+  text-align: right;
+}
+
+.actionbuttons * {
+  margin: 1em;
+}
+
+.errornotice {
+  background-color: #FF3333;
+  color: #FFFFFF;
+  font-weight: bold;
+  border: 1px solid #4680A8;
+  margin: 0 0 0.5em 0;
+  padding: 0.3em;
+}
+
+tr.errormessage {
+  background-color: #FF3333;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+
+tr.field {
+  border-bottom: 1px solid #4680A8;
+  background-color: #FFFFFF;
+}
+
+tr.field td.name {
+  white-space: nowrap;
+}

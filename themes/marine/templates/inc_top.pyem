@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Editor interface of <%= brick.site.title %></title>
+<%
+styleSheetURL = getattr(template.edit, 'styleSheetURL', None)
+if styleSheetURL:
+    %><link rel="stylesheet" type="text/css" href="<%= quoteHTML(styleSheetURL) %>"><%
+%>
+</head>
+<body>
+<table width="100%">
+<tr>
+<td align="left" class="sitetitle">
+<a href="<%= template.edit.prefix+'/' %>"><%
+logoURL = getattr(template.edit, 'logoURL', None)
+if logoURL:
+    %><img src="<%= quoteHTML(logoURL) %>" alt="Editor interface of &quot;<%= brick.site.title %>&quot;"><%
+else:
+    %>Editor interface of <q><%= brick.site.title %></q><%
+%></a>
+</td>
+<td align="right">
+<table class="topmenu"><tr>
+<%
+for stream in template.allowedStreams:
+    if getattr(stream, 'showInMenu', 0):
+        %><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td><%
+%>
+</tr></table>
+</td></tr>
+<tr><td colspan="2" align="center">
+<!-- end of inc_top -->

@@ -1,0 +1,7 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%"><%
+if value:
+    %><%= brick.getLabel(value) %><%
+else:
+    %><%= brick.extraOption %><%
+%></td>

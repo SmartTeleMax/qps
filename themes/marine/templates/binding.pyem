@@ -1,0 +1,51 @@
+<%= template('inc_top', brick=brick) %>
+
+<h1><%= brick.site.title %> :: <%= brick.title %> &lt;-&gt; <%= bound.title %></h1>
+
+<form action="<%= quoteHTML(template.edit.prefix+brick.path()) %>" method="POST">
+<input type="hidden" name="bound" value="<%= quoteHTML(boundPath) %>">
+<input type="hidden" name="field" value="<%= quoteHTML(fieldName) %>">
+<input type="hidden" name="page" value="<%= brick.page %>">
+
+<%= template('inc_pages', brick=brick, query_prefix='qps-action%%3AshowBinding=1&bound=%s&field=%s&' % (boundPath, fieldName)) %>
+
+<table width="100%" class="data">
+
+<thead><tr>
+<%
+for field_name in template.bindingIndexFields(brick):
+    %><th><%= brick.indexFields[field_name].indexTitle %></th><%
+%><th>[X]</th>
+</tr></thead>
+
+<tbody>
+<%
+for it in Cook.Repeat(brick):
+    item = it.value
+    %>
+<tr class="<%= it.alter('odd', 'even') %>"><%
+    for field_name in template.bindingIndexFields(brick):
+        %>
+<td><%= template.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
+    id_str = item.fields['id'].convertToString(item.id)
+    %>
+<td><%
+    if isBound(item):
+        %>
+<input type="hidden" name="qps-old" value="<%= quoteHTML(id_str) %>"><%
+    %><input type="<%= boundElementType %>" name="qps-new" value="<%= quoteHTML(id_str) %>"<%= isBound(item) and ' checked' or '' %>></td><%
+    %>
+</tr>
+<%
+%>
+</tbody>
+
+</table>
+
+<%= template('inc_pages', brick=brick, query_prefix='qps-action%%3AshowBinding=1&bound=%s&field=%s&' % (boundPath, fieldName)) %>
+
+<div class="actionbuttons"><input type="submit" name="qps-action:updateBinding" value="Update binding"></div>
+
+</form>
+
+<%= template('inc_bottom', brick=brick) %>
