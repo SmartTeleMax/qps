@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.44 2005/01/26 11:33:14 corva Exp $
+# $Id: qFieldTypes.py,v 1.45 2005/02/08 10:27:23 ods Exp $
 
 '''Classes for common field types'''
 
@@ -69,7 +69,7 @@ class FieldType(object):
         user    - login of user, requested this operation'''
         value = getattr(item, name)
         if value is None:
-            value = self.convertToForm(self.default)
+            value = self.convertToForm(self.getDefault(item))
         else:
             value = self.convertToForm(value)
         namespace = global_namespace.copy()
@@ -324,6 +324,15 @@ class DATETIME(FieldType):
                                                {'brick': self})
             raise self.InvalidFieldContent(message)
 
+
+class AUTO_TS(DATETIME):
+    permissions = []
+    storeControl = "always"
+    allowNull = True
+
+    def convertToDB(self, value, item):
+        return self.getDefault(item)
+    
 
 class TEXT(STRING):
     layout = _LayoutDict({'cols': 60, 'rows': 10, 'wrap': 'virtual',
@@ -785,15 +794,17 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
                 pass
         if self.allowUrl:
             try:
-                url = form[name+'-url'].value
-                referer = '/'.join(url.split('/')[:-1])+'/'
-            
-                import urllib2
-                req = urllib2.Request(url=url)
-                req.add_header('Referer', referer)
-                sources.append(urllib2.urlopen(req))
-            except (IOError, KeyError, AttributeError, ValueError):
+                url = form.getfirst(name+'-url')
+                if url:
+                    referer = '/'.join(url.split('/')[:-1])+'/'
+                    import urllib2
+                    req = urllib2.Request(url=url)
+                    req.add_header('Referer', referer)
+                    sources.append(urllib2.urlopen(req))
+            except ValueError:
                 pass
+            except IOError, why:
+                raise self.InvalidFieldContent(why)
 
         image = self._Image(self, item)
         for source in sources:
