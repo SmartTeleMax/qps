@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.3 2004/04/07 13:13:30 ods Exp $
+# $Id: qEdit.py,v 1.4 2004/04/07 14:08:08 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -119,10 +119,11 @@ class MakedEditObject(qWebUtils.MakedObject):
         stream = obj
         item_fields = stream.allItemFields
         itemFieldsOrder = []
-        for field_name in stream.itemFieldsOrder:
+        for field_name in ['id']+stream.itemFieldsOrder:
             field_type = item_fields[field_name]
             if field_type.showInBinding and \
-                    self.edUser.checkPermission('r', field_type.permissions):
+                    self.edUser.checkPermission('r',
+                                                field_type.indexPermissions):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
     bindingIndexFields = qUtils.CachedAttribute(getBindingIndexFields)
