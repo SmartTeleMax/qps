@@ -65,7 +65,7 @@ if brick.stream.page>1:
 </td></tr><%
 for field in template.allowedFields(brick):
     %>
-<tr bgcolor="#F0F1F2"><td><%
+<tr bgcolor="#F0F1F2"><td id="field-<%= field %>"><%
     if fieldErrors and fieldErrors.has_key(field):
         %><span class="t11b" id="y1"><%= fieldErrors[field] %></span><br><span class="s3">&nbsp;</span><br><%
     %>
