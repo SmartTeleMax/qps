@@ -1,4 +1,4 @@
-# $Id: streamDescriptions.py,v 1.5 2004/06/09 10:18:15 ods Exp $
+# $Id: streamDescriptions.py,v 1.6 2004/06/18 07:45:19 corva Exp $
 from qps.qUtils import DictRecord
 from qps.qVirtual import VirtualRule
 
@@ -23,7 +23,7 @@ streamDescriptions = {
         condition='',  # raw SQL condition to place into WHERE clause
         order='id',
         indexNum=10,   # number of items on page
-        streamCat='docs',
+        templateCat='docs',
         streamClass='qps.qBricks.qSQL.SQLStream',
         permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
 

@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.7 2004/06/04 09:40:29 corva Exp $
+# $Id: qMake.py,v 1.8 2004/06/09 07:17:41 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -129,10 +129,10 @@ class Maker(BaseMaker):
         if brick.type=='site':
             return brick.type
         if brick.type=='item':
-            streamCat = brick.stream.streamCat
+            templateCat = brick.stream.templateCat
         else:
-            streamCat = brick.streamCat
-        return '.'.join([streamCat, brick.type])
+            templateCat = brick.templateCat
+        return '.'.join([templateCat, brick.type])
 
     def prepareObject(self, brick):
         return self.proxyClass(brick)

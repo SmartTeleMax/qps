@@ -13,7 +13,7 @@ streamDescriptions = {
     'security_users': DictRecord(
         title=u"Security: users",
         tableName="security_users",
-        streamCat="security_users",
+        templateCat="security_users",
         streamClass="Content.SecurityUsers.SecurityUsers",
         permissions=[('wheel', perm_all)],
         ),
@@ -21,7 +21,7 @@ streamDescriptions = {
     'security_groups': DictRecord(
         title=u"Security: groups",
         tableName="security_groups",
-        streamCat="security_groups",
+        templateCat="security_groups",
         streamClass="Content.Stream",
         permissions=[('wheel', perm_all)],
         ),
@@ -31,14 +31,14 @@ streamDescriptions = {
         tableName="documents",
         order="date DESC",
         indexNum=25,
-        streamCat="documents",
+        templateCat="documents",
         streamClass="Content.Stream",
         ),
     
     'rubrics': DictRecord(
         title=u"Rubrics",
         tableName="rubrics",
-        streamCat="rubrics",
+        templateCat="rubrics",
         streamClass="Content.Stream",
         permissions=[('docs', perm_all)],
         streamMakers=['ItemsMaker'],
