@@ -1,0 +1,25 @@
+<%= template('inc_top', brick=brick) %>
+
+<h1>Editor interface of <q><%= brick.site.title %></q></h1>
+
+<form action="<%= template.edit.prefix+path %>" method="POST">
+<table class="loginmenu">
+<tr>
+<td>Login:</td>
+<td><input type="text" name="login"></td>
+</tr>
+<tr>
+<td>Password:</td>
+<td><input type="password" name="passwd"></td>
+</tr>
+<tr>
+<td>Remember me:</td>
+<td><input type=checkbox name="perm_login" value="y" checked="checked"></td>
+</tr>
+<tr>
+<td colspan="2"><input type="submit" value="Login"></td>
+</tr>
+</table>
+</form>
+
+<%= template('inc_bottom', brick=brick) %>
