@@ -2,26 +2,27 @@
 <span class="s3">&nbsp;</span><br>
 <div style="border: 1px solid #A0AAB1; padding: 10px;">
 <%
-for value_item in Cook.Repeat(not stream.indexNum and stream or value):
-    if value_item.isFirst:
+for repeat in Cook.Repeat(not stream.indexNum and stream or value):
+    valueitem = repeat.value
+    if repeat.isFirst:
         %><table border=0 cellspacing=1 cellpadding=0><%
-    if value_item.isEven:
+    if repeat.isEven:
         %><tr><%
     %>
-<td><input type="checkbox" name="<%= name %>" value="<%= value_item.fields['id'].convertToString(value_item.value.id) %>"<%
-    if value_item.value in value:
+<td><input type="checkbox" name="<%= name %>" value="<%= valueitem.fields['id'].convertToString(valueitem.id) %>"<%
+    if valueitem in value:
         %> checked<%
     %>></td>
-<td><span class=t11 id=db1><%= brick.getLabel(value_item.value) %></span></td>
+<td><span class=t11 id=db1><%= brick.getLabel(valueitem) %></span></td>
 <%
-    if value_item.isEven:
+    if repeat.isEven:
         %><td <%
-        if value_item.isLast:
+        if repeat.isLast:
             %>colspan="3"<%
         %>> &nbsp; &nbsp; &nbsp; </td><%
-    if value_item.isOdd or value_item.isLast:
+    if repeat.isOdd or repeat.isLast:
         %></tr><%
-    if value_item.isLast:
+    if repeat.isLast:
         %></table><%
 %>
 </div>
