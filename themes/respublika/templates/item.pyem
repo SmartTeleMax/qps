@@ -50,7 +50,7 @@ if template.isNew:
     %><%= brick.stream.path() %><%
 else:
     %><%= brick.path() %><%
-%>" method="POST" enctype="multipart/form-data" onsubmit="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста подождите.'; n.style.display='';">
+%>" method="POST" enctype="multipart/form-data" onsubmit="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста, подождите.'; n.style.display='';">
 <input type="hidden" name="order" value="<%= brick.stream.order %>">
 <input type="hidden" name="page" value="<%= brick.stream.page %>">
 
