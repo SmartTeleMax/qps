@@ -1,6 +1,6 @@
 <%= template('inc_top', brick=brick) %>
 
-<h1><%= brick.site.title %> :: <%= brick.stream.title %> :: <%= getattr(brick, 'title', brick.id) %></h1>
+<h1><a href="<%= template.edit.prefix %>"><%= brick.site.title %></a> :: <a href="<%= template.edit.prefix+brick.stream.path() %>"><%= brick.stream.title %></a> :: <%= getattr(brick, 'title', brick.id) %></h1>
 
 <%
 errors = globals().get('fieldErrors', {})
