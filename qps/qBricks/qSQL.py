@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.3 2004/03/16 15:56:20 ods Exp $
+# $Id: qSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -8,8 +8,21 @@ import qBase
 from qps import qUtils
 
 
-class SQLItem(qBase.Item):
+class StoreHandler(object):
+    "Base class for store handlers"
+    
+    def handleItemStore(self, item, fields):
+        """Method is called after item was stored. Item is item object,
+        fields is a list of stored fields names"""
+        pass
+    
+    def handleItemsDelete(self, stream, items_ids):
+        """Is called after group of items was deleted. Stream is instance of
+        corresponding stream, items_ids is a list of deleted items ids"""
+        pass
 
+
+class SQLItem(qBase.Item):
     def initFieldsFromDB(self, row):
         '''Initialize item fields from DB row'''
         field_types = self.stream.allStreamFields
@@ -140,7 +153,8 @@ class SQLItem(qBase.Item):
             self.dbConn.update(self.stream.joinTable, join_fields, condition)
         self.storeExtFields(names)
         tnx.close()
-
+        self.stream.storeHandler.handleItemStore(self, names)
+        
     def delete(self):
         '''Delete item from DB'''
         self.stream.deleteItems([self.id])
@@ -148,7 +162,8 @@ class SQLItem(qBase.Item):
 
 class SQLStream(qBase.Stream):
     itemClass = SQLItem
-
+    storeHandler = StoreHandler()
+    
     def calculateLimits(self):
         '''Return limits for items retrieval (offset and number)'''
         if self.indexNum>0 and self.page>0:
@@ -258,6 +273,7 @@ class SQLStream(qBase.Stream):
                     self.dbConn.IN('id', item_ids))
                 number_of_deleted = cursor.rowcount
             tnx.close()
+            self.storeHandler.handleItemsDelete(self, items_ids)
         return number_of_deleted
 
 # vim: ts=8 sts=4 sw=4 ai et
