@@ -1,15 +1,15 @@
 <%
 if brick.indexNum!=0 and len(brick)==brick.indexNum:
     %><!-- inc_pages -->
-<table class="pages"><tr>
-<td><%
+<table class="pages" width="100%"><tr>
+<td align="left"><%
     if brick.page>1:
         %><a href="?page=<%= brick.page-1 %>">&lt;&lt; prev</a><%
     else:
         %>&lt;&lt; prev<%
     %></td>
 <td>page <%= brick.page %></td>
-<td><%
+<td align="right"><%
     if len(brick)==brick.indexNum:
         %><a href="?page=<%= brick.page+1 %>">next &gt;&gt;</a><%
     else:

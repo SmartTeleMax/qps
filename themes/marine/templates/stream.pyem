@@ -1,14 +1,56 @@
 <%= brick.template('inc_top') %>
 <div class="title"><%= brick.title %></div>
 <%
-permissions = brick.getPermissions()
-if 'c' in permissions:
-    %><div class="action"><a href="<%= quoteHTML(brick.edPrefix+brick.path()) %>?qps-action%3AnewItem=1">Create new</a></div><%
+if brick.isStreamCreatable:
+    %><div class="actionlinks"><a href="<%= quoteHTML(brick.edPrefix+brick.path()) %>?qps-action%3AnewItem=1">Create new</a></div><%
 %>
-<%= brick.template('inc_pages') %>
+
 <form action="<%= quoteHTML(brick.edPrefix+brick.path()) %>" method="POST">
-<table>
-</table>
-</form>
+
 <%= brick.template('inc_pages') %>
+
+<table width="100%" class="data">
+
+<thead><tr>
+<%
+for field_name in brick.allowedIndexFields:
+    %><th><%= brick.allStreamFields[field_name].indexTitle %></th><%
+if brick.isStreamDeletable or brick.isStreamUnbindable:
+    %><th>[X]</th><%
+%>
+</tr></thead>
+
+<tbody>
+<%
+for it in Cook.Repeat(brick):
+    item = it.value
+    %>
+<tr class="<%= it.alter('odd', 'even') %>"><%
+    for field_name in brick.allowedIndexFields:
+        %>
+<td><%= brick.showFieldInIndex(item, field_name) %></td><%
+    if brick.isStreamDeletable or brick.isStreamUpdatable:
+        %>
+<td><input type="checkbox" name="qps-select" value="<%= brick.itemIDField.convertToString(item.id) %>"></td><%
+    %>
+</tr>
+<%
+%>
+</tbody>
+
+</table>
+
+<%= brick.template('inc_pages') %>
+
+<div class="actionbuttons"><%
+if brick.isStreamUpdatable:
+    %><input type="submit"  name="qps-action:updateStream" value="Update"><%
+if brick.isStreamUnbindable:
+    %><input type="submit"  name="qps-action:unbindItems" value="Unbind selected"><%
+if brick.isStreamDeletable:
+    %><input type="submit"  name="qps-action:deleteItems" value="Delete selected"><%
+%></div>
+
+</form>
+
 <%= brick.template('inc_bottom') %>

@@ -19,6 +19,10 @@ table {
   text-align: center;
 }
 
+td {
+  padding: 0.3em;
+}
+
 table.topmenu tr td {
   border: 1px solid #205F8A;
   padding: 0.2em;
@@ -79,7 +83,7 @@ table.pages tr td a:hover {
   background-color: #FFFFFF;
 }
 
-.action, .action a {
+.actionlinks, .actionlinks a {
   text-align: left;
   font-family: Tahoma, Helvetica, Arial, sans-serif;
   font-weight: bold;
@@ -88,7 +92,41 @@ table.pages tr td a:hover {
   text-decoration: none;
 }
 
-.action a:hover {
+.actionlinks a:hover {
   text-decoration: underline;
   color: #CC0000;
+}
+
+table.data {
+  border: 1px solid #4680A8;
+  text-align: left;
+}
+
+thead tr th {
+  background-color: #4680A8;
+  font-family: Tahoma, Arial,  Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: smaller;
+  color: #FFFFFF;
+  text-align: center;
+}
+
+tr.odd {
+  background-color: #FFFFFF;
+}
+
+tr.even {
+  background-color: #F2F2F8;
+}
+
+table.data tbody tr td a {
+  color: #000000;
+}
+
+.actionbuttons {
+  text-align: right;
+}
+
+.actionbuttons * {
+  margin: 1em;
 }
