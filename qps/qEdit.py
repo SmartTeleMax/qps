@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.14 2004/06/04 14:52:50 ods Exp $
+# $Id: qEdit.py,v 1.15 2004/06/07 12:09:16 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -420,7 +420,7 @@ class EditBase:
         if bound.type=='stream':
             field_name = getattr(bound, 'joinField', None)
             binding_to_item = getattr(bound, bound.virtual.paramName)
-            isBound = lambda item: binding_to_item in getattr(item, field_name)
+            is_bound = lambda item: binding_to_item in getattr(item, field_name)
             bound_stream = bound
             bound_element_type = "checkbox"
         elif bound.type=='item':
@@ -430,10 +430,10 @@ class EditBase:
             try:
                 iter(field)
             except TypeError: # field is not a sequence
-                isBound = lambda item: item == field
+                is_bound = lambda item: item==field
                 bound_element_type = "radio"
             else:             # field is a sequence
-                isBound = lambda item: item in field
+                is_bound = lambda item: item in field
                 bound_element_type = "checkbox"
             bound_stream = bound.stream
         else:
@@ -450,7 +450,7 @@ class EditBase:
         response.write(template('binding', brick=template_stream,
                                 item=binding_to_item, fieldName=field_name,
                                 bound=bound, boundPath=bound_path,
-                                isBound=isBound,
+                                isBound=is_bound,
                                 boundElementType=bound_element_type))
 
     def do_updateBinding(self, request, response, form, objs, user):
