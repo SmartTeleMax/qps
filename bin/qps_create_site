@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.11 2004/04/07 08:51:36 ods Exp $
+# $Id: qps_create_site,v 1.12 2004/04/22 11:23:36 corva Exp $
 
 import sys, os, shutil
 sys.path.append('..')  # let it work without installation
@@ -31,13 +31,13 @@ class SiteProtos:
         fp = open(os.path.join(proto_dir, 'MANIFEST'))
         for line in fp:
             if not line.startswith('#'):
-                dst, src = line.split()
-                dst = os.path.join(code_dir, dst)
+                dst_tmpl, src = line.split()
+                dst = os.path.join(code_dir, dst_tmpl)
                 src = os.path.join(protos_dir, src)
                 if os.path.exists(dst):
                     if not (force and os.path.isfile(dst)):
                         raise RuntimeError('File %r already exists' % dst)
-                print 'Installing %r' % (os.path.basename(dst))
+                print 'Installing %r' % (dst_tmpl)
                 if os.path.isfile(src):
                     self.copyFile(src, dst)
                 else:
