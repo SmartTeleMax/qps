@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qSQL.py,v 1.2 2004/06/03 19:13:14 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -6,20 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 import qBase
 from qps import qUtils
-
-
-class StoreHandler(object):
-    "Base class for store handlers"
-    
-    def handleItemStore(self, item, fields):
-        """Method is called after item was stored. Item is item object,
-        fields is a list of stored fields names"""
-        pass
-    
-    def handleItemsDelete(self, stream, items_ids):
-        """Is called after group of items was deleted. Stream is instance of
-        corresponding stream, items_ids is a list of deleted items ids"""
-        pass
 
 
 class SQLItem(qBase.Item):
@@ -153,6 +139,8 @@ class SQLItem(qBase.Item):
             self.dbConn.update(self.stream.joinTable, join_fields, condition)
         self.storeExtFields(names)
         tnx.close()
+        # XXX should handler be called insude transaction?
+        # XXX May be just call inherited store?
         self.stream.storeHandler.handleItemStore(self, names)
         
     def delete(self):
@@ -162,7 +150,6 @@ class SQLItem(qBase.Item):
 
 class SQLStream(qBase.Stream):
     itemClass = SQLItem
-    storeHandler = StoreHandler()
     
     def calculateLimits(self):
         '''Return limits for items retrieval (offset and number)'''

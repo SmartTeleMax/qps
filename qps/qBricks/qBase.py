@@ -1,10 +1,24 @@
-# $Id: qBase.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qBase.py,v 1.2 2004/04/07 14:08:09 ods Exp $
 
 '''Base brick classes'''
 
 import weakref, logging
 logger = logging.getLogger(__name__)
 from qps import qUtils
+
+
+class StoreHandler(object):
+    "Base class for store handlers"
+    
+    def handleItemStore(self, item, fields):
+        """Method is called after item was stored. Item is item object,
+        fields is a list of stored fields names"""
+        pass
+    
+    def handleItemsDelete(self, stream, items_ids):
+        """Is called after group of items was deleted. Stream is instance of
+        corresponding stream, items_ids is a list of deleted items ids"""
+        pass
 
 
 class Brick(object):
@@ -129,8 +143,8 @@ class Item(Brick):
 
     def store(self, names=None):
         '''Store data of item (new or existing)'''
-        # XXX store external fields here?
-        raise NotImplementedError()
+        self.storeExtFields(names)
+        self.stream.storeHandler.handleItemStore(self, names)
 
     def touch(self):
         '''Touch the item (i.e. mark as its updated and need to be remaked)'''
@@ -169,6 +183,8 @@ class Stream(Brick):
     '''Base class for streams'''
 
     type = 'stream'
+    itemClass = Item
+    storeHandler = StoreHandler()
     itemFieldsOrder = []
     itemFields = {}
     itemExtFields = {}
