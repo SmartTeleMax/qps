@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qSQL.py,v 1.2 2004/06/29 08:34:47 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -273,6 +273,27 @@ class Connection(object):
         query = 'INSERT INTO %s (' % table + Query(*field_names) + \
                 ') VALUES (' + Query(*field_values) + ')'
         return self.execute(query)
+
+    def insertMany(self, table, fields, values):
+        '''Construct and execute SQL INSERT command with executemany.
+
+        fields is a list of field names
+        values is a list of tuples of field values'''
+        field_names = ','.join(fields)
+        field_values = []
+
+        for value in values[0]:
+            if field_values:
+                field_values.append(',')
+            field_values.append(Param(value))
+        query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
+                Query(*field_values) + ')'
+        query = query.sql(self._db_module.paramstyle)[0]
+
+        cursor = self._dbh.cursor()
+        logger.debug(query)
+        cursor.executemany(query, values)
+        return cursor
 
     def update(self, table, field_dict, condition=''):
         '''Construct and execute SQL UPDATE command and return cursor.'''
