@@ -62,9 +62,7 @@ table.centermenu tr td a:hover {
 }
 
 table.pages tr td {
-  font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-size: smaller;
-  font-weight: bold;
+  font: bold 0.8em Tahoma, Arial, Helvetica, sans-serif;
   padding: 0.3em;
 }
 
@@ -76,18 +74,15 @@ table.pages tr td a:hover {
   color:#CC0000;
 }
 
-.title {
-  font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-weight: bold;
+h1 {
+  font: bold 1em Tahoma, Arial, Helvetica, sans-serif;
   border: 1px solid #205F8A;
   background-color: #FFFFFF;
 }
 
 .actionlinks, .actionlinks a {
   text-align: left;
-  font-family: Tahoma, Helvetica, Arial, sans-serif;
-  font-weight: bold;
-  font-size: smaller;
+  font: bold 0.8em Tahoma, Helvetica, Arial, sans-serif;
   color: #003366;
   text-decoration: none;
 }
@@ -104,9 +99,7 @@ table.data {
 
 thead tr th {
   background-color: #4680A8;
-  font-family: Tahoma, Arial,  Helvetica, sans-serif;
-  font-weight: bold;
-  font-size: smaller;
+  font: bold 0.8em Tahoma, Arial,  Helvetica, sans-serif;
   color: #FFFFFF;
   text-align: center;
 }
@@ -121,6 +114,11 @@ tr.even {
 
 table.data tbody tr td a {
   color: #000000;
+  text-decoration: underline;
+}
+
+table.data tbody tr td a:hover {
+  color: #AA0000;
 }
 
 .actionbuttons {
