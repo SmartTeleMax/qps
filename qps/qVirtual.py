@@ -1,8 +1,9 @@
-# $Id: qVirtual.py,v 1.5 2004/06/09 06:42:42 corva Exp $
+# $Id: qVirtual.py,v 1.6 2004/06/09 07:17:41 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
 from qUtils import CachedAttribute, interpolateString
+from qDB.qSQL import Query, Param
 
 # Object describing rule for virtual streams must have methods:
 #   matchParamStream(self, stream)  -> True if stream is stream of parameters
@@ -54,7 +55,7 @@ class VirtualRule:
                                                tag=site.transmitTag(tag))
             try:
                 param_item_id = \
-                    param_stream.fields['id'].convertFromString(parts[-1])
+                    param_stream.fields.id.convertFromString(parts[-1])
             except ValueError:
                 return
             param_item = param_stream.retrieveItem(param_item_id)
@@ -74,9 +75,8 @@ class VirtualRule:
 
     def condition(self, stream):
         conn = stream.dbConn
-        return conn.join(
-                ['%s=%s' % (name, conn.convert(getattr(stream, name).id))
-                             for name in self.itemParamNames])
+        return conn.join([Query('%s=' % name, Param(getattr(stream, name).id))
+                          for name in self.itemParamNames])
         # XXX We must convert field with convertToDB
         # But there are problems with following code when many-to-many relation
         # is used. Try indexFields then use getattr(stream,
