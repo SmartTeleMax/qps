@@ -1,0 +1,5 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td><table><%
+for field in subfields:
+    %><tr><%= field %></tr><%
+%></table></td>
