@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.8 2004/07/26 08:42:56 ods Exp $
+# $Id: __init__.py,v 1.9 2004/08/17 15:32:10 ods Exp $
 
 '''Q Publishing System
 (c) 2000-2004 Sergey Barbarash, Oleg Broytmann, Pavel Barykin, Alexey
@@ -26,7 +26,6 @@ qMake = LazyModule('qMake', locals(), globals())
 qBricks = LazyModule('qBricks', locals(), globals())
 qSite = LazyModule('qSite', locals(), globals())
 qEdit = LazyModule('qEdit', locals(), globals())
-qFilters = LazyModule('qFilters', locals(), globals())
 qHTTP = LazyModule('qHTTP', locals(), globals())
 
 # vim: ts=8 sts=4 sw=4 ai et:
