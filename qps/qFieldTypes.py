@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.154 2004/03/16 15:48:20 ods Exp $
+# $Id: qFieldTypes.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
 
 '''Classes for common field types'''
 
@@ -160,6 +160,7 @@ class STRING_ID(STRING):
     pattern = '^[0-9a-zA-Z_]+$'
     not_match_error_message = 'ID can contain latin alfanumeric characters '\
                               'and underscore only'
+    indexPermissions = [('all', 'r')]
 
     def convertFromForm(self, form, name, item=None):
         value = STRING.convertFromForm(self, form, name, item)
@@ -211,6 +212,7 @@ class INTEGER(NUMBER):
 class INTEGER_AUTO_ID(INTEGER):
     title = 'ID'
     omitForNew = 1
+    indexPermissions = [('all', 'r')]
 
 
 class PASSWORD(FieldType):
