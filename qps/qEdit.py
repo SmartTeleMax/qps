@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.7 2004/05/25 14:59:31 corva Exp $
+# $Id: qEdit.py,v 1.8 2004/06/04 08:50:12 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -147,7 +147,7 @@ class RenderHelper(object):
 class EditBase:
     '''Base class for editor interface'''
     streamLoaderClass = qPath.PagedStreamLoader
-    renderHelper = RenderHelper
+    renderHelperClass = RenderHelper
     
     prefix = '/ed'
     templateDirs = ['%s/templates/default' % dirname(abspath(__file__))]
@@ -220,7 +220,7 @@ class EditBase:
 
     def showBrick(self, request, response, obj, user, isNew=0, **kwargs):
         obj = self.prepareObject(obj)
-        template = self.renderHelper(self, user, isNew)
+        template = self.renderHelperClass(self, user, isNew)
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
         response.write(template(obj.type, brick=obj, **kwargs))
@@ -461,7 +461,7 @@ class EditBase:
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
         obj = self.prepareObject(template_stream)
-        template = self.renderHelper(self, user)
+        template = self.renderHelperClass(self, user)
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
         response.write(template('binding', brick=obj, item=binding_to_item,

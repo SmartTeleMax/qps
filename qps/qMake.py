@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.5 2004/06/03 16:04:32 ods Exp $
+# $Id: qMake.py,v 1.6 2004/06/04 08:47:43 corva Exp $
 
 '''Defines common maker classes'''
 
@@ -109,8 +109,8 @@ class BaseMaker:
 
 class Maker(BaseMaker):
 
-    proxyClass = lambda self, x: x
-    renderHelper = qWebUtils.RenderHelper
+    proxyClass = staticmethod(lambda x: x)
+    renderHelperClass = qWebUtils.RenderHelper
 
     def __init__(self, site, writer=None, template_getter=None, **params):
         BaseMaker.__init__(self, site, **params)
@@ -139,7 +139,7 @@ class Maker(BaseMaker):
 
     def do_make(self, brick):
         obj = self.prepareObject(brick)
-        template = self.renderHelper(self)
+        template = self.renderHelperClass(self)
 
         namespace = self.globalNamespace.copy()
         namespace['template'] = template

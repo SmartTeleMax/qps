@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
+# $Id: qWebUtils.py,v 1.2 2004/06/04 08:46:12 corva Exp $
 
 '''Template support'''
 
@@ -68,8 +68,8 @@ class RenderHelper(object):
 
 class Publisher:
 
-    proxyClass = lambda self, x: x
-    renderHelper = RenderHelper
+    proxyClass = staticmethod(lambda x: x)
+    renderHelperClass = RenderHelper
     templateDirs = None
 
     def __init__(self, site):
@@ -91,7 +91,7 @@ class Publisher:
 
     def renderObject(self, obj, template_name, **kwargs):
         obj = self.prepareObject(obj)
-        template = self.renderHelper(self)
+        template = self.renderHelperClass(self)
         return template(template_name, brick=obj, **kwargs)
 
 
