@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.4 2004/06/29 08:53:28 corva Exp $
+# $Id: qSecurity.py,v 1.5 2004/09/26 23:10:44 corva Exp $
 
 '''Function to check permissions'''
 
@@ -151,6 +151,11 @@ class CookieAuthHandler:
     def cmd_notAuthorized(self, request, response, form, objs, user):
         login, passwd, perm_login = [form.getfirst(name) for name in \
                                      ('login', 'passwd', 'perm_login')]
+        # crypt method used below only supports string types
+        try:
+            passwd = str(passwd)
+        except UnicodeEncodeError:
+            passwd = None        
 
         if not (login and passwd):
             if objs[-1]:
@@ -168,6 +173,7 @@ class CookieAuthHandler:
 
             if user:
                 passwd_field = user.fields['passwd']
+                
                 if passwd_field.crypt(passwd) == user.passwd:
                     # success!
                     if perm_login:
