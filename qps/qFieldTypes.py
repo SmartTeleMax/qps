@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.37 2004/10/31 13:58:07 corva Exp $
+# $Id: qFieldTypes.py,v 1.38 2004/11/12 11:30:17 corva Exp $
 
 '''Classes for common field types'''
 
@@ -164,7 +164,8 @@ class STRING_ID(STRING):
     pattern = '^[0-9a-zA-Z_]+$'
     not_match_error_message = 'ID can contain latin alfanumeric characters '\
                               'and underscore only'
-    permissions = [('all', 'rw')]
+    permissions = [('all', 'r')]
+    createPermissions = [('all', 'rw')]
     indexPermissions = [('all', 'r')]
     showInBinding = 1
 
