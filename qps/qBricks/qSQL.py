@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.6 2004/06/09 07:17:42 ods Exp $
+# $Id: qSQL.py,v 1.7 2004/06/09 09:02:06 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -23,13 +23,13 @@ class SQLItem(qBase.Item):
         object'''
         # XXX This code would be faster in place of use
         # another solution - adding optional field_names argument
-        fields = {}
+        result = {}
         for field_name, field_type in fields.iteritems():
             if field_type.storeControl!='never':
-                fields[field_name] = field_type.convertToDB(
+                result[field_name] = field_type.convertToDB(
                     getattr(self, field_name),
                     self)
-        return fields
+        return result
 
     def sqlCondition(self):
         '''Return SQL condition for this item'''
@@ -88,8 +88,8 @@ class SQLItem(qBase.Item):
 
     def store(self, names=None):
         '''Store data of item (new or existing) in DB'''
-        fields = self.prepareFieldsForDB(fields=self.fields.main)
-        join_fields = self.prepareFieldsForDB(fields=self.stream.joinFields)
+        fields = self.prepareFieldsForDB(self.fields.main)
+        join_fields = self.prepareFieldsForDB(self.stream.joinFields)
         # remove from fields read-only fields
         for field_name in fields.keys():
             field_type = self.indexFields[field_name]
