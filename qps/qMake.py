@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.2 2004/04/12 15:34:04 ods Exp $
+# $Id: qMake.py,v 1.3 2004/04/12 16:08:53 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -195,7 +195,7 @@ class VirtualsMaker(BaseMaker):
 class ImagesMaker(Maker):
 
     def do_delete(self, item):
-        from FieldTypes import IMAGE
+        from qFieldTypes import IMAGE
         from glob import glob
         for field_name, field_type in item.stream.itemExtFields.items():
             if isinstance(field_type, IMAGE):
@@ -204,7 +204,7 @@ class ImagesMaker(Maker):
                     os.remove(old_path)
 
     def do_make(self, item):
-        from FieldTypes import IMAGE
+        from qFieldTypes import IMAGE
         from glob import glob
         for field_name, field_type in item.stream.itemExtFields.items():
             if isinstance(field_type, IMAGE):
