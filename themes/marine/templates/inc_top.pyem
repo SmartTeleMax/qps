@@ -12,7 +12,7 @@ if styleSheetURL:
 <table width="100%">
 <tr>
 <td align="left" class="sitetitle">
-<a href="<%= template.edit.prefix+'/' %>"><%
+<a href="<%= quoteHTML(template.edit.prefix)+'/' %>"><%
 logoURL = getattr(template.edit, 'logoURL', None)
 if logoURL:
     %><img src="<%= quoteHTML(logoURL) %>" alt="Editor interface of &quot;<%= brick.site.title %>&quot;"><%
@@ -26,7 +26,7 @@ else:
 if template.user:
     for stream in template.allowedStreams:
         if getattr(stream, 'showInMenu', 0):
-            %><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td><%
+            %><td><a href="<%= quoteHTML(template.edit.prefix+stream.path()) %>"><%= stream.title %></a></td><%
 %>
 </tr></table>
 </td></tr>

@@ -1,6 +1,6 @@
 <%= template('inc_top', brick=brick) %>
 
-<h1><a href="<%= template.edit.prefix %>"><%= brick.site.title %></a> :: <a href="<%= template.edit.prefix+brick.stream.path() %>"><%= brick.stream.title %></a> :: <%= getattr(brick, 'title', brick.id) %></h1>
+<h1><a href="<%= quoteHTML(template.edit.prefix) %>"><%= brick.site.title %></a> :: <a href="<%= quoteHTML(template.edit.prefix+brick.stream.path()) %>"><%= brick.stream.title %></a> :: <%= getattr(brick, 'title', brick.id) %></h1>
 
 <%
 errors = globals().get('fieldErrors', {})
@@ -9,7 +9,7 @@ if errors:
 
 <%
 %>
-<form action="<%= template.edit.prefix+(template.isNew and brick.stream.path() or brick.path()) %>" method="POST" enctype="multipart/form-data">
+<form action="<%= quoteHTML(template.edit.prefix+(template.isNew and brick.stream.path() or brick.path())) %>" method="POST" enctype="multipart/form-data">
 
 <table class="data" width="100%">
 <%

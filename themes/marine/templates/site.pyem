@@ -6,7 +6,7 @@
 <%
 for stream in template.allowedStreams:
     if not getattr(stream, 'showInMenu', 0):
-        %><tr><td><a href="<%= template.edit.prefix+stream.path() %>"><%= stream.title %></a></td></tr>
+        %><tr><td><a href="<%= quoteHTML(template.edit.prefix+stream.path()) %>"><%= stream.title %></a></td></tr>
 <%
 %></table>
 
