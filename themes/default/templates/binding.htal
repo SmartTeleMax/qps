@@ -9,15 +9,15 @@
 </head>
 <body>
 
-<h1><a href="#" tal:attributes="href brick.edPrefix+'/'">Editor interface</a> for
+<h1><a href="#" tal:attributes="href template.edit.prefix+'/'">Editor interface</a> for
 <a href="#" tal:attributes="href 'http://%s/' % brick.site.host"
             tal:content="brick.site.title">Site name</a>:
 Selecting
-<a href="#" tal:attributes="href brick.edPrefix+boundPath"
+<a href="#" tal:attributes="href template.edit.prefix+boundPath"
             tal:content="bound.title">Bound title</a></h1>
 
 <form action="" method="POST"
-      tal:attributes="action brick.edPrefix+brick.path()">
+      tal:attributes="action template.edit.prefix+brick.path()">
 <div tal:condition="brick.indexNum!=0">
 <a tal:omit-tag="brick.page==1" href="#"
    tal:attributes="href '?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % (boundPath, fieldName, brick.page-1)">
@@ -35,7 +35,7 @@ next page &gt;&gt;</a>
 <table>
 
 <tr>
-<tal:block tal:repeat="field_name brick.bindingIndexFields">
+<tal:block tal:repeat="field_name template.bindingIndexFields(brick)">
 <th tal:define="field_type brick.allItemFields[field_name]"
     tal:content="field_type.indexTitle">Field title</th>
 </tal:block>
@@ -43,8 +43,8 @@ next page &gt;&gt;</a>
 </tr>
 
 <tr tal:repeat="item brick">
-<td tal:repeat="field_name brick.bindingIndexFields"
-    tal:content="structure brick.showFieldInIndex(item, field_name, allow_edit=0)">
+<td tal:repeat="field_name template.bindingIndexFields(brick)"
+    tal:content="structure template.showFieldInIndex(item, field_name, allow_edit=0)">
 Field value</td>
 <td tal:define="id_str brick.itemIDField.convertToString(item.id); checked isBound(item) and 'checked'">
 <input type="hidden" name="qps-old" tal:condition="checked"
