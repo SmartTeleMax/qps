@@ -1,0 +1,965 @@
+# $Id: qFieldTypes.py,v 1.154 2004/03/16 15:48:20 ods Exp $
+
+'''Classes for common field types'''
+
+import types, os, re, sys, weakref, logging
+logger = logging.getLogger(__name__)
+
+from mx import DateTime
+from mx.Misc.LazyModule import LazyModule
+
+import qUtils
+
+
+class _LayoutDict(dict):
+    # This class is defined to keep compatimility with old field templates
+    def __init__(self, *args, **kwargs):
+        for d in args+(kwargs,):
+            self.update(d)
+    def __str__(self):
+        return ' '.join(['%s="%s"' % t for t in self.items()])
+
+
+class FieldType:
+    '''Base class for all field types'''
+    # storeControl:
+    #   None        - store if user has sufficient priveleges
+    #   'always'    - always store (useful for automatically updated fields)
+    #   'never'     - never store (useful when another procedure to store data
+    #                 is defined as it's done for multifield or for
+    #                 automatically updated by DB trigers fields)
+    storeControl = None
+    # omitForNew    - if True omit value when new item is stored
+    omitForNew = 0
+    # Allow initialization of field from form (disallowed for multifield)
+    initFromForm = 1
+    # showField in binding view
+    showInBinding    = 0
+    linkThrough      = 1
+
+    default     = ''                            # default value
+    permissions = [('all', 'rw')] # permissions for item view
+    indexPermissions = [] # permission for stream view
+    layout      = _LayoutDict()                 # used in field template
+    title       = '?'
+    indexTitle  = qUtils.ReadAliasAttribute('title')
+   
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def __call__(self, **kwargs):
+        # For compatibility: return a copy with some parameters changed.  Allow
+        # us to use existing type as template.
+        copy = apply(self.__class__, (), self.__dict__)
+        copy.__dict__.update(kwargs)
+        return copy
+
+    def getDefault(self, item=None):
+        return self.convertFromCode(self.default, item)
+    
+    def show(self, item, name, template_type, template_getter,
+             global_namespace={}):
+        '''Return HTML representation of field in editor interface
+        item    - item object
+        name    - field name
+        user    - login of user, requested this operation'''
+        value = getattr(item, name)
+        if value is None:
+            value = self.convertToForm(self.default)
+        else:
+            value = self.convertToForm(value)
+        namespace = global_namespace.copy()
+        namespace.update({'name': name, 'title': name, 'value': value,
+                          'item': item})
+        template = self.getTemplate(template_type, template_getter)
+        return template(self, namespace)
+
+    def getTemplate(self, template_type, template_getter, template_class=None):
+        template_class = template_class or self.__class__
+        if not template_class.__dict__.has_key('_templates'):
+            template_class._templates = {}
+        if not template_class._templates.has_key(template_type):
+            from qWebUtils import TemplateNotFoundError
+            try:
+                template = template_getter(
+                    '%s.%s' % (template_class.__name__, template_type))
+            except TemplateNotFoundError:
+                for base_class in template_class.__bases__:
+                    try:
+                        template = self.getTemplate(template_type,
+                                template_getter, template_class=base_class)
+                    except TemplateNotFoundError:
+                        pass
+                    else:
+                        break
+                else:
+                    raise TemplateNotFoundError(
+                        '%s.%s' % (template_class.__name__, template_type))
+            template_class._templates[template_type] = template
+        return template_class._templates[template_type]
+
+    def _identity(self, value, item=None): return value
+    convertToDB = convertToForm = _identity
+    def convertToString(self, value, item=None): return str(value)
+    def convertFromCode(self, value, item=None): return value
+    def convertFromDB(self, value, item=None): return value
+    def convertFromString(self, value, item=None): return value
+    def convertFromForm(self, form, name, item=None):
+        return self.convertFromString(form.getfirst(name, ''), item)
+
+    class InvalidFieldContent(Exception):
+        '''Use this exception in convertFromForm method when value supplied by
+        user is incorrect.  Pass error message as parameter.  For example:
+               def convertFromForm(self, form, name, item=None):
+                   try:
+                       value = DateTime(value)
+                   except:
+                       raise InvalidFieldContent(
+                           "Invalid date format or value")
+        '''
+
+        def __init__(self, message):
+            self.message = message
+
+
+class STRING(FieldType):
+    layout = _LayoutDict({'style': 'width: 100%'})
+    minlength = 0
+    maxlength = 255
+    error_message = 'Text must consist of from %(brick.minlength)s to ' \
+                    '%(brick.maxlength)s characters'
+
+    def __init__(self, **kwargs):
+        apply(FieldType.__init__, [self], kwargs)
+        self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
+        
+    def convertFromForm(self, form, name, item=None):
+        value = form.getfirst(name, '').strip()
+        if len(value) < self.minlength or len(value) > self.maxlength:
+            message = qUtils.interpolateString(self.error_message,
+                                               {'brick': self})
+            raise self.InvalidFieldContent(message)
+        return value
+
+    def convertFromDB(self, value, item):
+        value = value.strip()
+        if item.site.dbCharset:
+            value = value.decode(item.site.dbCharset)
+        return value
+
+    def convertToDB(self, value, item):
+        if item.site.dbCharset:
+            value = value.encode(item.site.dbCharset)
+        return value
+
+
+class STRING_ID(STRING):
+    title = 'ID'
+    minlength = 1
+    maxlength = 32
+    pattern = '^[0-9a-zA-Z_]+$'
+    not_match_error_message = 'ID can contain latin alfanumeric characters '\
+                              'and underscore only'
+
+    def convertFromForm(self, form, name, item=None):
+        value = STRING.convertFromForm(self, form, name, item)
+        if not re.match(self.pattern, value):
+            raise self.InvalidFieldContent(self.not_match_error_message)
+        return value
+
+
+class NUMBER(FieldType):
+
+    type = None
+    type_name = "Number"
+    default = 0
+    min_value = 0
+    max_value = sys.maxint
+    error_message = '%(brick.type_name)s from %(brick.min_value)s to '\
+                    '%(brick.max_value)s required'
+
+    def __init__(self, **kwargs):
+        FieldType.__init__(self, **kwargs)
+        self.maxlength = max(len(str(self.max_value)),
+                             len(str(self.min_value))) + 1
+        self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
+
+    def convertFromString(self, value, item=None):
+        return self.type(value)
+
+    def convertFromForm(self, form, name, item=None):
+        value = form.getfirst(name, '').strip()
+        message = qUtils.interpolateString(self.error_message, {'brick': self})
+        try:
+            value = self.type(value)
+        except ValueError:
+            raise self.InvalidFieldContent(message)
+        if self.min_value<=value<=self.max_value:
+            return value
+        else:
+            raise self.InvalidFieldContent(message)
+
+    def convertFromDB(self, value, item=None):
+        return self.type(value)
+    
+
+class INTEGER(NUMBER):
+    type = int
+    type_name = "Integer"
+
+
+class INTEGER_AUTO_ID(INTEGER):
+    title = 'ID'
+    omitForNew = 1
+
+
+class PASSWORD(FieldType):
+
+    minlength = 5
+    too_short_message = 'Password must be at least %(brick.minlength)s ' \
+                        'characters long'
+    confirmation_failed_message = 'Passwords donot match'
+
+    def crypt(self, value):
+        # Don't encrypt by default
+        return value
+
+    def convertFromForm(self, form, name, item):
+        value = form.getfirst(name, '').strip()
+        old_value = getattr(item, name)
+        if value or not old_value:
+            if len(value)<self.minlength:
+                message = qUtils.interpolateString(self.too_short_message,
+                                                   {'brick': self})
+                raise self.InvalidFieldContent(message)
+            confirm = form.getfirst(name+'-confirm', '').strip()
+            if value!=confirm:
+                message = qUtils.interpolateString(
+                            self.confirmation_failed_message, {'brick': self})
+                raise self.InvalidFieldContent(message)
+            return self.crypt(value)
+        else:
+            # leave unchanged
+            return old_value
+
+
+class DIGESTPASSWORD(PASSWORD):
+
+    from md5 import new as digest
+
+    def crypt(self, value):
+        return self.digest(value).hexdigest()
+
+
+class DATETIME(FieldType):
+    format = '%d.%m.%Y %H:%M'
+    error_message = 'Invalid date format'
+    default = 'now'
+    def convertFromCode(self, value, item=None):
+        if value=='now':
+            return DateTime.now()
+        else:
+            return DateTime.strptime(value, self.format)
+    convertFromString = convertFromCode
+    def convertToForm(self, value):
+        return value.strftime(self.format)
+    def convertFromForm(self, form, name, item=None):
+        value = form.getfirst(name, '').strip()
+        try:
+            if len(value)>16: value = value[:16]
+            return DateTime.strptime(value, self.format)
+        except:
+            message = qUtils.interpolateString(self.error_message,
+                                               {'brick': self})
+            raise self.InvalidFieldContent(message)
+
+
+class TEXT(STRING):
+    layout = _LayoutDict({'cols': 60, 'rows': 10, 'wrap': 'virtual',
+                          'style': 'width: 100%'})
+    maxlength = 65535
+    lengthInIndex = 250
+
+
+class DROP(FieldType):
+
+    extra = ''
+    maxlen = 0
+    size = 0
+    undefined_label = '(undefined)'
+    labelTemplate = '%(quoteHTML(getattr(brick, "title", brick.id)))s'
+
+    def show(self, item, name, template_type, template_getter,
+             global_namespace={}):
+        if not hasattr(self, 'optionList'):
+            stream = item.site.retrieveStream(self.stream,
+                                    tag=item.site.transmitTag(item.stream.tag))
+            # retrieve stream of items used as options in drop menu
+            stream.retrieve()
+            namespace = global_namespace.copy()
+            namespace['stream'] = stream
+            # current value
+            value = getattr(item, name)
+        return FieldType.show(self, item, name, template_type, template_getter,
+                              namespace)
+
+    def getLabel(self, item):
+        '''Return label for option defined by item'''
+        namespace = item.site.globalNamespace.copy()
+        namespace.update({'brick': item})
+        return qUtils.interpolateString(self.labelTemplate, namespace)
+
+
+class SELECT(DROP):
+    layout = _LayoutDict({'size': 5, 'multiple': 'multiple'})
+    default = []
+    fieldSeparator = ','
+    itemIDField = STRING()  # must be the same as itemIDField of stream
+    def convertToDB(self, value, item=None):
+        return self.fieldSeparator.join(
+                        map(self.itemIDField.convertToString, value)+[''])
+    def convertFromDB(self, value, item=None):
+        return map(self.itemIDField.convertFromString,
+                   value.split(self.fieldSeparator)[:-1])
+    def convertFromForm(self, form, name, item=None): 
+        return form.getlist(self.name)
+        
+
+class LazyItem:
+    """Base class for other Lazy Classes, it is supposed to be stored into
+    field of item as a references to other item without retrieving it untill
+    it is really neccessary"""
+    
+    def __init__(self, site, stream_params, item_id):
+        self._site = site # it's already a weakref
+        self._stream_id, self._stream_tag = stream_params
+        self._item_id = item_id
+
+    def _stream(self):
+        return self._site.retrieveStream(
+            self._stream_id,
+            tag=self._site.transmitTag(self._stream_tag))
+
+    def _item(self):
+        "Returns item, should be redefined in childs"
+        pass
+
+    def __nonzero__(self):
+        return self._item is not None
+
+    def __getattr__(self, name):
+        if name in ('_item', '__del__'): # XXX Avoid unlimited recursion due
+                                         # to bug in decriptiors
+                                         # implementation in 2.2
+            raise AttributeError(name)
+        return getattr(self._item, name)
+
+    def __repr__(self):
+        return '<LazyItem for stream_id=%r id=%r>' % (self._stream_id,
+                                                      self._item_id)
+
+class RetrievedLazyItem(LazyItem):
+    """This class retrieves item from db w/o retrieving whole stream"""
+    
+    def _item(self):
+        return self._stream().retrieveItem(self._item_id)
+    _item = qUtils.CachedAttribute(_item)
+
+class GettedLazyItem(LazyItem):
+    """This class retrieves item retrieves stream and get item with getItem"""
+    
+    def _item(self):
+        return self._stream().getItem(self._item_id)
+    _item = qUtils.CachedAttribute(_item)
+
+class FOREIGN_DROP(FieldType):
+    proxyClass = RetrievedLazyItem
+    extra_option = None
+    missing_id = None # representation of missing value in DB (default is NULL)
+    default = None
+    labelTemplate = '%(quoteHTML(getattr(brick, "title", brick.id)))s'
+
+    def _retrieve_stream(self, item):
+        return item.site.retrieveStream(self.stream,
+                                    tag=item.site.transmitTag(item.stream.tag))
+
+    def _stream_params(self, item):
+        return (self.stream, item.stream.tag)
+
+    def convertFromCode(self, value, item):
+        if value is not None:
+            return self.proxyClass(item.site, self._stream_params(item),
+                                   value)
+
+    def convertFromDB(self, value, item):
+        if value!=self.missing_id:
+            return self.proxyClass(item.site, self._stream_params(item),
+                                   value)
+    
+    def convertToDB(self, value, item=None):
+        if value: # calls LazyItem.__nonzero__ that checks for None
+            return value.stream.itemIDField.convertToDB(value.id, item)
+        else:
+            return self.missing_id
+
+    def convertFromForm(self, form, name, item):
+        value = form.getfirst(name, '')
+        if value:
+            stream = self._retrieve_stream(item)
+            return self.proxyClass(item.site,
+                                   self._stream_params(item),
+                                   stream.itemIDField.convertFromString(value)
+                                   )
+
+    def getLabel(self, item):
+        namespace = item.site.globalNamespace.copy()
+        namespace.update({'brick': item})
+        return qUtils.interpolateString(self.labelTemplate, namespace)
+
+    def show(self, item, name, template_type, template_getter,
+             global_namespace={}):
+        namespace = global_namespace.copy()
+        namespace.update({'stream': self._retrieve_stream(item)})
+        return FieldType.show(self, item, name, template_type, template_getter,
+                              namespace)
+
+
+class FOREIGN_MULTISELECT(FOREIGN_DROP):
+    fieldSeparator = ','
+    default = []
+    
+    def inList(self, id, items):
+        return id in [item.id for item in items]
+
+    def convertFromCode(self, values, item):
+        # XXX Bug here! Missing (or just unpublished) items are not filtered
+        # out! We must use somethong like LazyItemList to keep laziness.
+        return [FOREIGN_DROP.convertFromCode(self, value, item)
+                for value in values]
+
+    def convertFromDB(self, value, item):
+        if value:
+            item_ids = value.split(self.fieldSeparator)
+            stream = self._retrieve_stream(item)
+            return self.convertFromCode(
+                        map(stream.itemIDField.convertFromString, item_ids),
+                        item)
+        else:
+            return []
+
+    def convertFromForm(self, form, name, item):
+        value = form.getlist(name)
+        stream = self._retrieve_stream(item)
+        return self.convertFromCode(
+                    map(stream.itemIDField.convertFromString, value),
+                    item)
+
+    def convertToDB(self, value, item=None):
+        item_ids = [FOREIGN_DROP.convertToString(self, item.id)
+                    for item in value]
+        return self.fieldSeparator.join(item_ids)
+
+    def getIndexLabel(self, value):
+        views = [FOREIGN_DROP.getLabel(self, i)
+                 for i in value]
+        return ', '.join(views)
+       
+
+class FOREIGN(FOREIGN_DROP):
+    proxyClass = RetrievedLazyItem
+
+
+class MODE(FieldType):
+    layout = ['Show', 'Hide']
+
+
+class CB_YN(FieldType): pass
+
+
+class LazyItemList:
+    def __init__(self, field_type, item):
+        self.field_type = field_type
+        self.item = weakref.proxy(item)
+
+    def _items(self):
+        conn = self.item.dbConn
+        field_type = self.field_type
+        db_values = conn.selectFieldAsList(
+                field_type.tableName, field_type.valueFieldName,
+                field_type.condition(self.item))
+        items = []
+        for db_value in db_values:
+            items.append(field_type.itemField.convertFromDB(db_value,
+                                                            item=self.item))
+        return filter(None, items)
+    _items = qUtils.CachedAttribute(_items)
+
+    def __getitem__(self, index):
+        return self._items[index]
+
+    def __setitem__(self, index, value):
+        self._items[index] = value
+
+    def __len__(self):
+        return len(self._items)
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def append(self, obj):
+        self._items.append(obj)
+
+    def index(self, obj):
+        return self._items.index(obj)
+
+    def __contains__(self, obj):
+        return obj in self._items
+
+    def __delitem__(self, index):
+        del self._items[index]
+
+    def __eq__(self, other):
+        return self._items==other
+
+    def __ne__(self, other):
+        return not (self==other)
+
+    def remove(self, value):
+        return self._items.remove(value)
+
+
+class ExtFieldTypeMixIn:
+    '''Mix-in for for fields stored outside main table.  Base class is defined
+    to store list of items in separate table.'''
+    tableName = None       # Table name where values are stored. Must be
+                           # redefined in configuration.
+    itemField = STRING()   # Field type of values.
+    valueFieldName = None  # Fild name in DB where value (in most cases it's id
+                           # of referenced item) is stored. Must be defined in
+                           # configuration.
+    idFieldName = 'id'     # Fild name in DB where id of item (for which this
+                           # field is defined) is stored.
+
+    def condition(self, item):
+        return '%s=%s' % (self.idFieldName, item.dbConn.convert(item.id))
+
+    def insert(self, item, db_value):
+        item.dbConn.insert(self.tableName, {self.idFieldName: item.id,
+                                            self.valueFieldName: db_value})
+    
+    def retrieve(self, item):
+        return LazyItemList(self, item)
+
+    def store(self, values, item):
+        db_values = []
+        for value in values:
+            db_values.append(self.itemField.convertToDB(value, item))
+        conn = item.dbConn
+        all_cond = delete_cond = self.condition(item)
+        if db_values:
+            delete_cond = conn.join(
+                    [delete_cond, conn.NOT_IN(self.valueFieldName, db_values)])
+        tnx = conn.getTransaction()
+        old_db_values = conn.selectFieldAsList(self.tableName,
+                                               self.valueFieldName, all_cond)
+        conn.delete(self.tableName, delete_cond)
+        for db_value in db_values:
+            if db_value not in old_db_values:
+                self.insert(item, db_value)
+        tnx.close()
+
+    def delete(self, item_ids, stream):
+        if item_ids:
+            tnx = stream.dbConn.getTransaction()
+            stream.dbConn.delete(self.tableName,
+                                 stream.dbConn.IN(self.idFieldName, item_ids))
+            tnx.close()
+
+
+class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExtFieldTypeMixIn):
+    
+    linkThrough = 0
+    countTemplate = '%(count or "no")s item(s)'
+
+    def __init__(self, **kwargs):
+        FOREIGN_MULTISELECT.__init__(self, **kwargs)
+        self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
+
+    def getIndexLabel(self, value):
+        count = len(value)
+        return qUtils.interpolateString(self.countTemplate, {'count': count})
+
+
+class EXT_VIRTUAL_REFERENCE(FieldType):
+
+    default = None
+    permissions = [('all', 'r')]
+    linkThrough = 0
+    templateStream = None  # must be set
+    omitForNew = 1
+    storeControl = 'never'
+    rewriteToStream = None
+
+    class LazyVirtual:
+        def __init__(self, item, template_stream, rewrite_to_stream=None):
+            self._item = weakref.proxy(item)
+            self._template_stream = template_stream
+            self._rewrite_to_stream = rewrite_to_stream
+        def _stream(self):
+            item = self._item
+            if self._rewrite_to_stream is not None and \
+                   item.stream.id!=self._rewrite_to_stream:
+                new_stream = item.site.retrieveStream(self._rewrite_to_stream,
+                                                      # NB: no transmission
+                                                      # here!
+                                                      tag=item.stream.tag)
+                item = new_stream.retrieveItem(item.id)
+                if item is None:
+                    return
+            
+            for stream in item.virtualStreams:
+                template_stream = getattr(stream.virtual, 'templateStream',
+                                          None)
+                if template_stream is not None and \
+                        template_stream==self._template_stream:
+                    return stream
+        _stream = qUtils.CachedAttribute(_stream)
+        def __nonzero__(self):
+            return self._stream is not None
+        def __getattr__(self, name):
+            if name in ('_stream', '__del__'): # XXX Avoid unlimited
+                                               # recursion due to bug in 
+                                               # decriptiors implementation
+                                               # in 2.2
+                raise AttributeError(name)
+            return getattr(self._stream, name)
+
+    def retrieve(self, item):
+        return self.LazyVirtual(item, self.templateStream,
+                                self.rewriteToStream)
+
+    def store(self, value, item):
+        pass
+
+    def delete(self, item_ids, stream):
+        pass
+
+    def getDefault(self, item=None):
+        return self.retrieve(item)
+
+class IMAGE(FieldType, ExtFieldTypeMixIn):
+
+    editRoot = None
+    pathTemplate = '/images/%(brick.id)s'
+    bad_image_message = 'Unknown format or broken image'
+    format_not_allowed_message = 'Format %(image.format_description)s '\
+                                 'is not allowed'
+    allowed_formats = ('GIF', 'PNG', 'JPEG')
+    linkThrough = 0
+    
+    class _Image:
+        def __init__(self, field_type, item, body=None, old_path=None):
+            self.item = weakref.proxy(item)
+            self.field_type = field_type
+            self.body = body
+            self.old_path = old_path
+        def pattern(self):
+            return qUtils.interpolateString(self.field_type.pathTemplate,
+                                            {'brick': self.item})
+        pattern = qUtils.CachedAttribute(pattern)
+        def path(self):
+            if self.body:
+                return self.pattern+'.'+self._image.format.lower()
+            else:
+                from glob import glob
+                file_list = glob(self.field_type.editRoot+self.pattern+'.*')
+                if file_list:
+                    file_name = file_list[0]
+                    return file_name[len(self.field_type.editRoot):]
+        path = qUtils.CachedAttribute(path)
+        def __str__(self):
+            return self.path
+        def __nonzero__(self):
+            return self.path is not None
+        def _image(self):
+            if self.body is None:
+                if self.path is None:
+                    return
+                fp = open(self.field_type.editRoot+self.path)
+            elif not self.body:
+                return
+            else:
+                from cStringIO import StringIO
+                fp = StringIO(self.body)
+            import PIL.Image
+            try:
+                return PIL.Image.open(fp)
+            except IOError:
+                logger.warn('Broken image in %s', getattr(fp, 'name', '?'))
+                return
+        _image = qUtils.CachedAttribute(_image)
+
+    def convertFromForm(self, form, name, item):
+        old_path =  getattr(getattr(item, name), 'path', None)
+        if form.has_key(name+'-delete'):
+            return self._Image(self, item, '', old_path)
+
+        sources = []
+        try:
+            sources.append(form[name+'-body'].file)
+        except (KeyError, AttributeError):
+            pass
+        try:
+            url = form[name+'-url'].value
+            referer = '/'.join(url.split('/')[:-1])+'/'
+            
+            import urllib2
+            req = urllib2.Request(url=url)
+            req.add_header('Referer', referer)
+            sources.append(urllib2.urlopen(req))
+        except (IOError, KeyError, AttributeError, ValueError):
+            pass
+
+        image = self._Image(self, item)
+        for source in sources:
+            if source is None:
+                continue
+            image_body = source.read()
+            if not image_body:
+                continue
+            image = self._Image(self, item, image_body, old_path)
+            break
+        else:
+            return image
+
+        if image._image is None:
+            message = qUtils.interpolateString(self.bad_image_message,
+                                               {'brick': self})
+            raise self.InvalidFieldContent(message)
+        if image._image.format not in self.allowed_formats:
+            message = qUtils.interpolateString(self.format_not_allowed_message,
+                                       {'brick': self, 'image': image._image})
+            raise self.InvalidFieldContent(message)
+        return image
+
+    def retrieve(self, item):
+        return self._Image(self, item)
+
+    def convertFromCode(self, value, item):
+        return self.retrieve(item)
+
+    def store(self, value, item):
+        if value.body:
+            if value.old_path is not None:
+                 os.remove(self.editRoot+value.old_path)
+            # hack to reset chached value for new item
+            try:
+                del value.pattern
+            except AttributeError:
+                pass
+            try:
+                del value.path
+            except AttributeError:
+                pass
+            qUtils.writeFile(self.editRoot+value.path, value.body)
+        elif value.body is not None:
+            os.remove(self.editRoot+value.path)
+
+    def delete(self, item_ids, stream):
+        for item_id in item_ids:
+            item = stream.retrieveItem(item_id)
+            image = self._Image(self, item)
+            if image:
+                os.remove(self.editRoot+image.path)
+
+class RESTRICTED_IMAGE(IMAGE):
+
+    maxWidth = None
+    maxHeight = None
+    def resizeFilter(self):
+        import PIL.Image
+        return PIL.Image.BILINEAR
+    resizeFilter = property(resizeFilter)
+
+    def convertFromForm(self, form, name, item):
+        value = IMAGE.convertFromForm(self, form, name, item)
+        image = image_orig = value._image
+
+        if image:
+            w,h = image.size
+            maxw, maxh = self.maxWidth, self.maxHeight
+
+            if maxw and w > maxw:
+                image = image.resize((maxw, maxw*h/w), self.resizeFilter)
+                w,h = image.size
+            if maxh and h > maxh:
+                image = image.resize((w*maxh/h, maxh), self.resizeFilter)
+
+            if image != image_orig:
+                from cStringIO import StringIO
+                fp = StringIO()
+                image.save(fp, image_orig.format)
+                fp.seek(0)
+                value = self._Image(self, item, fp.read(),
+                                    getattr(getattr(item, name), 'path', None))
+
+        return value
+
+
+class AgregateFieldType(FieldType):
+
+    def _unescape(self, string):
+        return re.sub(r'\\(.)', r'\1', string)
+
+    def convertFromDB(self, value, item=None):
+        return self.convertFromString(value, item)
+
+    def convertToDB(self, value, item):
+        return self.convertToString(value, item)
+
+    class _Proxy:
+        def __init__(self, item, ext_fields):
+            self.__item = item
+            self.__dict__.update(ext_fields)
+        def __getattr__(self, name):
+            return getattr(self.__item, name)
+
+
+class CONTAINER(AgregateFieldType):
+
+    itemFieldsOrder = []
+    itemFields = {}
+    dictClass = qUtils.DictRecord
+
+    def _split(self, string):
+        return [(self._unescape(key), self._unescape(field))
+                for key, field in 
+                    re.findall(r'(?:^|,)((?:[^\\:]|\\.)*):((?:[^\\,]|\\.)*)',
+                               string)]
+
+    def _join(self, seq):
+        return ','.join([':'.join([self._escape(key), self._escape(field)])
+                         for key, field in seq])
+
+    def _escape(self, string):
+        return re.sub(r'([,:\\])', r'\\\1', string)
+
+    def _child_name(self, name, subname):
+        return '.'.join([name, subname])
+
+    def convertFromCode(self, value, item=None):
+        result = self.dictClass()
+        for key in self.itemFieldsOrder:
+            field_type = self.itemFields[key]
+            result[key] = field_type.convertFromCode(value, item)
+        return result
+    
+    def convertFromString(self, string, item=None):
+        result = self.dictClass()
+        key_field_map = dict(self._split(string))
+        for key in self.itemFieldsOrder:
+            field_type = self.itemFields[key]
+            try:
+                field = key_field_map[key]
+            except KeyError:
+                result[key] = field_type.getDefault(item)
+            else:
+                result[key] = field_type.convertFromString(field)
+        return result
+
+    def convertToString(self, value):
+        seq = []
+        for key, field in value.items():
+            field_type = self.itemFields[key]
+            seq.append((key, field_type.convertToString(field)))
+        return self._join(seq)
+
+    def convertFromForm(self, form, name, item=None):
+        result = self.dictClass()
+        for subname in self.itemFieldsOrder:
+            field_type = self.itemFields[subname]
+            result[subname] = field_type.convertFromForm(form,
+                                    self._child_name(name, subname), item)
+        return result
+
+    def show(self, item, name, template_type, template_getter,
+             global_namespace={}):
+        value = getattr(item, name)
+        subfields = []
+        for subname in self.itemFieldsOrder:
+            field_type = self.itemFields[subname]
+            full_name = self._child_name(name, subname)
+            proxied_item = self._Proxy(item, {full_name: value[subname]})
+            subfields.append(field_type.show(proxied_item, full_name,
+                                             template_type, template_getter,
+                                             global_namespace))
+        namespace = global_namespace.copy()
+        namespace['subfields'] = subfields
+        return FieldType.show(self, item, name, template_type, template_getter,
+                              namespace)
+
+
+class ARRAY(AgregateFieldType):
+
+    length = 3
+    itemField = STRING()
+
+    def _split(self, string):
+        return [self._unescape(field)
+                for field in re.findall(r'((?:[^\\;]|\\.)*);', string)]
+
+    def _join(self, seq):
+        return ';'.join([self._escape(field) for field in seq])+';'
+
+    def _escape(self, string):
+        return re.sub(r'([;\\])', r'\\\1', string)
+
+    def _child_name(self, name, index):
+        return '%s-%s' % (name, index)
+
+    def _fix_length(self, value, item):
+        while len(value)<self.length:
+            value.append(self.itemField.getDefault(item))
+        return value[:self.length]
+    
+    def hideItem(self, value, tag=None):
+        return value is None
+
+    def _filter(self, values, item):
+        tag = item.site.transmitTag(item.stream.tag)
+        return [value for value in values if not self.hideItem(value, tag)]
+    
+    def convertFromCode(self, values, item=None):
+        return self._filter([self.itemField.convertFromCode(value, item)
+                             for value in values], item)
+    
+    def convertFromString(self, string, item=None):
+        return self._filter([self.itemField.convertFromString(field)
+                             for field in self._split(string)], item)
+
+    def convertToString(self, value):
+        return self._join([self.itemField.convertToString(field)
+                           for field in value])
+
+    def convertFromForm(self, form, name, item=None):
+        return self._filter([self.itemField.convertFromForm(form,
+                                    self._child_name(name, index), item)
+                             for index in range(self.length)], item)
+
+    def show(self, item, name, template_type, template_getter,
+             global_namespace={}):
+        value = self._fix_length(getattr(item, name), item)
+        subfields = []
+        for index in range(self.length):
+            full_name = self._child_name(name, index)
+            proxied_item = self._Proxy(item, {full_name: value[index]})
+            subfields.append(self.itemField(title=str(index+1)).show(
+                                    proxied_item, full_name, template_type,
+                                    template_getter, global_namespace))
+        namespace = global_namespace.copy()
+        namespace['subfields'] = subfields
+        return FieldType.show(self, item, name, template_type, template_getter,
+                              namespace)
+
+
+# vim: ts=8 sts=4 sw=4 ai et
