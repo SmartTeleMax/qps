@@ -1,0 +1,8 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%"><%
+if value:
+    %><img src="<%= quoteHTML(value.path) %>"><br>
+<input type="checkbox" name="<%= name %>-delete"> Delete<br><%
+%>
+<input type="file" name="<%= name %>-body">
+</td>
