@@ -1,5 +1,2 @@
 <span tal:replace="getattr(brick, 'title', name)">Title</span>:<br>
-<textarea tal:attributes="cols brick.layout.get('cols');
-                          rows brick.layout.get('rows');
-                          wrap brick.layout.get('wrap')"
-	  readonly="readonly" tal:content="value">Text</textarea>
+<div tal:content="structure quoteHTML(value, pre=1)">Text</div>
