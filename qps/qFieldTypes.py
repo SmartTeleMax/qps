@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.17 2004/06/18 14:57:31 ods Exp $
+# $Id: qFieldTypes.py,v 1.17.2.1 2004/06/30 14:58:48 ods Exp $
 
 '''Classes for common field types'''
 
@@ -1062,6 +1062,9 @@ class FieldDescriptions(object):
     def __getitem__(self, name):
         return self._config_dict[name]
 
+    def get(self, field_name, default=None):
+        return self._config_dict.get(field_name, default)
+
     def has_key(self, name):
         return self._config_dict.has_key(name)
 
@@ -1108,9 +1111,11 @@ class FieldDescriptionsRepository:
             ...
         })
     '''
+
     def __init__(self, config):
         self._config = config
         self._cache = {}
+
     def __getitem__(self, table):
         if not self._cache.has_key(table):
             self._cache[table] = FieldDescriptions(self._config[table])
