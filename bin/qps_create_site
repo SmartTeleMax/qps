@@ -1,3 +1,50 @@
 #!/usr/bin/python
 
-print 'OK'
+import sys, os
+
+python_executable = os.path.normpath(sys.executable)
+
+SITE_TMPL = '''\
+%(setlocale)s\
+%(imports)s
+from qps import qSite
+
+class Site(qSite.Site):
+
+    title = '%(title)s'
+    makeRoot = '%(root)s/www'
+    templateDirs = ['%(root)s/templates']
+%(stream_descs)s\
+%(field_descs)s\
+%(db_params)s
+'''
+
+LOCALE_TMPL = '''\
+import locale
+locale.setlocale(locale.LC_ALL, '%(locale)s')
+
+'''
+STREAM_DESCS_IMPORTS = '''\
+from qps.qUtils import DictRecord
+'''
+
+STREAM_DESCS_TMPL = '''\
+streamDescriptions = {
+    'static_stream_example': DictRecord(
+        title='Static stream title',
+        streamClass='qps.qBricks.qStatic.StaticStream',
+        itemListSpec = [
+            ('id1', {'title': 'First item title'}),
+            ('id2', {'title': 'Second item title'}),
+        ],
+        permissions=[('all', 'rx')]),
+    #'sql_stream_example': DictRecord(
+    #    title='SQL stream example',
+    #    tableName='stream_table',
+    #    condition='',
+    #    order='id',
+    #    streamCat='sql_stream_template_category',
+    #    streamClass='qps.qBricks.qSQL.SQLStream',
+    #    permissions=[('editor', 'rwxcd'), ('all', 'rx')]),
+}
+'''
