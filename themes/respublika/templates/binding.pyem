@@ -8,7 +8,27 @@ if brick.site.clientCharset:
 %>
 <style>
 <%= template('style', brick=brick) %>
-</style>
+</style><%
+if updated:
+    %>
+<script src="<%= template.publisher.staticPrefix %>/rpc.js">
+</script>
+
+<script>
+url = '<%= template.publisher.prefix+bound.path() %>?qps-action:showField=1&field=<%= fieldName %>';
+doc = window.opener.document;
+req = request();
+if (req != null) {
+    req.open("GET", url);
+    req.onreadystatechange = function() {
+        if (req.readyState==4 && req.responseText) {
+            doc.getElementById('field-<%= fieldName %>').innerHTML=req.responseText;
+        }
+    };
+    req.send(null);
+}
+</script><%
+%>
 </head>
 <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
 <table cellpadding=12 cellspacing=0 height="100%" width="100%">
