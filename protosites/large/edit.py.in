@@ -15,14 +15,14 @@ class Edit(qps.qEdit.EditBase, qps.qCommands.Publisher,
            qps.qCommands.FieldNameCommandDispatcher,
            qps.qSecurity.CookieAuthHandler):
     usersStream = "security_users"
-    templateDirs = [%(edit_templates_dir)s]
-    fieldTemplateDirs = [%(field_templates_dir)s]
+    templateDirs = ["%(edit_templates_dir)s"]
+    fieldTemplateDirs = ["%(field_templates_dir)s"]
 
 
 class Handler(Edit.Handler):
     def __init__(self):
         site = Site.Site()
-        self._commands = Edit.Edit(site)
+        self.__commands = Edit.Edit(site)
 
 handler = Handler()
 
