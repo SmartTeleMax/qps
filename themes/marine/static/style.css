@@ -57,6 +57,16 @@ table.centermenu tr td {
   color: #AA0000;
 }
 
+table.loginmenu tr td {
+  border: 1px solid #666666;
+  padding: 0.5em;
+  background-color: #FFFFFF;
+  text-align: left;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  color: #AA0000;
+}
+
 table.centermenu tr td a {
   text-decoration: none;
   color: #000000;
