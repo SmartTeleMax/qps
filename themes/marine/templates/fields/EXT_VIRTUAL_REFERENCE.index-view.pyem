@@ -1,5 +1,5 @@
 <%
 if value:
-    %><a href="<%= edPrefix+value.path() %>">&gt;&gt;</a><%
+    %><a href="<%= quoteHTML(edPrefix+value.path()) %>">&gt;&gt;</a><%
 else:
     %>&mdash;

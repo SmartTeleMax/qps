@@ -18,6 +18,6 @@ if value and value not in stream:
 %></select>
 <%
 if not isNew and stream.indexNum!=0 and len(stream)>=stream.indexNum:
-    %><a href="<%= quoteHTML('%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (edPrefix, stream.path(), item.path(), name)) %>">more &gt;&gt;</a>
+    %><a href="<%= quoteHTML('%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (edPrefix, stream.path(), quoteFormField(item.path()), quoteFormField(name))) %>">more &gt;&gt;</a>
 <%
 %></td>    

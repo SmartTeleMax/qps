@@ -1,7 +1,7 @@
 <td class="name"><%= getattr(brick, 'title', name) %>:</td>
 <td width="100%"><%
 if value:
-    %><a href="<%= edPrefix+value.path() %>">&gt;&gt;</a><%
+    %><a href="<%= quoteHTML(edPrefix+value.path()) %>">&gt;&gt;</a><%
 else:
     %>&mdash;<%
 %></td>
