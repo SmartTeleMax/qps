@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.8 2004/06/09 10:01:43 corva Exp $
+# $Id: qSQL.py,v 1.9 2004/06/10 11:24:15 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -6,6 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 import qBase
 from qps import qUtils
+from qps.qDB.qSQL import Query, Param
 
 
 class SQLItem(qBase.Item):
@@ -33,10 +34,9 @@ class SQLItem(qBase.Item):
 
     def sqlCondition(self):
         '''Return SQL condition for this item'''
-        return "%s.id=%s" % \
-               (self.stream.tableName,
-                self.dbConn.convert(
-                    self.fields['id'].convertToDB(self.id, self)))
+        return Query(
+            "%s.%s=" % (self.stream.tableName, self.fields.idFieldName),
+            Param(self.fields.id.convertToDB(self.id, self)))
 
     def exists(self, ignoreStatus=0):
         '''Return True if item exists in DB and False otherwise'''
@@ -100,16 +100,24 @@ class SQLItem(qBase.Item):
         tnx = self.dbConn.getTransaction()
         if not self.exists(1):
             # INSERT
-            id_field_type = self.fields['id']
-            if not (id_field_type.omitForNew and self.id is None):
-                fields['id'] = id_field_type.convertToDB(self.id, self)
+            id_field_type = self.fields.id
+            id_field_name = self.fields.idFieldName
+            # XXX fields already have id field from prepareFieldsForDB
+            #if not (id_field_type.omitForNew and self.id is None):
+            #    fields[id_field_name] = id_field_type.convertToDB(self.id,self)
             cursor = self.dbConn.insert(self.stream.tableName, fields)
 
             if id_field_type.omitForNew and self.id is None:
                 # Auto-increment support
                 self.id = id_field_type.convertFromDB(
-                        self.dbConn.lastInsertID(self.stream.tableName, 'id'),
+                        self.dbConn.lastInsertID(self.stream.tableName,
+                                                 id_field_name),
                         self)
+            if self.id is None and fields[id_field_name] is not None:
+                # Auto-increment support: field generated id before store,
+                # we already stored id to DB, but self.id is still None
+                self.id = id_field_type.convertFromDB(
+                    fields[id_field_name], self)
             self._exists = 1
         elif fields:
             # UPDATE
@@ -120,12 +128,11 @@ class SQLItem(qBase.Item):
             join_field_type = self.fields[self.stream.joinField]
             param_db_value = join_field_type.itemField.convertToDB(param_value,
                                                                    self)
-            id_db_value = self.fields['id'].convertToDB(self.id, self)
-            condition = '%s=%s AND %s=%s' % (
-                                    join_field_type.idFieldName,
-                                    self.dbConn.convert(id_db_value),
-                                    self.stream.virtual.paramName,
-                                    self.dbConn.convert(param_db_value))
+            id_db_value = self.fields.id.convertToDB(self.id, self)
+            condition = Query(
+                '%s=' % join_field_type.idFieldName, Param(id_db_value),
+                ' AND %s=' % self.stream.virtual.paramName,
+                Param(param_db_value))
             self.dbConn.update(self.stream.joinTable, join_fields, condition)
         self.storeExtFields(names)
         tnx.close()
@@ -153,14 +160,19 @@ class SQLStream(qBase.Stream):
     def addToCondition(self, new_cond, op="AND"):
         if new_cond:
             if self.condition:
-                self.condition = '(%s) %s (%s)' % (self.condition, op, new_cond)
+                self.condition = '('+self.condition+') '+op+\
+                                 ' ('+new_cond+')'
             else:
                 self.condition = new_cond
 
     def createItemFromDB(self, db_row):
         # For internal use: create item from dictionary of fields
-        id = self.fields['id'].convertFromDB(db_row['id'], self)
-        del db_row['id']
+        id_field_name = self.fields.idFieldName
+        id = self.fields.id.convertFromDB(db_row[id_field_name], self)
+        if id_field_name == 'id':
+            # id field in object and database has the same name
+            # to prevent convertion in initFieldsFromDB we delete it from a row
+            del db_row[id_field_name]
         item = self.itemClass(self.site, self, id)
         item.initFieldsFromDB(db_row)
         item._retrieved = 1
@@ -247,7 +259,7 @@ class SQLStream(qBase.Stream):
                 self.deleteExtFields(item_ids)
                 cursor = self.dbConn.delete(
                     self.tableName,
-                    self.dbConn.IN('id', item_ids))
+                    self.dbConn.IN(self.fields.idFieldName, item_ids))
                 number_of_deleted = cursor.rowcount
             tnx.close()
             self.storeHandler.handleItemsDelete(self, item_ids)
