@@ -1,6 +1,6 @@
-# $Id: streamDescriptions.py,v 1.1 2004/06/04 10:50:06 ods Exp $
+# $Id: streamDescriptions.py,v 1.2 2004/06/04 11:46:40 ods Exp $
 from qps.qUtils import DictRecord
-from qps.qVirtual import CommonVirtualStream
+from qps.qVirtual import CommonVirtualRule
 
 
 streamDescriptions = {
@@ -31,8 +31,8 @@ streamDescriptions = {
 
 virtualStreamRules = [
 
-    CommonVirtualStream('docs', 'rubrics', 'rubric',
-                        streamParams=DictRecord(
+    CommonVirtualRule('docs', 'rubrics', 'rubric',
+                      streamParams=DictRecord(
                             streamMakers=['qps.qMake.ItemsMaker',
                                           'qps.qMake.Maker'],
                             itemMakers=['qps.qMake.Maker'])),
