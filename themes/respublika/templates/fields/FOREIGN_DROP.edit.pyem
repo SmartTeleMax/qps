@@ -2,11 +2,17 @@
 <span class=a12><%
 if stream.indexNum:
     if value:
-        %><%= brick.getLabel(value) %><br><%
+        %><span id="span_<%= name %>"><%= brick.getLabel(value) %><br></span><%
     if not isNew:
         href = edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name
         %>
-<a href="<%= href %>" onclick="javascript:var new_window=window.open('<%= href %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;"><span class=t12 id=db1>&gt;&gt;</span></a><%
+<input id="input_<%= name %>" type="hidden" name="<%= name %>" value="<%
+        if value:
+             %><%= value.id %><%
+        %>">
+<a href="<%= href %>" onclick="javascript:var new_window=window.open('<%= href %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;" title="Выбрать"><span class=t12 id=db1>&gt;&gt;</span></a><%
+    if value:
+        %><span id="link_<%= name %>"> &nbsp;<a href="#" title="Очистить" onclick="document.getElementById('input_<%= name %>').value=''; document.getElementById('span_<%= name %>').innerHTML='<%= brick.extra_option and brick.extra_option + '<br>' or '' %>'; document.getElementById('link_<%= name %>').innerHTML=''; return false;"><span class=t12 id=db1>[x]</span></a></span><%
 else:
     %>
 <select name="<%= name %>" <%= str(brick.layout) %> class=a12><%
