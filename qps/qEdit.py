@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.4 2004/04/07 14:08:08 ods Exp $
+# $Id: qEdit.py,v 1.5 2004/04/07 18:52:49 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -405,7 +405,7 @@ class EditBase:
                     except field_type.InvalidFieldContent, exc:
                         logger.warning(
                                 'Error in updateStream for field %s: %s',
-                                field_name, exc)
+                                field_name, exc.message)
                 if changed_fields:
                     item.store(changed_fields)
 
