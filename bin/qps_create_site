@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.10 2004/03/25 12:24:08 ods Exp $
+# $Id: qps_create_site,v 1.11 2004/04/07 08:51:36 ods Exp $
 
 import sys, os, shutil
 sys.path.append('..')  # let it work without installation
@@ -21,8 +21,8 @@ class SiteProtos:
         self.protos_dir = protos_dir
 
     def list(self):
-        for path in os.listdir(protos_dir):
-            if os.path.isfile(os.path.join(protos_dir, path, 'MANIFEST')):
+        for path in os.listdir(self.protos_dir):
+            if os.path.isfile(os.path.join(self.protos_dir, path, 'MANIFEST')):
                 yield os.path.basename(path)
 
     def copy(self, proto, code_dir, vars, force=0):
@@ -44,9 +44,11 @@ class SiteProtos:
                     self.copyTemplate(src+'.in', dst, vars)
 
     def copyFile(self, src, dst):
+        mkdir(os.path.dirname(dst))
         shutil.copy(src, dst)
 
     def copyTemplate(self, src, dst, vars):
+        mkdir(os.path.dirname(dst))
         fp = open(src, 'rb')
         body = fp.read()
         fp.close()
