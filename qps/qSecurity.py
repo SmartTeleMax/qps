@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
+# $Id: qSecurity.py,v 1.2 2004/06/07 21:04:46 corva Exp $
 
 '''Function to check permissions'''
 
@@ -166,7 +166,7 @@ class CookieAuthHandler:
             user = stream.getUser(login)
 
             if user:
-                passwd_field = user.stream.allItemFields['passwd']
+                passwd_field = user.fields['passwd']
                 if passwd_field.crypt(passwd) == user.passwd:
                     # success!
                     if perm_login:

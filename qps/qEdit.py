@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.16 2004/06/07 12:58:23 ods Exp $
+# $Id: qEdit.py,v 1.17 2004/06/08 15:32:22 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -60,7 +60,7 @@ class RenderHelper(qWebUtils.RenderHelper):
         # assume stream.type=='stream':
         allowedIndexFields = self.allowedIndexFields(stream)
         if self.user.checkPermission('w', stream.permissions):
-            item_fields = stream.allStreamFields
+            item_fields = stream.indexFields
             for field_name in allowedIndexFields:
                 field_type = item_fields[field_name]
                 if self.user.checkPermission('w', field_type.indexPermissions):
@@ -105,7 +105,7 @@ class RenderHelper(qWebUtils.RenderHelper):
     def showFieldInIndex(self, item, name, allow_edit=1):
         '''Return representation of field in stream'''
         stream = item.stream
-        field_type = stream.allStreamFields[name]
+        field_type = stream.indexFields[name]
         stream_perms = self.user.getPermissions(stream.permissions)
         perms = self.user.getPermissions(field_type.indexPermissions)
         if allow_edit and 'w' in stream_perms and 'w' in perms:
@@ -321,7 +321,7 @@ class EditBase:
         if not user.checkPermission('w', stream.permissions):
             raise self.ClientError(403, self.edit_denied_error)
         updatable_fields = self.storableIndexFields(stream, user)
-        item_fields = stream.allStreamFields
+        item_fields = stream.indexFields
         if updatable_fields:
             item_id_strs = {}  # simulating set
             for name in form.keys():

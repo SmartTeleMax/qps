@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.13 2004/03/16 15:48:21 ods Exp $
+# $Id: qPath.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
 
 '''Standard QPS path parser'''
 
@@ -47,7 +47,7 @@ class PathParser:
             if item_id==self.index_file:
                 return (self.site, stream)
             try:
-                item_id = stream.itemIDField.convertFromString(item_id)
+                item_id = stream.fields['id'].convertFromString(item_id)
             except:
                 return (self.site, stream, None)
             return (self.site, stream, stream.retrieveItem(item_id))
@@ -96,7 +96,7 @@ class FilteredStreamLoader(PagedStreamLoader):
                              )
             elif field_name.startswith('qps-exactmatch:'):
                 db_field = field_name[len('qps-exactmatch:'):]
-                field_type = stream.allItemFields[db_field]
+                field_type = stream.fields[db_field]
                 value = field_type.convertFromForm(self.form, field_name, item)
                 conds.append("%s=%s" % \
                              (db_field, field_type.convertToDB(value, item))
