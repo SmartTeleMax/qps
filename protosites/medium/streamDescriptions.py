@@ -1,4 +1,4 @@
-# $Id: streamDescriptions.py,v 1.4 2004/06/08 07:59:57 ods Exp $
+# $Id: streamDescriptions.py,v 1.5 2004/06/09 10:18:15 ods Exp $
 from qps.qUtils import DictRecord
 from qps.qVirtual import VirtualRule
 
@@ -10,8 +10,8 @@ streamDescriptions = {
         tableName='*rubrics*',
         streamClass='qps.qBricks.qStatic.StaticStream',
         itemListSpec=[
-            ('id1', {'title': 'First rybric title'}),
-            ('id2', {'title': 'Second rubric title'}),
+            {'id': 'id1', 'title': 'First rybric title'},
+            {'id': 'id2', 'title': 'Second rubric title'},
         ],
         streamMakers=['qps.qMake.ItemsMaker'],
         itemMakers=['qps.qMake.VirtualsMaker'],
