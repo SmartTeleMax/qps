@@ -62,14 +62,14 @@ class qps_build(build):
             self.build_pydoc = os.path.join(self.build_base, 'pydoc')
 
 
-def rglob(dir):
+def rglob(where, dir):
     result = []
     for root, dirs, files in os.walk(dir):
         if 'CVS' in dirs:
             dirs.remove('CVS')
-        for file in files:
-            if not (file.startswith('.') or file.endswith('~')):
-                result.append(os.path.join(root, file))
+        files = [file for file in files
+                 if not (file.startswith('.') or file.endswith('~'))]
+        result.append((os.path.join(where, root), files))
     return result
 
 
@@ -94,9 +94,7 @@ setup(name='QPS',
                    'QPS-%s.tar.gz?download' % qps.__version__,
       packages=['qps', 'qps.qDB', 'qps.qBricks'],
       scripts=['bin/qps_create_site'],
-      data_files=[
-        ('share/QPS', rglob('themes')),
-      ],
+      data_files=rglob('share/QPS', 'themes'),
       cmdclass={
         'build'         : qps_build,
         'build_pydoc'   : qps_build_pydoc,
