@@ -2,7 +2,7 @@
 if not globals().has_key('fieldErrors'):
     fieldErrors = {}
 
-if brick.isNew:
+if template.isNew:
     item_title = "new object"
 elif hasattr(brick, 'title'):
     item_title = brick.title
@@ -17,7 +17,7 @@ if brick.site.clientCharset:
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
 %>
 <style>
-<%= brick.template('style') %>
+<%= template('style', brick=brick) %>
 </style>
 
   </head>
@@ -27,7 +27,7 @@ if brick.site.clientCharset:
 <tr valign="top">
 <!-- nav -->
 <td width="218" bgcolor="#e1e4e6">
-<%= brick.template('inc_navigation') %>
+<%= template('inc_navigation', brick=brick) %>
 </td>
 <!-- /nav -->
 
@@ -44,8 +44,8 @@ alert('Внимание, произошла ошибка заполнения полей кирпича, информация не была с
 </script><%
 %>
 
-<form action="<%= brick.edPrefix %><%
-if brick.isNew:
+<form action="<%= template.edit.prefix %><%
+if template.isNew:
     %><%= brick.stream.path() %><%
 else:
     %><%= brick.path() %><%
@@ -57,24 +57,24 @@ else:
 <tr><td>
 <table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
 <tr bgcolor="#354750"><td width="100%">
-<a href="<%= brick.edPrefix %><%= brick.stream.path() %><%
+<a href="<%= template.edit.prefix %><%= brick.stream.path() %><%
 if brick.stream.page>1:
     %>?page=<%= brick.stream.page %>&order=<%= quoteURLPath(brick.stream.order) %><%
 %>"><span class=t18b id=lb><b><%= brick.stream.title %></b></span></a><span class=t18b id=lb><b>: <%= item_title %></b></span>
 <br>
 </td></tr><%
-for field in brick.allowedFields:
+for field in template.allowedFields(brick):
     %>
 <tr bgcolor="#F0F1F2"><td><%
     if fieldErrors and fieldErrors.has_key(field):
         %><span class="t11b" id="y1"><%= fieldErrors[field] %></span><br><span class="s3">&nbsp;</span><br><%
     %>
-<%= brick.showField(field) %>
+<%= template.showField(brick, field) %>
 </td></tr><%
 %>
 
 <tr bgcolor="#E1E4E6"><td><center><input type="submit" name="qps-action:<%
-if brick.isNew:
+if template.isNew:
     %>createItem<%
 else:
     %>updateItem<%

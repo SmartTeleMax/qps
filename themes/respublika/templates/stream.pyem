@@ -7,7 +7,7 @@ if brick.site.clientCharset:
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
 %>
 <style>
-<%= brick.template('style') %>
+<%= template('style', brick=brick) %>
 </style>
    </head>
 
@@ -16,7 +16,7 @@ if brick.site.clientCharset:
 <tr valign="top">
 <!-- nav -->
 <td width="218" bgcolor="#e1e4e6">
-<%= brick.template('inc_navigation') %>
+<%= template('inc_navigation', brick=brick) %>
 </td>
 <!-- /nav -->
 
@@ -24,18 +24,18 @@ if brick.site.clientCharset:
 <td width="100%">
 
 <div align="center">
-<form action="<%= brick.edPrefix + brick.path() %>" method="POST">
+<form action="<%= template.edit.prefix + brick.path() %>" method="POST">
 <table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
 <tr><td bgcolor="#354750">
 <span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
 </td></tr>
 
-<%= brick.template('inc_browse', uri=brick.edPrefix+brick.path()+'?fixme=1') %>
+<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
 
 <!-- новый элемент -->
-<tr bgcolor="#E1E4E6"><td align="center"><a href="<%= brick.edPrefix + brick.path() + '?qps-action:newItem=1' %>"><span class=t12b id=y1>Новый элемент</span></a><%
-if hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField]):
-    %>&nbsp; <span id=y1>|</span>&nbsp; <a href="<%= brick.edPrefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>" onclick="javascript:var new_window=window.open('<%= brick.edPrefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes'); return false;"><span class=t12b id=y1>Перевязать</span></a><%
+<tr bgcolor="#E1E4E6"><td align="center"><a href="<%= template.edit.prefix + brick.path() + '?qps-action:newItem=1' %>"><span class=t12b id=y1>Новый элемент</span></a><%
+if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.allItemFields[brick.joinField]):
+    %>&nbsp; <span id=y1>|</span>&nbsp; <a href="<%= template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>" onclick="javascript:var new_window=window.open('<%= template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes'); return false;"><span class=t12b id=y1>Перевязать</span></a><%
 %></td></tr>
 <!-- /новый элемент -->
 
@@ -47,7 +47,7 @@ if brick:
 <table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6>
 <!-- fields titles -->
     <tr bgcolor="#A0AAB1"><%
-    for field_name in brick.allowedIndexFields:
+    for field_name in template.allowedIndexFields(brick):
         field_type = brick.allStreamFields[field_name]
         %>
         <td nowrap>
@@ -74,10 +74,10 @@ if brick:
         %>
 
     <tr valign="top"><%
-        for field in brick.allowedIndexFields:
+        for field in template.allowedIndexFields(brick):
             %>
         <td bgcolor=#F0F1F2>
-<%= brick.showFieldInIndex(item, field) %>
+<%= template.showFieldInIndex(item, field) %>
         </td><%
         %>
         <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= brick.itemIDField.convertToString(item.id) %>"></center>
@@ -88,13 +88,13 @@ if brick:
 
 </td></tr>
 <tr bgcolor="#E1E4E6"><td align="right"><%
-    if brick.isStreamUpdatable:
+    if template.isStreamUpdatable(brick):
         %>
-&nbsp; <input type="submit" name="qps-action:updateStream" value="Обновить"><%
+&nbsp; <input type="submit" name="qps-action:updateItems" value="Обновить"><%
     if hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField]):
         %>
 &nbsp; <input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
-    if'd' in brick.getPermissions():
+    if'd' in template.getPermissions(brick):
         %>&nbsp; <input type="submit" name="qps-action:deleteItems" value="Удалить"><%
     %>
 </td></tr><%
@@ -105,7 +105,7 @@ else:
 </td></tr><%
 %>
 
-<%= brick.template('inc_browse', uri=brick.edPrefix+brick.path()+'?fixme=1') %>
+<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
 
 </table>
 </form>

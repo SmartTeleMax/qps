@@ -7,7 +7,7 @@ if brick.site.clientCharset:
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
 %>
 <style>
-<%= brick.template('style') %>
+<%= template('style', brick=brick) %>
 </style>
 
   </head>
@@ -17,7 +17,7 @@ if brick.site.clientCharset:
 <tr valign="top">
 <!-- nav -->
 <td width="218" bgcolor="#e1e4e6">
-<%= brick.template('inc_navigation') %>
+<%= template('inc_navigation', brick=brick) %>
 </td>
 <!-- /nav -->
 
