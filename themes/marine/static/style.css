@@ -29,16 +29,22 @@ table.topmenu tr td {
   background-color: #FFFFFF;
   color: #205F8A;
   text-align: center;
-  font-family: Tahoma, Arial, Helvetica, sans-serif;
-  font-weight: bold;
+  font: bold 0.9em Tahoma, Arial, Helvetica, sans-serif;
 }
 
-table.topmenu tr td a {
+.sitetitle {
   color: #205F8A;
+  font: bold 1em Tahoma, Arial, Helvetica, sans-serif;
 }
 
-table.topmenu tr td a:hover {
+table.topmenu tr td a, .sitetitle a {
+  color: #205F8A;
+  text-decoration: none;
+}
+
+table.topmenu tr td a:hover, .sitetitle a:hover {
   color: #CC0000;
+  text-decoration: underline;
 }
 
 table.centermenu tr td {

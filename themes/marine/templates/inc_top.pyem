@@ -11,15 +11,17 @@ if styleSheetURL:
 <body>
 <table width="100%">
 <tr>
-<td width="20%">
-<%
+<td align="left" class="sitetitle">
+<a href="<%= brick.edPrefix+'/' %>"><%
 logoURL = getattr(brick, 'logoURL', None)
 if logoURL:
-    %><a href="<%= brick.edPrefix+'/' %>"><img src="<%= quoteHTML(logoURL) %>" alt="Editor interface of &quot;<%= brick.site.title %>&quot;"><%
-%>
+    %><img src="<%= quoteHTML(logoURL) %>" alt="Editor interface of &quot;<%= brick.site.title %>&quot;"><%
+else:
+    %>Editor interface of <q><%= brick.site.title %></q><%
+%></a>
 </td>
-<td width="80%">
-<table class="topmenu" width="100%"><tr>
+<td align="right">
+<table class="topmenu"><tr>
 <%
 for stream in brick.allowedStreams:
     if getattr(stream, 'showInMenu', 0):
