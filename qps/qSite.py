@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.2 2004/03/19 14:35:18 ods Exp $
+# $Id: qSite.py,v 1.3 2004/04/02 12:25:40 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -34,7 +34,7 @@ class Site(object):
     transmitTags = {'edit'  : 'edit',
                     'delete': 'all'}
 
-    def globalNamespace(self):
+    def globalNamespace(cls):
         import cgi, urllib
         return {'quoteHTML'     : lambda s: cgi.escape(s, 1),
                 'quoteFormField': urllib.quote_plus,
