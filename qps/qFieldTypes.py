@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.48 2005/02/22 12:15:57 ods Exp $
+# $Id: qFieldTypes.py,v 1.49 2005/03/16 16:29:32 ods Exp $
 
 '''Classes for common field types'''
 
@@ -862,9 +862,12 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
 
 
 class RESTRICTED_IMAGE(IMAGE):
-
+    # maxWidth and maxHeight are obsoleted, use width and height
     maxWidth = None
     maxHeight = None
+    width  = qUtils.ReadAliasAttribute('maxWidth')
+    height = qUtils.ReadAliasAttribute('maxHeight')
+    
     def resizeFilter(self):
         import PIL.Image
         return PIL.Image.ANTIALIAS
@@ -876,7 +879,7 @@ class RESTRICTED_IMAGE(IMAGE):
 
         if value.body and image:
             w,h = image.size
-            maxw, maxh = self.maxWidth, self.maxHeight
+            maxw, maxh = self.width, self.height
 
             if maxw and w > maxw:
                 image = image.resize((maxw, maxw*h/w), self.resizeFilter)
