@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.17 2004/06/18 14:57:31 ods Exp $
+# $Id: qFieldTypes.py,v 1.18 2004/06/29 08:47:52 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1091,6 +1091,12 @@ class FieldDescriptions(object):
 
     def has_key(self, field_name):
         return self._config_dict.has_key(field_name)
+
+    def get(self, field_name, default=None):
+        try:
+            return self[field_name]
+        except KeyError:
+            return default
 
     def external(self):
         return FieldDescriptions(
