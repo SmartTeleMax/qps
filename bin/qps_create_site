@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.7 2004/03/22 15:58:44 ods Exp $
+# $Id: qps_create_site,v 1.8 2004/03/23 15:27:54 ods Exp $
 
 import sys, os, shutil
 sys.path.append('..')  # let it work without installation
@@ -71,8 +71,8 @@ for share_dir in [prefix, os.path.join(prefix, 'share', 'QPS')]:
 else:
     sys.exit('"protosites" directory not found. Make sure QPS is installed '\
              'correctly')
-edit_templates_dir = os.path.join(share_dir, 'themes', 'default')
-field_templates_dir = os.path.join(share_dir, 'themes', 'default', 'fields')
+edit_templates_dir = os.path.join(share_dir, 'themes', 'default', 'templates')
+field_templates_dir = os.path.join(edit_templates_dir, 'fields')
 
 protos = SiteProtos(protos_dir)
 protos_list = protos.list()
