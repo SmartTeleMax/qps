@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.19 2004/07/05 07:05:09 corva Exp $
+# $Id: qFieldTypes.py,v 1.20 2004/07/05 10:18:18 ods Exp $
 
 '''Classes for common field types'''
 
@@ -1069,6 +1069,9 @@ class FieldDescriptions(object):
     def __getitem__(self, name):
         return self._config_dict[name]
 
+    def __add__(self, other):
+        return FieldDescriptions(self._config + other._config)
+                                 
     def has_key(self, name):
         return self._config_dict.has_key(name)
 
