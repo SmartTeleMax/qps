@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.5 2004/06/09 06:53:31 corva Exp $
+# $Id: qSQL.py,v 1.6 2004/06/09 07:17:42 ods Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -17,22 +17,14 @@ class SQLItem(qBase.Item):
                 value = fields[field_name].convertFromDB(db_value, item=self)
                 setattr(self, field_name, value)
 
-    def prepareFieldsForDB(self):
+    def prepareFieldsForDB(self, fields):
         '''Reverse for initFieldsFromDB: return dictionary with current values
-        of fields suitable to store in DB'''
+        of fields suitable to store in DB, fields param is a FieldDescriptions
+        object'''
         # XXX This code would be faster in place of use
         # another solution - adding optional field_names argument
         fields = {}
-        for field_name, field_type in self.fields.iteritems():
-            if field_type.storeControl!='never':
-                fields[field_name] = field_type.convertToDB(
-                    getattr(self, field_name),
-                    self)
-        return fields
-
-    def prepareJoinFieldsForDB(self):
-        fields = {}
-        for field_name, field_type in self.stream.joinFields.items():
+        for field_name, field_type in fields.iteritems():
             if field_type.storeControl!='never':
                 fields[field_name] = field_type.convertToDB(
                     getattr(self, field_name),
@@ -96,8 +88,8 @@ class SQLItem(qBase.Item):
 
     def store(self, names=None):
         '''Store data of item (new or existing) in DB'''
-        fields = self.prepareFieldsForDB()
-        join_fields = self.prepareJoinFieldsForDB()
+        fields = self.prepareFieldsForDB(fields=self.fields.main)
+        join_fields = self.prepareFieldsForDB(fields=self.stream.joinFields)
         # remove from fields read-only fields
         for field_name in fields.keys():
             field_type = self.indexFields[field_name]
