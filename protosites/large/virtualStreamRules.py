@@ -1,11 +1,11 @@
 from qps.qUtils import DictRecord
-from qps.qVirtual import CommonVirtualRule
+from qps.qVirtual import VirtualRule
 from qps.qSecurity import perm_all, perm_read, perm_list, perm_edit, \
      perm_delete
 from streamDescriptions import Maker
 
 virtualStreamRules = [
-    CommonVirtualRule(
+    VirtualRule(
         templateStream='documents',
         paramStream='rubrics',
         paramName='rubric',

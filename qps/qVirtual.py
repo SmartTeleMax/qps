@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.2 2004/06/04 11:43:44 ods Exp $
+# $Id: qVirtual.py,v 1.3 2004/06/08 07:42:44 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -17,7 +17,7 @@ from qUtils import CachedAttribute, interpolateString
 #   itemParamNames  - list of parameters to be initialized in item (default is
 #                     [paramName])
 
-class CommonVirtualRule:
+class VirtualRule:
     '''Class for rules of virtual streams with single parameter.  Stream ID is
     formed as prefix+'/'+item_id_from_paramStream.  Default value for prefix is
     stream_id_of_paramStream.'''
@@ -89,6 +89,6 @@ class CommonVirtualRule:
         #         for name in self.itemParamNames])
 
 
-CommonVirtualStream = CommonVirtualRule
+CommonVirtualStream = VirtualRule
 
 # vim: ts=8 sts=4 sw=4 ai et
