@@ -2,7 +2,14 @@
 <td width="100%"><%
 if value:
     %><img src="<%= quoteHTML(edPrefix+value.path) %>"><br>
-<input type="checkbox" name="<%= name %>-delete"> Delete<br><%
-%>
-<input type="file" name="<%= name %>-body">
-</td>
+Delete:<br><input type="checkbox" name="<%= name %>-delete" value="y"><br><%
+if brick.allowFile:
+    %>
+File:<br>
+<input type="file" name="<%= name %>-body"><br><%
+if brick.allowUrl:
+    %>
+URL:<br>
+<input type="text" name="<%= name %>-url"><br><%
+%></td>
+
