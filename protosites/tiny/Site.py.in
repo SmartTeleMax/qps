@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.7 2004/04/06 11:07:38 ods Exp $
+# $Id: Site.py.in,v 1.8 2004/04/06 11:17:44 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -19,11 +19,17 @@ class Site(qSite.Site):
         'rubrics': DictRecord(
             title='Rubrics',
             streamClass='qps.qBricks.qStatic.StaticStream',
+            itemFieldsOrder = ['title'],
+            itemFields = {
+                'title' : FT.STRING(title='Title',
+                                    indexPermissions=[('all', 'r')]),
+            },
             itemListSpec = [
                 ('id1', {'title': 'First rybric title'}),
                 ('id2', {'title': 'Second rubric title'}),
             ],
-            #streamMakers=['qps.qMake.Maker'],
+            #streamMakers=['qps.qMake.ItemsMaker'],
+            #itemMakers=['qps.qMake.VirtualsMaker'],
             permissions=[('all', 'rx')]),
         #'docs': DictRecord(
         #    title='Documents',
@@ -31,7 +37,15 @@ class Site(qSite.Site):
         #    condition='',  # raw SQL condition to place into WHERE clause
         #    order='id',
         #    indexNum=10,   # number of items on page
-        #    streamCat='sql_stream_template_category',
+        #    itemIDField=FT.INTEGER_AUTO_ID(),
+        #    itemFieldsOrder=['rubric', 'title', 'body'],
+        #    itemFields={
+        #        'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics'),
+        #        'title' : FT.STRING(title='Title',
+        #                            indexPermissions=[('all', 'r')]),
+        #        'body'  : FT.TEXT(title='Body text'),
+        #    },
+        #    streamCat='docs',
         #    streamClass='qps.qBricks.qSQL.SQLStream',
         #    permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
     }
@@ -42,22 +56,4 @@ class Site(qSite.Site):
     #                                          'qps.qMake.Maker'],
     #                            itemMakers=['qps.qMake.Maker'])),
     #]
-    itemFieldsOrder = {
-        #'docs': ['rubric', 'title', 'body'],
-    }
-    itemIDFields = {
-        #'docs': FT.INTEGER_AUTO_ID(),
-    }
-    itemFields = {
-        'rubrics': {
-            'title' : FT.STRING(title='Title',
-                                indexPermissions=[('all', 'r')]),
-        },
-        #'docs': {
-        #    'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics'),
-        #    'title' : FT.STRING(title='Title',
-        #                        indexPermissions=[('all', 'r')]),
-        #    'body'  : FT.TEXT(title='Body text'),
-        #},
-    }
     dbParams = {'user': 'test', 'db': 'test', 'passwd': 'secret'}
