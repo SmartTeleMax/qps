@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.19 2004/06/09 07:17:41 ods Exp $
+# $Id: qEdit.py,v 1.20 2004/06/10 11:24:15 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -38,9 +38,8 @@ class RenderHelper(qWebUtils.RenderHelper):
 
     def allowedFields(self, item):
         # assume item.type=='item'
-        stream = item.stream
         itemFieldsOrder = []
-        for field_name, field_type in stream.fields.iteritems():
+        for field_name, field_type in item.fields.iteritems():
             perms = self.user.getPermissions(field_type.permissions)
             if 'w' in perms or 'r' in perms and \
                     not (self.isNew and field_type.omitForNew):
@@ -164,9 +163,9 @@ class EditBase:
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
 
-    def storableFields(self, stream, user):
+    def storableFields(self, item, user):
         itemFieldsOrder = []
-        for field_name, field_type in stream.fields.iteritems():
+        for field_name, field_type in item.fields.iteritems():
             if field_name!='id' and \
                     user.checkPermission('w', field_type.permissions):
                 itemFieldsOrder.append(field_name)
@@ -250,7 +249,7 @@ class EditBase:
         if not (id_field_type.omitForNew or errors) and item.exists()==1:
             raise self.ClientError(403, self.existing_id_error)
         errors.update(item.initFieldsFromForm(
-                        form, names=self.storableFields(stream, user)))
+                        form, names=self.storableFields(item, user)))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',
@@ -273,7 +272,7 @@ class EditBase:
         if not user.checkPermission('w', item.stream.permissions):
             raise self.ClientError(403, self.edit_denied_error)
         errors = item.initFieldsFromForm(
-                    form, names=self.storableFields(item.stream, user))
+                    form, names=self.storableFields(item, user))
         if errors:
             for field_name, message in errors.items():
                 logger.warning('Invalid content of field %r: %s',
