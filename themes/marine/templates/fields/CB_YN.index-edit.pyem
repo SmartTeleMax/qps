@@ -1,0 +1,6 @@
+<%
+field_suffix = '%s:%s' % (item.stream.itemIDField.convertToString(item.id), name)
+if value:
+    %><input type="hidden" name="qps-old:<%= field_suffix %>" value="y"><%
+%><input type="checkbox" name="qps-new:<%= field_suffix %>" value="y"<%= value a
+nd ' checked' or '' %>>
