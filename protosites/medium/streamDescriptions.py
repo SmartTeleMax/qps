@@ -1,4 +1,4 @@
-# $Id: $
+# $Id: streamDescriptions.py,v 1.1 2004/06/04 10:50:06 ods Exp $
 from qps.qUtils import DictRecord
 from qps.qVirtual import CommonVirtualStream
 
@@ -7,6 +7,7 @@ streamDescriptions = {
 
     'rubrics': DictRecord(
         title='Rubrics',
+        tableName='*rubrics*',
         streamClass='qps.qBricks.qStatic.StaticStream',
         itemListSpec=[
             ('id1', {'title': 'First rybric title'}),
