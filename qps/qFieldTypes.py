@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.35 2004/10/07 11:58:04 ods Exp $
+# $Id: qFieldTypes.py,v 1.36 2004/10/18 00:45:30 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1100,7 +1100,7 @@ class FieldDescriptions(object):
         return self._config_dict[name]
 
     def __add__(self, other):
-        return FieldDescriptions(self._config + other._config)
+        return self.__class__(self._config + other._config)
                                  
     def has_key(self, name):
         return self._config_dict.has_key(name)
@@ -1129,12 +1129,12 @@ class FieldDescriptions(object):
         return self._config_dict.get(field_name, default)
 
     def external(self):
-        return FieldDescriptions(
+        return self.__class__(
             [(fn, ft) for fn, ft in self._config if hasattr(ft, 'store')])
     external = qUtils.CachedAttribute(external)
 
     def main(self):
-        return FieldDescriptions(
+        return self.__class__(
             [(fn, ft) for fn, ft in self._config if not hasattr(ft, 'store')])
     main = qUtils.CachedAttribute(main)
 
