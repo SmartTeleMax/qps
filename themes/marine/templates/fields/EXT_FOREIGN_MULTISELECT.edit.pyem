@@ -1,0 +1,8 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%">
+<%
+for cur_item in stream:
+    %><input type="checkbox" name="<%= name %>" value="<%= quoteHTML(cur_item.fields['id'].convertToString(cur_item.id)) %>" <%= brick.inList(cur_item.id, value) and ' checked' or '' %>> <%= brick.getLabel(cur_item) %><br><%
+if stream.indexNum and len(stream)>=stream.indexNum and not isNew:
+    %><a href="<%= edPrefix+'/'+brick.stream+'/?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>Select</a><%
+%></td>

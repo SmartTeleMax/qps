@@ -1,0 +1,6 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%">
+<%
+for cur_item in stream:
+    %><input type="checkbox" name="<%= name %>" value="<%= quoteHTML(cur_item.fields['id'].convertToString(cur_item.id)) %>" <%= cur_item.id in value and ' checked' or '' %>> <%= brick.getLabel(cur_item) %><br><%
+%></td>
