@@ -1,0 +1,6 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:<br/>
+<tal:block tal:condition="value">
+<img tal:attributes="src value.path"/><br/>
+<input type="checkbox" tal:attributes="name name+'-delete'"/>Delete<br/>
+</tal:block>
+Upload: <input type="file" tal:attributes="name name+'-body'"/>

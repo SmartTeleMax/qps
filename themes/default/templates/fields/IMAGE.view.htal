@@ -1,0 +1,4 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:<br/>
+<tal:block tal:condition="value">
+<img tal:attributes="src value.path"/>
+</tal:block>

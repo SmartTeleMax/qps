@@ -1,0 +1,6 @@
+<tal:block tal:define="field_suffix '%s:%s' % (item.stream.itemIDField.convertToString(item.id), name)">
+<input type="hidden" tal:condition="value"
+       tal:attributes="name 'qps-old:'+field_suffix; value value"/>
+<input type="text"
+       tal:attributes="name 'qps-new:'+field_suffix; value value; maxlength brick.maxlength; size brick.layout.get('size', min(brick.maxlength+1, 20))"/>
+</tal:block>

@@ -1,0 +1,2 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:<br>
+<div tal:content="value">Text</div>

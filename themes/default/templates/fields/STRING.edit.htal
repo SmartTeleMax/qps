@@ -1,0 +1,2 @@
+<span tal:replace="getattr(brick, 'title', name)">Title</span>:
+<input type="text" tal:attributes="name name; value value; maxlength brick.maxlength; size brick.layout.get('size', min(brick.maxlength+1, 80))">

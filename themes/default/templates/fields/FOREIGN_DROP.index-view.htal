@@ -1,0 +1,2 @@
+<a tal:omit-tag="not brick.linkThrough"
+   tal:attributes="href edPrefix+item.path()"><span tal:condition="value" tal:replace="structure brick.getLabel(value)">Option label</span><span tal:condition="not value" tal:replace="structure brick.extra_option">Extra option label</span></a>

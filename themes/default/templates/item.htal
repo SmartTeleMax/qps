@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Editor interface for
+<tal:block tal:replace="brick.site.host">Host name</tal:block>:
+<tal:block tal:replace="brick.stream.title">Stream title</tal:block>:
+<tal:block tal:replace="brick.isNew and 'new object' or getattr(brick, 'title', brick.id)">Item title</tal:block>
+</head>
+<body>
+
+<h1><a hreef="#" tal:attributes="href brick.edPrefix+'/'">Editor interface</a> for
+<a href="#" tal:attributes="href 'http://%s/' % brick.site.host"
+            tal:content="brick.site.title">Site name</a>:
+<a href="#" tal:attributes="href brick.edPrefix+brick.stream.path()"
+            tal:content="brick.stream.title">Stream title</a>:
+<span tal:replace="brick.isNew and 'new object' or getattr(brick, 'title', brick.id)">Item title</span></h1>
+
+<strong tal:condition="fieldErrors">Warning! Document was not saved due to errors in one or more fields.</strong>
+
+<form tal:attributes="action brick.edPrefix+(brick.isNew and brick.stream.path() or brick.path())" method="POST" enctype="multipart/form-data">
+<tal:block tal:condition="brick.isNew and not brick.stream.itemIDField.omitForNew">
+<tal:block tal:condition="fieldErrors.has_key('id')">
+<strong tal:content="fieldErrors['id']">Error message</strong><br>
+</tal:block>
+<tal:block tal:replace="structure brick.showField('id')">ID field content</tal:block>
+</tal:block>
+
+<div tal:repeat="field_name brick.allowedFields">
+<tal:block tal:replace="structure brick.showField(field_name)">Field content</tal:block>
+</div>
+
+<input type="submit" tal:attributes="name 'qps-action:' + (brick.isNew and 'createItem' or 'updateItem'); value brick.isNew and 'Create' or 'Update'">
+</form>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Editor interface for <span tal:replace="brick.host">Host name</span></title>
+</head>
+<body>
+
+<h1>Editor interface for
+<a href="#" tal:attributes="href 'http://%s/' % brick.host"
+            tal:content="brick.title">Site name</a></h1>
+
+<ul>
+<li tal:repeat="stream brick.allowedStreams">
+<a href="#" tal:attributes="href brick.edPrefix+stream.path()"
+            tal:content="stream.title">Stream title</a></li>
+</ul>
+
+</body>
+</html>

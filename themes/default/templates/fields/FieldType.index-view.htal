@@ -1,0 +1,3 @@
+<a tal:omit-tag="not brick.linkThrough"
+   tal:attributes="href edPrefix+item.path()"
+   tal:content="value">Field value</a>
