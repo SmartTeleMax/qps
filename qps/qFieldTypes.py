@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.22 2004/07/14 15:45:24 ods Exp $
+# $Id: qFieldTypes.py,v 1.23 2004/07/15 11:26:16 ods Exp $
 
 '''Classes for common field types'''
 
@@ -1141,6 +1141,12 @@ class FieldDescriptionsRepository:
         if not self._cache.has_key(table):
             self._cache[table] = FieldDescriptions(self._config[table])
         return self._cache[table]
+
+    def get(self, table, default=None):
+        try:
+            return self[table]
+        except KeyError:
+            return default
 
 
 # vim: ts=8 sts=4 sw=4 ai et
