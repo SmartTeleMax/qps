@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.172 2004/03/16 15:48:20 ods Exp $
+# $Id: qEdit.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -50,7 +50,7 @@ class MakedEditObject(qWebUtils.MakedObject):
                     not (self.isNew and field_type.omitForNew):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
-    allowedFields = qUtils.CachedAttribute(getAllowedFields)
+    allowedFields = qUtils.CachedAttribute(getAllowedFields, 'allowedFields')
 
     def getAllowedIndexFields(self, obj=None):
         if obj is None:
@@ -67,7 +67,8 @@ class MakedEditObject(qWebUtils.MakedObject):
                                                field_type.indexPermissions):
                     itemFieldsOrder.append(field_name)
         return itemFieldsOrder
-    allowedIndexFields = qUtils.CachedAttribute(getAllowedIndexFields)
+    allowedIndexFields = qUtils.CachedAttribute(getAllowedIndexFields,
+                                                'allowedIndexFields')
 
     def checkIfStreamUpdatable(self, obj=None):
         if obj is None:
@@ -85,7 +86,31 @@ class MakedEditObject(qWebUtils.MakedObject):
                                                field_type.indexPermissions):
                     return 1
         return 0
-    isStreamUpdatable = qUtils.CachedAttribute(checkIfStreamUpdatable)
+    isStreamUpdatable = qUtils.CachedAttribute(checkIfStreamUpdatable,
+                                               'isStreamUpdatable')
+
+    def checkIfStreamUnbindable(self, obj=None):
+        if obj is None:
+            obj = self.object
+        return hasattr(obj, 'joinField') and \
+                self.edUser.checkPermission('w',
+                        brick.allItemFields[brick.joinField].indexPermissions)
+    isStreamUnbindable = qUtils.CachedAttribute(checkIfStreamUnbindable,
+                                                'isStreamUnbindable')
+
+    def checkIfStreamCreatable(self, obj=None):
+        if obj is None:
+            obj = self.object
+        return self.edUser.checkPermission('c', obj.permissions)
+    isStreamCreatable= qUtils.CachedAttribute(checkIfStreamCreatable,
+                                              'isStreamCreatable')
+
+    def checkIfStreamDeletable(self, obj=None):
+        if obj is None:
+            obj = self.object
+        return self.edUser.checkPermission('d', obj.permissions)
+    isStreamDeletable= qUtils.CachedAttribute(checkIfStreamDeletable,
+                                              'isStreamDeletable')
 
     def getBindingIndexFields(self, obj=None):
         if obj is None:
