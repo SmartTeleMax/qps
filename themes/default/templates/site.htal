@@ -10,8 +10,8 @@
             tal:content="brick.title">Site name</a></h1>
 
 <ul>
-<li tal:repeat="stream brick.allowedStreams">
-<a href="#" tal:attributes="href brick.edPrefix+stream.path()"
+<li tal:repeat="stream template.allowedStreams">
+<a href="#" tal:attributes="href template.edit.prefix+stream.path()"
             tal:content="stream.title">Stream title</a></li>
 </ul>
 
