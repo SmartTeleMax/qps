@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.4 2004/04/27 14:33:57 ods Exp $
+# $Id: qMake.py,v 1.5 2004/06/03 16:04:32 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -109,12 +109,14 @@ class BaseMaker:
 
 class Maker(BaseMaker):
 
-    proxyClass = qWebUtils.MakedObject
+    proxyClass = lambda self, x: x
+    renderHelper = qWebUtils.RenderHelper
 
     def __init__(self, site, writer=None, template_getter=None, **params):
         BaseMaker.__init__(self, site, **params)
         self.writer = site.getWriter(writer)
-        self.template_getter = site.getTemplateGetter(template_getter)
+        self.getTemplate = site.getTemplateGetter(template_getter)
+        self.globalNamespace = site.globalNamespace
 
     def path(self, brick):
         return brick.path()
@@ -133,18 +135,21 @@ class Maker(BaseMaker):
         return '.'.join([streamCat, brick.type])
 
     def prepareObject(self, brick):
-        return self.proxyClass(brick, template_getter=self.template_getter,
-                               global_namespace=brick.site.globalNamespace)
+        return self.proxyClass(brick)
 
     def do_make(self, brick):
         obj = self.prepareObject(brick)
+        template = self.renderHelper(self)
+
+        namespace = self.globalNamespace.copy()
+        namespace['template'] = template
+        template = self.getTemplate(self.getTemplateName(brick))
+
         fp = self.writer.getFP(self.path(brick))
-        namespace = obj.globalNamespace.copy()
-        template = self.template_getter(self.getTemplateName(brick))
         template.interpret(fp, namespace, {'brick': obj, '__object__': obj})
         fp.close()
 
-
+       
 class StreamsMaker(BaseMaker):
 
     def process(self, site):
