@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.15 2004/06/09 07:17:41 ods Exp $
+# $Id: qFieldTypes.py,v 1.16 2004/06/09 09:23:47 ods Exp $
 
 '''Classes for common field types'''
 
@@ -21,7 +21,7 @@ class _LayoutDict(dict):
         return ' '.join(['%s="%s"' % t for t in self.items()])
 
 
-class FieldType:
+class FieldType(object):
     '''Base class for all field types'''
     # storeControl:
     #   None        - store if user has sufficient priveleges
@@ -38,6 +38,7 @@ class FieldType:
     showInBinding    = 0
     linkThrough      = 1
     
+    templateCat = None
     default     = ''                            # default value
     permissions = [('all', 'rw')] # permissions for item view
     indexPermissions = [] # permission for stream view
@@ -75,29 +76,27 @@ class FieldType:
         template = self.getTemplate(template_type, template_getter)
         return template(namespace)
 
-    def getTemplate(self, template_type, template_getter, template_class=None):
-        template_class = template_class or self.__class__
-        if not template_class.__dict__.has_key('_templates'):
-            template_class._templates = {}
-        if not template_class._templates.has_key(template_type):
-            from qWebUtils import TemplateNotFoundError
-            try:
-                template = template_getter(
-                    '%s.%s' % (template_class.__name__, template_type))
-            except TemplateNotFoundError:
-                for base_class in template_class.__bases__:
-                    try:
-                        template = self.getTemplate(template_type,
-                                template_getter, template_class=base_class)
-                    except TemplateNotFoundError:
-                        pass
+    def getTemplate(self, template_type, template_getter):
+        if self.templateCat is not None:
+            # Such templates MUST exist and MUST NOT be cached in class
+            return template_getter('%s.%s' % (self.templateCat, template_type))
+        from qWebUtils import TemplateNotFoundError
+        for cls in self.__class__.__mro__:
+            if not cls.__dict__.has_key('_templates'):
+                cls._templates = {}
+            if not cls._templates.has_key(template_type):
+                try:
+                    logger.warn('? %s (%s)', cls.__name__, self.__class__.__name__)
+                    template = template_getter(
+                                    '%s.%s' % (cls.__name__, template_type))
+                except TemplateNotFoundError:
+                    logger.warn('!!! %s not found', cls.__name__)
+                    if cls is FieldType:
+                        raise
                     else:
-                        break
-                else:
-                    raise TemplateNotFoundError(
-                        '%s.%s' % (template_class.__name__, template_type))
-            template_class._templates[template_type] = template
-        return template_class._templates[template_type]
+                        continue
+                cls._templates[template_type] = template
+            return cls._templates[template_type]
 
     def _identity(self, value, item=None): return value
     convertToDB = convertToForm = _identity
