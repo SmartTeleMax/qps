@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.4 2004/04/07 14:15:44 ods Exp $
+# $Id: qFieldTypes.py,v 1.5 2004/04/07 19:02:15 corva Exp $
 
 '''Classes for common field types'''
 
@@ -653,6 +653,7 @@ class EXT_VIRTUAL_REFERENCE(FieldType):
     def getDefault(self, item=None):
         return self.retrieve(item)
 
+
 class IMAGE(FieldType, ExtFieldTypeMixIn):
 
     editRoot = None
@@ -778,6 +779,7 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
             if image:
                 os.remove(self.editRoot+image.path)
 
+
 class RESTRICTED_IMAGE(IMAGE):
 
     maxWidth = None
@@ -812,6 +814,63 @@ class RESTRICTED_IMAGE(IMAGE):
         return value
 
 
+class THUMBNAIL(IMAGE):
+    
+    fieldToThumb = None
+    width = 0  # define correct sizes of thumbnail
+    height = 0
+
+    def resizeFilter(self):
+        import PIL.Image
+        return PIL.Image.BILINEAR
+    resizeFilter = property(resizeFilter)
+    
+    def convertFromForm(self, form, name, item):
+        image = image_orig = getattr(getattr(item, self.fieldToThumb, None),
+                                     '_image', None)
+
+        if image and self.width and self.height:
+            image = self.thumbnail(image)
+            from cStringIO import StringIO
+            fp = StringIO()
+            image.save(fp, image_orig.format)
+            fp.seek(0)
+            return self._Image(self, item, fp.read(),
+                               getattr(getattr(item, name), 'path', None))
+        else:
+            return self._Image(self, item)
+
+    def thumbnail(self, image):
+        w,h = image.size
+        logger.debug('orig image: %sx%s', w, h)
+
+        if float(h)/w > float(self.height)/self.width:
+            size = (self.width, self.width*h/w)
+            image = image.resize(size, self.resizeFilter)
+            w,h = image.size
+            logger.debug('resized image: %sx%s', w, h)
+            rect = (0,
+                    (h-self.height)/2,
+                    self.width,
+                    (h-self.height)/2+self.height
+                    )
+            logger.debug('crop frame: %s', str(rect))
+            image = image.crop(rect)
+        else:
+            size = (self.height*w/h, self.height)
+            image = image.resize(size)
+            w,h = image.size
+            logger.debug('resized image: %sx%s', w, h)
+            rect = ((w-self.width)/2,
+                    0,
+                    (w-self.width)/2+self.width,
+                    self.height
+                    )
+            logger.debug('crop frame: %s', str(rect))
+            image = image.crop(rect)
+        return image
+
+    
 class AgregateFieldType(FieldType):
 
     def _unescape(self, string):
