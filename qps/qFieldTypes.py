@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.3 2004/04/07 14:05:38 ods Exp $
+# $Id: qFieldTypes.py,v 1.4 2004/04/07 14:15:44 ods Exp $
 
 '''Classes for common field types'''
 
@@ -160,7 +160,7 @@ class STRING_ID(STRING):
     pattern = '^[0-9a-zA-Z_]+$'
     not_match_error_message = 'ID can contain latin alfanumeric characters '\
                               'and underscore only'
-    permissions = [('all', 'r')]
+    permissions = [('all', 'rw')]
     indexPermissions = [('all', 'r')]
     showInBinding = 1
 
@@ -214,7 +214,7 @@ class INTEGER(NUMBER):
 class INTEGER_AUTO_ID(INTEGER):
     title = 'ID'
     omitForNew = 1
-    permissions = [('all', 'r')]
+    permissions = [('all', '')]
     indexPermissions = [('all', 'r')]
     showInBinding = 1
 
@@ -469,7 +469,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         views = [FOREIGN_DROP.getLabel(self, i)
                  for i in value]
         return ', '.join(views)
-       
+
 
 class FOREIGN(FOREIGN_DROP):
     proxyClass = RetrievedLazyItem
