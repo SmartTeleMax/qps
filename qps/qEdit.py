@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.5 2004/04/07 18:52:49 corva Exp $
+# $Id: qEdit.py,v 1.6 2004/04/23 13:43:29 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -466,10 +466,19 @@ class EditBase:
             binding_to_item = getattr(bound, bound.virtual.paramName)
             isBound = lambda item: binding_to_item in getattr(item, field_name)
             bound_stream = bound
+            bound_element_type = "checkbox"
         elif bound.type=='item':
             field_name = form.getfirst('field')
             binding_to_item = bound
-            isBound = lambda item: item in getattr(binding_to_item, field_name)
+            field = getattr(binding_to_item, field_name)
+            try:
+                iter(field)
+            except TypeError: # field is not a sequence
+                isBound = lambda item: item == field
+                bound_element_type = "radio"
+            else:             # field is a sequence
+                isBound = lambda item: item in field
+                bound_element_type = "checkbox"
             bound_stream = bound.stream
         else:
             return self.cmd_invalidCommand(request, response, form, objs, user)
@@ -485,7 +494,8 @@ class EditBase:
         response.write(obj.template('binding', item=binding_to_item,
                                     fieldName=field_name,
                                     bound=bound, boundPath=bound_path,
-                                    isBound=isBound))
+                                    isBound=isBound,
+                                    boundElementType=bound_element_type))
 
     def do_updateBinding(self, request, response, form, objs, user):
         '''Store new binding.  The path corresponds to template stream (stream
@@ -507,12 +517,10 @@ class EditBase:
         if bound.type=='stream':
             field_name = getattr(bound, 'joinField', None)
             binding_to_item = getattr(bound, bound.virtual.paramName)
-            isBound = lambda item: binding_to_item in getattr(item, field_name)
             bound_stream = bound
         elif bound.type=='item':
             field_name = form.getfirst('field')
             binding_to_item = bound
-            isBound = lambda item: item in getattr(binding_to_item, field_name)
             bound_stream = bound.stream
         else:
             return self.cmd_invalidCommand(request, response, form, objs, user)
@@ -543,17 +551,29 @@ class EditBase:
                     setattr(item, field_name, values)
                     item.store([field_name])
         else:  # reverse binding
-            values = list(getattr(bound, field_name))
-            for item_id in old_ids:
-                if item_id not in new_ids:
-                    values = [value for value in values if value.id!=item_id]
-            for item_id in new_ids:
-                if item_id not in old_ids:
-                    item = template_stream.retrieveItem(item_id)
-                    values.append(item)
-            if values!=getattr(bound, field_name):
-                setattr(bound, field_name, values)
-                bound.store()
+            field = getattr(bound, field_name)
+            try:
+                iter(field)
+            except TypeError: # field is not a sequence
+                new_id = new_ids and new_ids[0] or None
+                value = field
+                if new_id and (not value or value.id != new_id):
+                    setattr(bound, field_name,
+                            template_stream.retrieveItem(new_id))
+                    bound.store()
+            else:             # field is a sequence
+                values = list(field)
+                for item_id in old_ids:
+                    if item_id not in new_ids:
+                        values = [value for value in values
+                                  if value.id!=item_id]
+                for item_id in new_ids:
+                    if item_id not in old_ids:
+                        item = template_stream.retrieveItem(item_id)
+                        values.append(item)
+                if values!=getattr(bound, field_name):
+                    setattr(bound, field_name, values)
+                    bound.store()
         raise self.SeeOther(
             '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % \
                             (self.prefix, template_stream.path(), bound.path(),
