@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.38 2004/11/12 11:30:17 corva Exp $
+# $Id: qFieldTypes.py,v 1.39 2004/11/24 16:39:18 ods Exp $
 
 '''Classes for common field types'''
 
@@ -147,13 +147,13 @@ class STRING(FieldType):
 
     def convertFromDB(self, value, item):
         value = value.strip()
-        if item.site.dbCharset:
-            value = value.decode(item.site.dbCharset)
+        if item.dbConn.charset:
+            value = value.decode(item.dbConn.charset)
         return value
 
     def convertToDB(self, value, item):
-        if item.site.dbCharset:
-            value = value.encode(item.site.dbCharset)
+        if item.dbConn.charset:
+            value = value.encode(item.dbConn.charset)
         return value
 
 

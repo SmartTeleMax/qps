@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.3 2004/07/05 10:38:23 corva Exp $
+# $Id: qSQL.py,v 1.4 2004/08/27 10:51:49 ods Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -191,10 +191,11 @@ class Connection(object):
     _db_module = None  # Overwrite it in descending class
     _dbh = None
 
-    def __new__(cls, *args, **kwargs):
-        cache_key = (cls, args, tuple(kwargs.items()))
+    def __new__(cls, charset, *args, **kwargs):
+        cache_key = (cls, charset, args, tuple(kwargs.items()))
         if not cls.__connections_cache.has_key(cache_key):
             self = object.__new__(cls)
+            self.charset = charset
             self.__connection_params = (args, kwargs)
             self.execute = self._connect_and_execute
             cls.__connections_cache[cache_key] = self

@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.6 2004/06/09 07:17:41 ods Exp $
+# $Id: qSite.py,v 1.7 2004/06/09 07:42:51 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -79,7 +79,7 @@ class Site(object):
         '''Default implementation creates connection to MySQL based on dbParams
         attribute of site.  Override this method to use another RDMS.'''
         from qDB.qMySQL import Connection
-        return Connection(**self.dbParams)
+        return Connection(self.dbCharset, **self.dbParams)
 
     def dbConn(self):
         # We need this dispatch method to hide magic with CachedAttribute from
