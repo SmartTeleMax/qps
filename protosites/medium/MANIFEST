@@ -1,3 +1,5 @@
 Site.py medium/Site.py
+streamDescriptions.py medium/streamDescriptions.py
+fieldDescriptions.py medium/fieldDescriptions.py
 make.py tiny/make.py
 edit.py tiny/edit.py
