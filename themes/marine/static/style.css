@@ -148,3 +148,7 @@ tr.field {
   border-bottom: 1px solid #4680A8;
   background-color: #FFFFFF;
 }
+
+tr.field td.name {
+  white-space: nowrap;
+}
