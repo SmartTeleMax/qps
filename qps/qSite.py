@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
+# $Id: qSite.py,v 1.2 2004/03/19 14:35:18 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -19,7 +19,6 @@ class Site(object):
     '''Base class for site'''
 
     type = 'site'
-    forceUpdate = 0
     dbParams = {}
     streamDescriptions = None # Must be defined in child
     virtualStreamRules = []
