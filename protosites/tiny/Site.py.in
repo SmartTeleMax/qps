@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.9 2004/04/07 08:27:09 ods Exp $
+# $Id: Site.py.in,v 1.10 2004/04/07 08:56:04 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -46,7 +46,8 @@ class Site(qSite.Site):
             itemIDField=FT.INTEGER_AUTO_ID(),
             itemFieldsOrder=['rubric', 'title', 'body'],
             itemFields={
-                'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics'),
+                'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics',
+                                          extra_option='(no rubric)'),
                 'title' : FT.STRING(title='Title',
                                     indexPermissions=[('all', 'r')]),
                 'body'  : FT.TEXT(title='Body text'),
