@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.46 2005/02/09 10:36:17 corva Exp $
+# $Id: qFieldTypes.py,v 1.47 2005/02/15 15:18:18 corva Exp $
 
 '''Classes for common field types'''
 
@@ -452,8 +452,8 @@ class FOREIGN_DROP(FieldType):
     labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
 
     def _retrieve_stream(self, item):
-        return item.site.retrieveStream(self.stream,
-                                    tag=item.site.transmitTag(item.stream.tag))
+        stream, tag = self._stream_params(item)
+        return item.site.retrieveStream(stream, tag=item.site.transmitTag(tag))
 
     def _stream_params(self, item):
         return (self.stream, item.stream.tag)
