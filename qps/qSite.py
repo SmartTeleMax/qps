@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.7 2004/06/09 07:42:51 corva Exp $
+# $Id: qSite.py,v 1.8 2004/11/30 13:05:00 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -238,11 +238,14 @@ class Site(object):
     def makeAction(self):
         return 'make'
 
-    def make(self, maker_params={}):
+    def make(self, maker=None, maker_params={}):
         '''Make all streams (i.e. make the whole site)'''
 
-        makers = [self.getMaker(desc, maker_params) for desc in \
-                  self.siteMakers]
+        if maker is None:
+            makers = [self.getMaker(desc, maker_params) for desc in \
+                      self.siteMakers]
+        else:
+            makers = [maker]
         for maker in makers:
             maker.process(self)
         
