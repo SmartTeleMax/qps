@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.27 2004/07/30 14:18:45 corva Exp $
+# $Id: qFieldTypes.py,v 1.28 2004/08/06 12:30:36 corva Exp $
 
 '''Classes for common field types'''
 
@@ -680,8 +680,10 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
             self.body = body
             self.old_path = old_path
         def pattern(self):
+            namespace = self.item.site.globalNamespace.copy()
+            namespace.update({'brick': self.item})
             return qUtils.interpolateString(self.field_type.pathTemplate,
-                                            {'brick': self.item})
+                                            namespace)
         pattern = qUtils.CachedAttribute(pattern)
         def path(self):
             if self.body:
