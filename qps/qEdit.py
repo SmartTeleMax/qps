@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.12 2004/06/04 14:42:31 ods Exp $
+# $Id: qEdit.py,v 1.13 2004/06/04 14:44:17 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -36,9 +36,9 @@ class RenderHelper(qWebUtils.RenderHelper):
         return streams
     allowedStreams = qUtils.CachedAttribute(allowedStreams)
 
-    def allowedFields(self, obj):
-        # assume obj.type=='item'
-        stream = obj.stream
+    def allowedFields(self, item):
+        # assume item.type=='item'
+        stream = item.stream
         item_fields = stream.allItemFields
         itemFieldsOrder = []
         for field_name in ['id']+stream.itemFieldsOrder:
@@ -49,9 +49,8 @@ class RenderHelper(qWebUtils.RenderHelper):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def allowedIndexFields(self, obj):
-        # assume obj.type=='stream':
-        stream = obj
+    def allowedIndexFields(self, stream):
+        # assume stream.type=='stream':
         item_fields = stream.allStreamFields
         itemFieldsOrder = []
         if self.user.checkPermission('x', stream.permissions):
@@ -62,10 +61,9 @@ class RenderHelper(qWebUtils.RenderHelper):
                     itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def isStreamUpdatable(self, obj):
-        allowedIndexFields = self.allowedIndexFields(obj)
-        # assume obj.type=='stream':
-        stream = obj
+    def isStreamUpdatable(self, stream):
+        # assume stream.type=='stream':
+        allowedIndexFields = self.allowedIndexFields(stream)
         if self.user.checkPermission('w', stream.permissions):
             item_fields = stream.allStreamFields
             for field_name in allowedIndexFields:
@@ -74,20 +72,19 @@ class RenderHelper(qWebUtils.RenderHelper):
                     return 1
         return 0
 
-    def isStreamUnbindable(self, obj):
-        return hasattr(obj, 'joinField') and \
+    def isStreamUnbindable(self, stream):
+        return hasattr(stream, 'joinField') and \
                 self.user.checkPermission('w',
-                    brick.allItemFields[brick.joinField].indexPermissions)
+                    stream.allItemFields[stream.joinField].indexPermissions)
 
-    def isStreamCreatable(self, obj):
-        return self.user.checkPermission('c', obj.permissions)
+    def isStreamCreatable(self, stream):
+        return self.user.checkPermission('c', stream.permissions)
 
-    def isStreamDeletable(self, obj):
-        return self.user.checkPermission('d', obj.permissions)
+    def isStreamDeletable(self, stream):
+        return self.user.checkPermission('d', stream.permissions)
 
-    def bindingIndexFields(self, obj):
-        # assume self.object.type=='stream':
-        stream = obj
+    def bindingIndexFields(self, stream):
+        # assume stream.type=='stream':
         item_fields = stream.allItemFields
         itemFieldsOrder = []
         for field_name in ['id']+stream.itemFieldsOrder:
@@ -97,10 +94,10 @@ class RenderHelper(qWebUtils.RenderHelper):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def showField(self, obj, name):
+    def showField(self, item, name):
         '''Return representation of field in editor interface'''
-        field_type = obj.stream.allItemFields[name]
-        stream_perms = self.user.getPermissions(obj.stream.permissions)
+        field_type = item.stream.allItemFields[name]
+        stream_perms = self.user.getPermissions(item.stream.permissions)
         perms = self.user.getPermissions(field_type.permissions)
         if 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
@@ -108,15 +105,15 @@ class RenderHelper(qWebUtils.RenderHelper):
             template_type = 'view'
         else:
             return ''
-        return field_type.show(obj, name, template_type,
+        return field_type.show(item, name, template_type,
                                self.edit.getFieldTemplate,
                                self.fieldGlobalNamespace) # XXX namespace
 
     def showFieldInIndex(self, item, name, allow_edit=1):
         '''Return representation of field in stream'''
-        obj = item.stream
-        field_type = obj.allStreamFields[name]
-        stream_perms = self.user.getPermissions(obj.permissions)
+        stream = item.stream
+        field_type = stream.allStreamFields[name]
+        stream_perms = self.user.getPermissions(stream.permissions)
         perms = self.user.getPermissions(field_type.indexPermissions)
         if allow_edit and 'w' in stream_perms and 'w' in perms:
             template_type = 'edit'
