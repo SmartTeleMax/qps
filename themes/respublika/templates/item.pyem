@@ -11,7 +11,11 @@ else:
 %><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
   <head>
-    <title>Редактура <%= brick.site.title %>: <%= brick.stream.title %>: <%= item_title %></title>
+    <title>Редактура <%= brick.site.title %>: <%= brick.stream.title %>: <%= item_title %></title><%
+if brick.site.clientCharset:
+    %>
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
+%>
 <style>
 <%= brick.template('style') %>
 </style>
