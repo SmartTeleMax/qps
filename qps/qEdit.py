@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.24 2004/09/15 23:23:36 corva Exp $
+# $Id: qEdit.py,v 1.25 2004/09/26 23:17:16 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -20,6 +20,9 @@ class RenderHelper(qWebUtils.RenderHelper):
 
     def fieldGlobalNamespace(self):
         namespace = self.edit.globalNamespace.copy()
+        namespace['template'] = self
+        # following 3 lines are here only for compatibility reasons
+        # after all field templates will be changed they will gone
         namespace['edPrefix'] = self.edit.prefix
         namespace['edUser'] = self.user
         namespace['isNew'] = self.isNew
