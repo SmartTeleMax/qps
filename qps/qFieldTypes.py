@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.36 2004/10/18 00:45:30 corva Exp $
+# $Id: qFieldTypes.py,v 1.37 2004/10/31 13:58:07 corva Exp $
 
 '''Classes for common field types'''
 
@@ -225,6 +225,8 @@ class PASSWORD(FieldType):
     too_short_message = 'Password must be at least %(brick.minlength)s ' \
                         'characters long'
     confirmation_failed_message = 'Passwords donot match'
+    encoding_failed_message = 'Password must consist only from latin ' \
+                              'characters, spaces, underscores and digits'
 
     def crypt(self, value):
         # Don't encrypt by default
@@ -243,6 +245,10 @@ class PASSWORD(FieldType):
                 message = qUtils.interpolateString(
                             self.confirmation_failed_message, {'brick': self})
                 raise self.InvalidFieldContent(message)
+            try:
+                value = str(value)
+            except UnicodeEncodeError:
+                raise self.InvalidFieldContent(self.encoding_failed_message)
             return self.crypt(value)
         else:
             # leave unchanged
