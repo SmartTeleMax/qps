@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.26 2004/07/27 13:18:31 ods Exp $
+# $Id: qFieldTypes.py,v 1.27 2004/07/30 14:18:45 corva Exp $
 
 '''Classes for common field types'''
 
@@ -124,8 +124,10 @@ class STRING(FieldType):
     layout = _LayoutDict({'style': 'width: 100%'})
     minlength = 0
     maxlength = 255
-    error_message = 'Text must consist of from %(brick.minlength)s to ' \
-                    '%(brick.maxlength)s characters'
+    pattern = ''
+    length_error_message = 'Text must consist of from %(brick.minlength)s ' \
+                           'to %(brick.maxlength)s characters'
+    not_match_error_message = 'String have to match pattern'
 
     def __init__(self, **kwargs):
         apply(FieldType.__init__, [self], kwargs)
@@ -134,9 +136,11 @@ class STRING(FieldType):
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
         if len(value) < self.minlength or len(value) > self.maxlength:
-            message = qUtils.interpolateString(self.error_message,
+            message = qUtils.interpolateString(self.length_error_message,
                                                {'brick': self})
             raise self.InvalidFieldContent(message)
+        if self.pattern and not re.match(self.pattern, value):
+            raise self.InvalidFieldContent(self.not_match_error_message)
         return value
 
     def convertFromDB(self, value, item):
@@ -162,12 +166,6 @@ class STRING_ID(STRING):
     indexPermissions = [('all', 'r')]
     showInBinding = 1
 
-    def convertFromForm(self, form, name, item=None):
-        value = STRING.convertFromForm(self, form, name, item)
-        if not re.match(self.pattern, value):
-            raise self.InvalidFieldContent(self.not_match_error_message)
-        return value
-
 
 class NUMBER(FieldType):
 
@@ -191,7 +189,7 @@ class NUMBER(FieldType):
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
         if not value:
-            return self.getDefault()
+            return self.getDefault(item)
         message = qUtils.interpolateString(self.error_message, {'brick': self})
         try:
             value = self.type(value)
@@ -420,6 +418,7 @@ class FOREIGN_DROP(FieldType):
             return self.proxyClass(item.site,
                                    self._stream_params(item),
                                    stream.fields.id.convertFromString(value))
+        
 
     def getLabel(self, item):
         namespace = item.site.globalNamespace.copy()
