@@ -10,9 +10,9 @@ if stream.indexNum:
         if value:
              %><%= value.id %><%
         %>">
-<a href="<%= href %>" onclick="javascript:var new_window=window.open('<%= href %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;" title="Выбрать"><span class=t12 id=db1>&gt;&gt;</span></a><%
+<a href="<%= href %>" onclick="javascript:var new_window=window.open('<%= href %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;" title="Выбрать"><span class=t12 id=db1>&gt;&gt;</span></a> &nbsp;<%
     if value:
-        %><span id="link_<%= name %>"> &nbsp;<a href="#" title="Очистить" onclick="document.getElementById('input_<%= name %>').value=''; document.getElementById('span_<%= name %>').innerHTML='<%= brick.extraOption and brick.extraOption + '<br>' or '' %>'; document.getElementById('link_<%= name %>').innerHTML=''; return false;"><span class=t12 id=db1>[x]</span></a></span><%
+        %><span id="link_<%= name %>"><a href="#" title="Очистить" onclick="document.getElementById('input_<%= name %>').value=''; document.getElementById('span_<%= name %>').innerHTML='<%= brick.extraOption and brick.extraOption + '<br>' or '' %>'; document.getElementById('link_<%= name %>').innerHTML=''; return false;"><span class=t12 id=db1>[x]</span></a></span><%
 else:
     %>
 <select name="<%= name %>" <%= str(brick.layout) %> class=a12><%
