@@ -1,10 +1,10 @@
-# $Id: Site.py.in,v 1.8 2004/04/06 11:17:44 ods Exp $
+# $Id: Site.py.in,v 1.9 2004/04/07 08:27:09 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
 from qps.qUtils import DictRecord
 from qps import qFieldTypes as FT
-#from qps.qVirtual import CommonVirtualStream
+from qps.qVirtual import CommonVirtualStream
 
 class Site(qSite.Site):
 
@@ -19,41 +19,47 @@ class Site(qSite.Site):
         'rubrics': DictRecord(
             title='Rubrics',
             streamClass='qps.qBricks.qStatic.StaticStream',
-            itemFieldsOrder = ['title'],
-            itemFields = {
+            itemFieldsOrder = ['title', 'docs'],
+            itemFields={
                 'title' : FT.STRING(title='Title',
                                     indexPermissions=[('all', 'r')]),
             },
-            itemListSpec = [
+            itemExtFields={
+                'docs'  : FT.EXT_VIRTUAL_REFERENCE(
+                                    title='Documents',
+                                    templateStream='docs',
+                                    indexPermissions=[('all', 'r')]),
+            },
+            itemListSpec=[
                 ('id1', {'title': 'First rybric title'}),
                 ('id2', {'title': 'Second rubric title'}),
             ],
-            #streamMakers=['qps.qMake.ItemsMaker'],
-            #itemMakers=['qps.qMake.VirtualsMaker'],
+            streamMakers=['qps.qMake.ItemsMaker'],
+            itemMakers=['qps.qMake.VirtualsMaker'],
             permissions=[('all', 'rx')]),
-        #'docs': DictRecord(
-        #    title='Documents',
-        #    tableName='docs',
-        #    condition='',  # raw SQL condition to place into WHERE clause
-        #    order='id',
-        #    indexNum=10,   # number of items on page
-        #    itemIDField=FT.INTEGER_AUTO_ID(),
-        #    itemFieldsOrder=['rubric', 'title', 'body'],
-        #    itemFields={
-        #        'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics'),
-        #        'title' : FT.STRING(title='Title',
-        #                            indexPermissions=[('all', 'r')]),
-        #        'body'  : FT.TEXT(title='Body text'),
-        #    },
-        #    streamCat='docs',
-        #    streamClass='qps.qBricks.qSQL.SQLStream',
-        #    permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
+        'docs': DictRecord(
+            title='Documents',
+            tableName='docs',
+            condition='',  # raw SQL condition to place into WHERE clause
+            order='id',
+            indexNum=10,   # number of items on page
+            itemIDField=FT.INTEGER_AUTO_ID(),
+            itemFieldsOrder=['rubric', 'title', 'body'],
+            itemFields={
+                'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics'),
+                'title' : FT.STRING(title='Title',
+                                    indexPermissions=[('all', 'r')]),
+                'body'  : FT.TEXT(title='Body text'),
+            },
+            streamCat='docs',
+            streamClass='qps.qBricks.qSQL.SQLStream',
+            permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
     }
-    #virtualStreamRules = [
-    #    CommonVirtualStream('docs', 'rubrics', 'rubric',
-    #                        streamParams=DictRecord(
-    #                            streamMakers=['qps.qMake.ItemsMaker',
-    #                                          'qps.qMake.Maker'],
-    #                            itemMakers=['qps.qMake.Maker'])),
-    #]
+    virtualStreamRules = [
+        CommonVirtualStream('docs', 'rubrics', 'rubric',
+                            streamParams=DictRecord(
+                                streamMakers=['qps.qMake.ItemsMaker',
+                                              'qps.qMake.Maker'],
+                                itemMakers=['qps.qMake.Maker'])),
+    ]
     dbParams = {'user': 'test', 'db': 'test', 'passwd': 'secret'}
