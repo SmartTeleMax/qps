@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+      <title>Редактура <%= brick.site.title %>: <%= brick.title %> (<%= brick.id %>)</title>
+<style>
+<%= brick.template('style') %>
+</style>
+   </head>
+
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%">
+<tr valign="top">
+<!-- nav -->
+<td width="218" bgcolor="#e1e4e6">
+<%= brick.template('inc_navigation') %>
+</td>
+<!-- /nav -->
+
+<!-- right -->
+<td width="100%">
+
+<div align="center">
+<form action="<%= brick.edPrefix + brick.path() %>" method="POST">
+<table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
+<tr><td bgcolor="#354750">
+<span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
+</td></tr>
+
+<%= brick.template('inc_browse', uri=brick.edPrefix+brick.path()+'?fixme=1') %>
+
+<!-- новый элемент -->
+<tr bgcolor="#E1E4E6"><td align="center"><a href="<%= brick.edPrefix + brick.path() + '?qps-action:newItem=1' %>"><span class=t12b id=y1>Новый элемент</span></a><%
+if hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField]):
+    %>&nbsp; <span id=y1>|</span>&nbsp; <a href="<%= brick.edPrefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>" onclick="javascript:var new_window=window.open('<%= brick.edPrefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes'); return false;"><span class=t12b id=y1>Перевязать</span></a><%
+%></td></tr>
+<!-- /новый элемент -->
+
+<%
+if brick:
+    %>
+<tr bgcolor="#E1E4E6"><td>
+
+<table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6>
+<!-- fields titles -->
+    <tr bgcolor="#A0AAB1" >
+        <td nowrap><span class=t11>id</span>
+<a href="?order=id&page=<%= brick.page %>"><img src="/.ed-images/qps-asc<%
+    if brick.order=='id':
+        %>-active<%
+    %>.gif" height=11 width=11 border=0></a>
+<a href="?order=id+DESC&page<%= brick.page %>"><img src="/.ed-images/qps-desc<%
+    if brick.order=='id DESC':
+        %>-active<%
+    %>.gif" height=11 width=11 border=0></a>
+        </td><%
+    for field_name in brick.allowedIndexFields:
+        field_type = brick.allStreamFields[field_name]
+        %>
+        <td nowrap>
+        <span class=t11><%= field_type.indexTitle %></span><%
+        if not field_type.storeControl=='never':
+            %>
+<a href="?order=<%= field_name %>&page=<%= brick.page %>"><img src="/.ed-images/qps-asc<%
+            if brick.order==field_name:
+                %>-active<%
+            %>.gif" height=11 width=11 border=0></a>
+<a href="?order=<%= field_name %>+DESC&page=<%= brick.page %>"><img src="/.ed-images/qps-desc<%
+            if brick.order==(field_name+' DESC'):
+                %>-active<%
+            %>.gif" height=11 width=11 border=0></a><%
+        %>
+        </td><%
+    %>
+        <td align="center"><span class=t11b id=y1>[x]</span>
+        </td>
+    </tr>
+<!-- /field titles --><%
+    for repeat in Cook.Repeat(brick):
+        item = repeat.value
+        %>
+
+    <tr valign="top">
+        <td bgcolor=#F0F1F2>
+<a href="<%= brick.edPrefix+item.path() %><%
+        if brick.page>1:
+            %>?page=<%= brick.page %>&order=<%= quoteURLPath(brick.order) %><%
+        %>"><span class=t11b id=db1><%= item.id %></span></a>
+        </td><%
+        for field in brick.allowedIndexFields:
+            %>
+        <td bgcolor=#F0F1F2>
+<%= brick.showFieldInIndex(item, field) %>
+        </td><%
+        %>
+        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= brick.itemIDField.convertToString(item.id) %>"></center>
+        </td>
+    </tr><%
+    %>
+</table>
+
+</td></tr>
+<tr bgcolor="#E1E4E6"><td align="right"><%
+    if brick.isStreamUpdatable:
+        %>
+&nbsp; <input type="submit" name="qps-action:updateStream" value="Обновить"><%
+    if hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField]):
+        %>
+&nbsp; <input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
+    if'd' in brick.getPermissions():
+        %>&nbsp; <input type="submit" name="qps-action:deleteItems" value="Удалить"><%
+    %>
+</td></tr><%
+else:
+    %>
+<tr bgcolor="#E1E4E6"><td>
+    <span class=t11 id=db1>В базе нет элементов этого потока.</span>
+</td></tr><%
+%>
+
+<%= brick.template('inc_browse', uri=brick.edPrefix+brick.path()+'?fixme=1') %>
+
+</table>
+</form>
+</div>
+
+</td>
+<!-- /right -->
+</tr>
+</table>
+</body>
+</html>

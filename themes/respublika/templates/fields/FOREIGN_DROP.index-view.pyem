@@ -1,0 +1,5 @@
+<%
+if brick.linkThrough:
+    %><a href="<%= edPrefix + item.path() %>"><span class=t12 id=db1><%= value and brick.getLabel(value) or "<i>%s</i>" % brick.extra_option %></span><%
+if brick.linkThrough:
+    %></a>

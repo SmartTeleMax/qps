@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <title>Редактура <%= brick.title %></title>
+<style>
+<%= brick.template('style') %>
+</style>
+
+  </head>
+
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%" width=100%> 
+<tr><td align="center">
+
+<table cellpadding=0 cellspacing=0><tr><td>
+<form action="<%= brick.edPrefix+path %>" method="POST">
+<span class=t18b id=lb><%= brick.title %></span><br>
+<span class=s12>&nbsp;</span><br>
+<span class=t11 id=lb>имя</span><br>
+<span class=s2>&nbsp;</span><br>
+<input type=text name="login" style="width: 153" class=t11><br>
+<span class=s6>&nbsp;</span><br>
+
+<span class=t11 id=lb>пароль</span><br>
+<span class=s2>&nbsp;</span><br>
+<input type=password name="passwd" style="width: 153" class=t11><br>
+<span class=s6>&nbsp;</span><br>
+<div class=t11 id=lb>запомнить <input type=checkbox name="perm_login" value="y" checked="checked" style="vertical-align: middle;"></div>
+<span class=s12>&nbsp;</span><br>
+<input type="submit" value="Войти">
+</form>
+</td></tr></table>
+
+</td></tr>
+</table>
+</body>
+</html>

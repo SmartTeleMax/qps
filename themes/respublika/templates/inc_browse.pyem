@@ -1,0 +1,32 @@
+<%
+if brick.indexNum and brick.page:
+    %>
+<!-- browse -->
+<tr><td nowrap bgcolor="#E1E4E6">
+<table border=0 cellpadding=3 cellspacing=0 width=100%>
+<tr bgcolor=#C1C8CC>
+<%
+    if brick.page > 1:
+        %>
+<!-- prev -->
+<td width=17 align=right>
+<a href="<%= '%s&page=%s' % (uri, brick.page-1) %>"><img src=/.ed-images/prev.gif width=17 height=17 border=0></a><br>
+</td>
+<!-- /prev --><%
+    %>
+<td width=100% height=25>
+<span class=t11 id=db1>&nbsp;&nbsp;Страница <%= brick.page %></span><br>
+</td>
+<%
+    if len(brick) >= brick.indexNum:
+       %>
+<!-- next -->
+<td width=17 align=right>
+<a href="<%= '%s&page=%s' % (uri, brick.page+1) %>"><img src=/.ed-images/next.gif width=17 height=17 border=0></a><br>
+</td>
+<!-- /next --><%
+    %>
+</tr></table>
+</td></tr>
+<!-- /browse --><%
+%>

@@ -1,0 +1,6 @@
+<%
+if brick.linkThrough:
+    %><a href="<%= edPrefix + item.path() %>"><%
+%><img src="<%= value.path %>" border="0"><%
+if brick.linkThrough:
+    %></a>

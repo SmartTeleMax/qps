@@ -1,0 +1,6 @@
+<span class=t11b id=db1><%= brick.title %>:</span><%
+if value:
+    %>
+<span class=s9>&nbsp;</span><br>
+<a href="<%= edPrefix + (value and value.path() or '') %>"><span class=a12 id=db1><%= brick.linkText %></span></a><%
+%>

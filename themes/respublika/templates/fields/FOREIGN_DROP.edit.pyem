@@ -1,0 +1,14 @@
+<span class=t11b id=db1><%= brick.title %>: </span><br><span class=s3>&nbsp;</span><br>
+<span class=a12>
+<select name="<%= name %>" <%= str(brick.layout) %> class=a12>
+<%
+if brick.extra_option:
+    %><option value=""><%= brick.extra_option %></option><%
+for item in stream:
+    %><option value="<%= item.id %>"<%
+    if item == value:
+        %> selected<%
+    %>><%= brick.getLabel(item) %></option><%
+%>
+</select>
+</span>

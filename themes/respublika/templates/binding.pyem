@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Редактура <%= brick.site.title + ': ' + brick.title %></title>
+<style>
+<%= brick.template('style') %>
+</style>
+</head>
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%" width="100%">
+<tr valign="top">
+<td width="100%">
+<div align="center">
+
+<form action="<%= brick.edPrefix + brick.path() %>" method="POST">
+<input type="hidden" name="bound" value="<%= boundPath %>">
+<input type="hidden" name="field" value="<%= fieldName %>">
+<input type="hidden" name="page" value="<%= brick.page %>">
+
+<table border="0" bgcolor="#000000" cellspacing="0" cellpadding="0" width=100%>
+<tr><td>
+
+<table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
+<!-- header -->
+<tr><td bgcolor="#354750">
+<span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)</b><br></span>
+</td></tr>
+<!-- /header -->
+
+<%= brick.template('inc_browse', uri='?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (boundPath, fieldName)) %>
+
+<tr bgcolor="#E1E4E6"><td>
+<table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6><%
+for repeat in Cook.Repeat(brick):
+    item = repeat.value
+    if repeat.isFirst:
+        %>
+<tr bgcolor="#A0AAB1" >
+<td nowrap><span class=t11>id</span></td><%
+        for field_name in brick.bindingIndexFields:
+            field_type = brick.allItemFields[field_name]
+            %>
+<td nowrap><span class=t11><%= field_type.indexTitle %></span></td><%
+        %>
+<td nowrap><span class=t11>X</span></td>
+</tr><%
+    %>
+<tr valign="top">
+<td bgcolor=#F0F1F2><span class=t12 id=db1><%= item.id %></span></td><%
+    for field_name in brick.bindingIndexFields:
+        field_type = brick.allItemFields[field_name]
+        %>
+<td bgcolor=#F0F1F2><%= brick.showFieldInIndex(item, field_name) %></td><%
+    id_str = brick.itemIDField.convertToString(item.id)
+    checked = isBound(item) and 'checked'
+    %>
+<td bgcolor=#F0F1F2><%
+    if checked:
+        %><input type="hidden" name="qps-old" value="<%= id_str %>"><%
+    %><input type="checkbox" name="qps-new" value="<%= id_str %>"<%
+    if checked:
+        %> checked<%
+    %>></td></tr><%
+%>
+</table>
+
+<table width="100%">
+<tr><td align="right"><input type="submit" name="qps-action:updateBinding" value="Привязать"></td></tr>
+</table>
+
+</td></tr>
+
+<%= brick.template('inc_browse', uri='?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (boundPath, fieldName)) %>
+
+</table>
+</td></tr>
+
+</table>
+
+</form>
+
+</div>
+</td>
+</tr>
+</table>
+</body>
+</html>

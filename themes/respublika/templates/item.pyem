@@ -1,0 +1,96 @@
+<%
+if not globals().has_key('fieldErrors'):
+    fieldErrors = {}
+
+if brick.isNew:
+    item_title = "new object"
+elif hasattr(brick, 'title'):
+    item_title = brick.title
+else:
+    item_title = brick.id
+%><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <title>Редактура <%= brick.site.title %>: <%= brick.stream.title %>: <%= item_title %></title>
+<style>
+<%= brick.template('style') %>
+</style>
+
+  </head>
+
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<table cellpadding=12 cellspacing=0 height="100%">
+<tr valign="top">
+<!-- nav -->
+<td width="218" bgcolor="#e1e4e6">
+<%= brick.template('inc_navigation') %>
+</td>
+<!-- /nav -->
+
+<!-- right -->
+<td width="100%">
+
+<div align="center">
+
+<%
+if fieldErrors:
+    %>
+<script>
+alert('Внимание, произошла ошибка заполнения полей кирпича, информация не была сохранена. Исправьте помеченные сообщениями ошибки и повторите действие')
+</script><%
+%>
+
+<form action="<%= brick.edPrefix %><%
+if brick.isNew:
+    %><%= brick.stream.path() %><%
+else:
+    %><%= brick.path() %><%
+%>" method="POST" enctype="multipart/form-data">
+<input type="hidden" name="order" value="<%= brick.stream.order %>">
+<input type="hidden" name="page" value="<%= brick.stream.page %>">
+
+<table border="0" bgcolor="#000000" cellspacing="0" cellpadding="0" width=100%>
+<tr><td>
+<table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
+<tr bgcolor="#354750"><td width="100%">
+<a href="<%= brick.edPrefix %><%= brick.stream.path() %><%
+if brick.stream.page>1:
+    %>?page=<%= brick.stream.page %>&order=<%= quoteURLPath(brick.stream.order) %><%
+%>"><span class=t18b id=lb><b><%= brick.stream.title %></b></span></a><span class=t18b id=lb><b>: <%= item_title %></b></span>
+<br>
+</td></tr><%
+if brick.isNew and not brick.stream.itemIDField.omitForNew:
+    %>
+<tr bgcolor="#F0F1F2"><td>
+<%= brick.showField('id') %>
+</td></tr><%
+
+for field in brick.allowedFields:
+    %>
+<tr bgcolor="#F0F1F2"><td><%
+    if fieldErrors and fieldErrors.has_key(field):
+        %><span class="t11b" id="y1"><%= fieldErrors[field] %></span><br><span class="s3">&nbsp;</span><br><%
+    %>
+<%= brick.showField(field) %>
+</td></tr><%
+%>
+
+<tr bgcolor="#E1E4E6"><td><center><input type="submit" name="qps-action:<%
+if brick.isNew:
+    %>createItem<%
+else:
+    %>updateItem<%
+%>" value="Готово"></center></td></tr>
+
+</table>
+</td></tr>
+
+</table>
+
+</form>
+
+</div>
+
+
+</body>
+</html>
