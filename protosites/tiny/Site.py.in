@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.1 2004/03/22 14:45:55 ods Exp $
+# $Id: Site.py.in,v 1.2 2004/03/24 12:18:15 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -34,6 +34,9 @@ class Site(qSite.Site):
     }
     itemFieldsOrder = {
         #'stream_table': ['title', 'body'],
+    }
+    itemIDFields = {
+        #'sql_stream_example': FT.INTEGER_AUTO_ID(),
     }
     itemFields = {
         #'stream_table': {
