@@ -1,9 +1,10 @@
-# $Id: qSecurity.py,v 1.2 2004/06/07 21:04:46 corva Exp $
+# $Id: qSecurity.py,v 1.3 2004/06/09 06:42:42 corva Exp $
 
 '''Function to check permissions'''
 
 import os, types, logging, qUtils, qHTTP
 from qBricks.qSQL import SQLStream, SQLItem
+from qDB.qSQL import Query, Param
 logger = logging.getLogger(__name__)
 
 # security table should be defined in local Cfg like following:
@@ -88,7 +89,7 @@ class UsersStream(SQLStream):
     def getUser(self, login):
         table, fields, condition, group = self.constructQuery()
         condition = self.dbConn.join([condition,
-                                      'login=%s' % self.dbConn.convert(login)])
+                                      Query('login=', Param(login))])
         items = self.itemsByQuery(table, fields, condition, group=group)
         if items:
             return items[0]
