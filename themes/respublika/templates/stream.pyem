@@ -33,7 +33,7 @@ if brick.site.clientCharset:
 <%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
 
 <!-- новый элемент -->
-<tr bgcolor="#E1E4E6"><td align="right"><a href="<%= template.edit.prefix + brick.path() + '?qps-action:newItem=1' %>"><span class=t12b id=y1>Создть новый элемент</span></a><%
+<tr bgcolor="#E1E4E6"><td align="right"><a href="<%= template.edit.prefix + brick.path() + '?qps-action:newItem=1' %>"><span class=t12b id=y1>Создать новый элемент</span></a><%
 if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
     %>&nbsp; <span id=y1>|</span>&nbsp; <a href="<%= template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>" onclick="javascript:var new_window=window.open('<%= template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path() %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes'); return false;"><span class=t12b id=y1>Перевязать</span></a><%
 %></td></tr>
