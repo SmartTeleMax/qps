@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.16 2004/06/09 09:23:47 ods Exp $
+# $Id: qFieldTypes.py,v 1.17 2004/06/18 14:57:31 ods Exp $
 
 '''Classes for common field types'''
 
@@ -86,11 +86,9 @@ class FieldType(object):
                 cls._templates = {}
             if not cls._templates.has_key(template_type):
                 try:
-                    logger.warn('? %s (%s)', cls.__name__, self.__class__.__name__)
                     template = template_getter(
                                     '%s.%s' % (cls.__name__, template_type))
                 except TemplateNotFoundError:
-                    logger.warn('!!! %s not found', cls.__name__)
                     if cls is FieldType:
                         raise
                     else:
@@ -192,6 +190,8 @@ class NUMBER(FieldType):
 
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
+        if not value:
+            return self.getDefault()
         message = qUtils.interpolateString(self.error_message, {'brick': self})
         try:
             value = self.type(value)
@@ -293,7 +293,7 @@ class DROP(FieldType):
     maxlen = 0
     size = 0
     undefined_label = '(undefined)'
-    labelTemplate = '%(quoteHTML(getattr(brick, "title", brick.id)))s'
+    labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
 
     def show(self, item, name, template_type, template_getter,
              global_namespace={}):
@@ -324,11 +324,11 @@ class SELECT(DROP):
         stream = item.site.retrieveStream(self.stream,
                                 tag=item.site.transmitTag(item.stream.tag))
         return self.fieldSeparator.join(
-                        map(stream.fields['id'].convertToString, value)+[''])
+                        map(stream.fields.id.convertToString, value)+[''])
     def convertFromDB(self, value, item=None):
         stream = item.site.retrieveStream(self.stream,
                                 tag=item.site.transmitTag(item.stream.tag))
-        return map(stream.fields['id'].convertFromString,
+        return map(stream.fields.id.convertFromString,
                    value.split(self.fieldSeparator)[:-1])
     def convertFromForm(self, form, name, item=None): 
         return form.getlist(self.name)
@@ -386,7 +386,7 @@ class FOREIGN_DROP(FieldType):
     extraOption = None
     missingID = None # representation of missing value in DB (default is NULL)
     default = None
-    labelTemplate = '%(quoteHTML(getattr(brick, "title", brick.id)))s'
+    labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
 
     def _retrieve_stream(self, item):
         return item.site.retrieveStream(self.stream,
@@ -407,7 +407,7 @@ class FOREIGN_DROP(FieldType):
     
     def convertToDB(self, value, item=None):
         if value: # calls LazyItem.__nonzero__ that checks for None
-            return value.stream.fields['id'].convertToDB(value.id, item)
+            return value.stream.fields.id.convertToDB(value.id, item)
         else:
             return self.missingID
 
@@ -417,7 +417,7 @@ class FOREIGN_DROP(FieldType):
             stream = self._retrieve_stream(item)
             return self.proxyClass(item.site,
                                    self._stream_params(item),
-                                   stream.fields['id'].convertFromString(value))
+                                   stream.fields.id.convertFromString(value))
 
     def getLabel(self, item):
         namespace = item.site.globalNamespace.copy()
@@ -450,7 +450,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
             item_ids = value.split(self.fieldSeparator)
             stream = self._retrieve_stream(item)
             return self.convertFromCode(
-                    map(stream.fields['id'].convertFromString, item_ids), item)
+                    map(stream.fields.id.convertFromString, item_ids), item)
         else:
             return []
 
@@ -458,7 +458,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         value = form.getlist(name)
         stream = self._retrieve_stream(item)
         return self.convertFromCode(
-                    map(stream.fields['id'].convertFromString, value), item)
+                    map(stream.fields.id.convertFromString, value), item)
 
     def convertToDB(self, value, item=None):
         item_ids = [FOREIGN_DROP.convertToString(self, item.id)
@@ -547,7 +547,8 @@ class ExtFieldTypeMixIn:
                            # field is defined) is stored.
 
     def condition(self, item):
-        return '%s=%s' % (self.idFieldName, item.dbConn.convert(item.id))
+        from qDB.qSQL import Query, Param
+        return Query('%s=' % self.idFieldName, Param(item.id))
 
     def insert(self, item, db_value):
         item.dbConn.insert(self.tableName, {self.idFieldName: item.id,
@@ -1036,7 +1037,7 @@ class FieldDescriptions(object):
                                     field2_name, field2_type_class(...),
                                     ...])
 
-        id = fields['id']
+        id = fields.id
         for field_name, field_type in fields:
             pass
         for field_name, field_type in fields.iteritems():
@@ -1044,13 +1045,17 @@ class FieldDescriptions(object):
         for field_name in fields.iterkeys():
             pass
 
-        Class also defines two attributes:
+        Class also defines attributes:
 
-        external  - FieldDescriptions object for external fields (storable)
-        main      - the same for main fields"""
-    
-    def __init__(self, config):
+        external    - FieldDescriptions object for external fields (storable)
+        main        - the same for main fields
+        idFieldName - name of id field"""
+
+    idFieldName = "id"
+        
+    def __init__(self, config, **kwargs):
         self._config = config
+        self.__dict__.update(kwargs)
 
     def __repr__(self):
         return repr(self._config)
@@ -1097,7 +1102,11 @@ class FieldDescriptions(object):
             [(fn, ft) for fn, ft in self._config if not hasattr(ft, 'store')])
     main = qUtils.CachedAttribute(main)
 
+    def id(self):
+        return self[self.idFieldName]
+    id = qUtils.CachedAttribute(id)
 
+    
 class FieldDescriptionsRepository:
     '''Wraps config (dictionary) values with FieldDescriptions class.
     
