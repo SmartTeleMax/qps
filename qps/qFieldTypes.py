@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.17.2.1 2004/06/30 14:58:48 ods Exp $
+# $Id: qFieldTypes.py,v 1.17.2.2 2004/07/05 10:20:53 ods Exp $
 
 '''Classes for common field types'''
 
@@ -329,7 +329,7 @@ class SELECT(DROP):
         return map(stream.fields['id'].convertFromString,
                    value.split(self.fieldSeparator)[:-1])
     def convertFromForm(self, form, name, item=None): 
-        return form.getlist(self.name)
+        return form.getlist(name)
         
 
 class LazyItem:
