@@ -17,7 +17,7 @@ for field_name in template.allowedFields(brick):
     error = errors.get(field_name)
     if error:
         %>
-<tr class="errormessage"><td clospan="2"><%= error %></td></tr><%
+<tr class="errormessage"><td colspan="2"><%= error %></td></tr><%
     %>
 <tr class="field">
 <%= template.showField(brick, field_name) %></tr>
