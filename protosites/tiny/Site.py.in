@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.11 2004/05/31 17:56:24 ods Exp $
+# $Id: Site.py.in,v 1.12 2004/06/09 09:23:47 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -19,17 +19,15 @@ class Site(qSite.Site):
         'rubrics': DictRecord(
             title='Rubrics',
             streamClass='qps.qBricks.qStatic.StaticStream',
-            itemFieldsOrder = ['title', 'docs'],
-            itemFields={
-                'title' : FT.STRING(title='Title',
-                                    indexPermissions=[('all', 'r')]),
-            },
-            itemExtFields={
-                'docs'  : FT.EXT_VIRTUAL_REFERENCE(
-                                    title='Documents',
-                                    templateStream='docs',
-                                    indexPermissions=[('all', 'r')]),
-            },
+            fields=FT.FieldDescriptions([
+                ('id',      FT.STRING_ID()),
+                ('title',   FT.STRING(title='Title',
+                                      indexPermissions=[('all', 'r')])),
+                ('docs',    FT.EXT_VIRTUAL_REFERENCE(
+                                      title='Documents',
+                                      templateStream='docs',
+                                      indexPermissions=[('all', 'r')])),
+            ]),
             itemListSpec=[
                 ('id1', {'title': 'First rybric title'}),
                 ('id2', {'title': 'Second rubric title'}),
@@ -43,15 +41,14 @@ class Site(qSite.Site):
             condition='',  # raw SQL condition to place into WHERE clause
             order='id',
             indexNum=10,   # number of items on page
-            itemIDField=FT.INTEGER_AUTO_ID(),
-            itemFieldsOrder=['rubric', 'title', 'body'],
-            itemFields={
-                'rubric': FT.FOREIGN_DROP(title='Rubric', stream='rubrics',
-                                          extraOption='(no rubric)'),
-                'title' : FT.STRING(title='Title',
-                                    indexPermissions=[('all', 'r')]),
-                'body'  : FT.TEXT(title='Body text'),
-            },
+            fields=FT.FieldDescriptions([
+                ('id',      FT.INTEGER_AUTO_ID()),
+                ('rubric',  FT.FOREIGN_DROP(title='Rubric', stream='rubrics',
+                                            extraOption='(no rubric)')),
+                ('title',   FT.STRING(title='Title',
+                                      indexPermissions=[('all', 'r')])),
+                ('body',    FT.TEXT(title='Body text')),
+            ]),
             streamCat='docs',
             streamClass='qps.qBricks.qSQL.SQLStream',
             permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
