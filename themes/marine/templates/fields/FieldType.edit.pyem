@@ -1,0 +1,11 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<%
+additional_attrs = ''
+if hasattr(brick, 'maxlength'):
+    additional_attrs += ' maxlength="%s"' % brick.maxlength
+if brick.layout.has_key('size'):
+    additional_attrs += ' size="%s"' % brick.layout['size']
+elif hasattr(brick, 'maxlength'):
+    additional_attrs += ' size="%s"' % min(brick.maxlength+1, 80)
+%>
+<td width="100%"><input type="text" name="<%= name %>" value="<%= quoteHTML(str(value)) %><%= additional_attrs %>"></td>

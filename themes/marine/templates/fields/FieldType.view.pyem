@@ -1,0 +1,2 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%"><%= quoteHTML(str(value)) %></td>
