@@ -2,6 +2,7 @@
 
 '''Classes for common field types'''
 
+from __future__ import generators
 import types, os, re, sys, weakref, logging
 logger = logging.getLogger(__name__)
 
@@ -470,7 +471,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
                  for i in value]
         return ', '.join(views)
 
-
+        
 class FOREIGN(FOREIGN_DROP):
     proxyClass = RetrievedLazyItem
 
@@ -1046,35 +1047,42 @@ class FieldDescriptions(object):
     main - same for main fields"""
     
     def __init__(self, config):
-        self.__config = config
+        self._config = config
 
     def __repr__(self):
-        return repr(self.__config)
+        return repr(self._config)
 
     def __iter__(self):
-        return iter(self.__config)
+        return iter(self._config)
 
     def __getitem__(self, name):
-        return self.__config_dict[name]
-
-    def iterkeys(self):
-        return self.__config_dict.iterkeys()
+        return self._config_dict[name]
 
     def iteritems(self):
-        return self.__config_dict.iteritems()
+        return iter(self._config)
 
-    def __config_dict(self):
-        return dict(self.__config)
-    __config_dict = qUtils.CachedAttribute(__config_dict)
+    def iterkeys(self):
+        for fn, ft in self:
+            yield fn
+
+    def items(self):
+        return self._config[:]
+
+    def keys(self):
+        return [fn for fn, ft in self]
+
+    def _config_dict(self):
+        return dict(self._config)
+    _config_dict = qUtils.CachedAttribute(_config_dict)
 
     def external(self):
         return FieldDescriptions(
-            [(fn, ft) for fn, ft in self.__config if hasattr(ft, 'store')])
+            [(fn, ft) for fn, ft in self._config if hasattr(ft, 'store')])
     external = qUtils.CachedAttribute(external)
 
     def main(self):
         return FieldDescriptions(
-            [(fn, ft) for fn, ft in self.__config if not hasattr(ft, 'store')])
+            [(fn, ft) for fn, ft in self._config if not hasattr(ft, 'store')])
     main = qUtils.CachedAttribute(main)
 
 # vim: ts=8 sts=4 sw=4 ai et
