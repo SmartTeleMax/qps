@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.4 2004/03/26 08:46:34 ods Exp $
+# $Id: Site.py.in,v 1.5 2004/03/29 11:42:11 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -7,6 +7,7 @@ from qps import qFieldTypes as FT
 
 class Site(qSite.Site):
 
+    host = 'localhost'
     title = %(`title`)s
     makeRoot = %(`make_dir`)s
     templateDirs = [%(`make_templates_dir`)s]
