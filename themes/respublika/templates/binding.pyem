@@ -45,7 +45,7 @@ for repeat in Cook.Repeat(brick):
             %>
 <td nowrap><span class=t11><%= field_type.indexTitle %></span></td><%
         %>
-<td nowrap><span class=t11>X</span></td>
+<td nowrap></td>
 </tr><%
     %>
 <tr valign="top"><%
