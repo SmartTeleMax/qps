@@ -1,4 +1,6 @@
-<fieldset style="border: 1px solid #A0AAB1;"><legend><span class=t12 id=db1><%= getattr(brick, 'title', name) %></span></legend>
+<span class="t11b" id="db1"><%= getattr(brick, 'title', name) %></span><br>
+<span class="s3">&nbsp;</span><br>
+<div style="border: 1px solid #A0AAB1; padding: 10px;">
 <%
 for value_item in Cook.Repeat(not stream.indexNum and stream or value):
     if value_item.isFirst:
@@ -22,10 +24,9 @@ for value_item in Cook.Repeat(not stream.indexNum and stream or value):
     if value_item.isLast:
         %></table><%
 %>
-
-</fieldset>
+</div>
 <%
 if stream.indexNum and not isNew:
     %>
-<span class=s3>&nbsp;</span><br><a href="<%= edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>" onclick="javascript:var new_window=window.open('<%= edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;"><span class=v10b id=db1>Выбрать</span></a><%
+<span class=s3>&nbsp;</span><br><a href="<%= edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>" onclick="javascript:var new_window=window.open('<%= edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;"><span class=t12 id=db1>&gt;&gt;</span></a><%
 %>
