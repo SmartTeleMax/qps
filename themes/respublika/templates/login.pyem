@@ -7,7 +7,7 @@ if brick.site.clientCharset:
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
 %>
 <style>
-<%= brick.template('style') %>
+<%= template('style', brick=brick) %>
 </style>
 
   </head>
@@ -17,7 +17,7 @@ if brick.site.clientCharset:
 <tr><td align="center">
 
 <table cellpadding=0 cellspacing=0><tr><td>
-<form action="<%= brick.edPrefix+path %>" method="POST">
+<form action="<%= template.edit.prefix+path %>" method="POST">
 <span class=t18b id=lb><%= brick.title %></span><br>
 <span class=s12>&nbsp;</span><br>
 <span class=t11 id=lb>имя</span><br>
