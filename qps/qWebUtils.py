@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.3 2004/06/04 09:40:29 corva Exp $
+# $Id: qWebUtils.py,v 1.4 2004/06/04 10:13:52 corva Exp $
 
 '''Template support'''
 
@@ -52,7 +52,17 @@ class TemplateGetter(object):
 
 
 class RenderHelper(object):
-    
+    """RenderHelper class, common usage is:
+
+    renderer = RenderHelper(publisher)
+    renderer('template_name', **kwargs)
+
+    Publisher is an object with getTemplate and globalNamespace attributes
+
+    Template, addressed by name 'template_name' is rendered by calling
+    renderer, kwargs are passed to template as global vars, moreover,
+    renderer object appears in template's global vars as 'template'"""
+
     def __init__(self, publisher):
         "Publisher is an object with getTemplate and globalNamespace attrs"
         self.publisher = publisher
