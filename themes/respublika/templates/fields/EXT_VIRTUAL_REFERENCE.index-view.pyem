@@ -1,5 +1,10 @@
 <%
+def testattr(obj, name): return hasattr(obj, name) and getattr(obj, name)
+%><nobr><%
 if value:
     %><a href="<%= edPrefix + value.path() %>"><span class=t12 id=db1>&gt;&gt;</span></a><%
+    if testattr(brick, "showCountItemsInIndex") and value.countItems():
+        %> <span class=t12 id=db1> (<%= value.countItems() %>)</span><%
 else:
-    %><span class=t12 id=db1>&mdash;</span>
+    %><span class=t12 id=db1>&mdash;</span><%
+%></nobr>

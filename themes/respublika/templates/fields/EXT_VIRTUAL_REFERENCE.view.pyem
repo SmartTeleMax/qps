@@ -1,6 +1,10 @@
-<span class=t11b id=db1><%= brick.title %>:</span><%
+<%
+def testattr(obj, name): return hasattr(obj, name) and getattr(obj, name)
+%><span class=t11b id=db1><%= brick.title %>:</span><br><%
 if value:
     %>
-<span class=s9>&nbsp;</span><br>
-<a href="<%= edPrefix + (value and value.path() or '') %>"><span class=a12 id=db1><%= brick.linkText %></span></a><%
+<span class=s3>&nbsp;</span><br>
+<a href="<%= edPrefix + (value and value.path() or '') %>"><span class=t12 id=db1>&gt;&gt;</span></a><%
+    if testattr(brick, "showCountItems") and value.countItems():
+        %><span class=t12 id=db1> (<%= value.countItems() %>)</span><%
 %>
