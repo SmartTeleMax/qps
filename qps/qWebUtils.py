@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.2 2004/06/04 08:46:12 corva Exp $
+# $Id: qWebUtils.py,v 1.3 2004/06/04 09:40:29 corva Exp $
 
 '''Template support'''
 
@@ -52,11 +52,13 @@ class TemplateGetter(object):
 
 
 class RenderHelper(object):
+    
     def __init__(self, publisher):
         "Publisher is an object with getTemplate and globalNamespace attrs"
         self.publisher = publisher
 
     def __call__(self, template_name, **kwargs):
+        "Interprets template named template_name and returns result string"
         ns = self.publisher.globalNamespace.copy()
         ns.update(kwargs)
         ns['template'] = self
@@ -85,14 +87,6 @@ class Publisher:
         else:
             return TemplateGetter(self.templateDirs, self.site.templateCharset)
     getTemplate = qUtils.CachedAttribute(getTemplate)
-
-    def prepareObject(self, obj):
-        return self.proxyClass(obj)
-
-    def renderObject(self, obj, template_name, **kwargs):
-        obj = self.prepareObject(obj)
-        template = self.renderHelperClass(self)
-        return template(template_name, brick=obj, **kwargs)
 
 
 # vim: ts=8 sts=4 sw=4 ai et

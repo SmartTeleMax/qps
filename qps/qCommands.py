@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.1.1.1 2004/03/18 15:17:15 ods Exp $
+# $Id: qCommands.py,v 1.2 2004/03/18 15:27:35 ods Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -77,13 +77,14 @@ class Publisher(qWebUtils.Publisher):
     
     def showObject(self, request, response, obj, template_name,
                    content_type='text/html', **kwargs):
+        template = self.renderHelperClass(self)
+        
         response.setContentType(content_type,
                                 charset=self.getClientCharset(request))
-        response.write(self.renderObject(obj, template_name, **kwargs))
+        response.write(template(template_name, brick=obj, **kwargs))
 
     def getClientCharset(self, request):
         '''Reload this method to determine charset per client'''
-        
         return self.site.clientCharset
 
 # vim: ts=8 sts=4 sw=4 ai et:

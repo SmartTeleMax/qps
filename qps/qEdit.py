@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.8 2004/06/04 08:50:12 corva Exp $
+# $Id: qEdit.py,v 1.9 2004/06/04 09:40:29 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -10,21 +10,13 @@ logger = logging.getLogger(__name__)
 import qWebUtils, qSite, qHTTP, qUtils, qCommands, qPath, qSecurity
 
 
-class RenderHelper(object):
+class RenderHelper(qWebUtils.RenderHelper):
     def __init__(self, edit, user, isNew=0, **kwargs):
+        qWebUtils.RenderHelper.__init__(self, edit)
         self.edit = edit
         self.user = user
         self.isNew = isNew
         self.__dict__.update(kwargs)
-
-    def __call__(self, template_name, **kwargs):
-        ns = self.edit.globalNamespace.copy()
-        ns.update(kwargs)
-        ns['template'] = self
-        logger.debug('Rendering template %s', template_name)
-        result = self.edit.getTemplate(template_name)(ns)
-        logger.debug('Finished rendering template %s', template_name)
-        return result
 
     def fieldGlobalNamespace(self):
         namespace = self.edit.globalNamespace.copy()
@@ -215,11 +207,7 @@ class EditBase:
         self.dispatch(request, response, field_name_prefix='qps-action:',
                       objs=objs, user=user)
 
-    def prepareObject(self, obj):
-        return self.proxyClass(obj)
-
     def showBrick(self, request, response, obj, user, isNew=0, **kwargs):
-        obj = self.prepareObject(obj)
         template = self.renderHelperClass(self, user, isNew)
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
@@ -460,13 +448,13 @@ class EditBase:
         if not (user.checkPermission('w', bound_stream.permissions) and \
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
-        obj = self.prepareObject(template_stream)
         template = self.renderHelperClass(self, user)
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
-        response.write(template('binding', brick=obj, item=binding_to_item,
-                                fieldName=field_name, bound=bound,
-                                boundPath=bound_path, isBound=isBound,
+        response.write(template('binding', brick=template_stream,
+                                item=binding_to_item, fieldName=field_name,
+                                bound=bound, boundPath=bound_path,
+                                isBound=isBound,
                                 boundElementType=bound_element_type))
 
     def do_updateBinding(self, request, response, form, objs, user):
