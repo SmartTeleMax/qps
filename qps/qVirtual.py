@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.24 2004/03/16 15:48:21 ods Exp $
+# $Id: qVirtual.py,v 1.1.1.1 2004/03/18 15:17:17 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -50,7 +50,6 @@ class CommonVirtualStream:
     def match(self, site, stream_path, tag=None):
         parts = stream_path.split('/')
         if len(parts)>=2 and '/'.join(parts[:-1])==self.prefix:
-            params = self.streamParams.copy()
             param_stream = site.retrieveStream(self.paramStream,
                                                tag=site.transmitTag(tag))
             try:
@@ -62,6 +61,7 @@ class CommonVirtualStream:
             if param_item is None:
                 # no such item
                 return
+            params = self.streamParams.copy()
             params[self.paramName] = param_item
             if self.titleTemplate is not None:
                 params['title'] = interpolateString(self.titleTemplate, params)
