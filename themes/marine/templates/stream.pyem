@@ -30,7 +30,7 @@ for it in Cook.Repeat(brick):
     for field_name in template.allowedIndexFields(brick):
         %>
 <td><%= template.showFieldInIndex(item, field_name) %></td><%
-    if template.isStreamDeletable(brick) or template.isStreamUpdatable(brick):
+    if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
         %>
 <td><input type="checkbox" name="qps-select" value="<%= item.fields['id'].convertToString(item.id) %>"></td><%
     %>
