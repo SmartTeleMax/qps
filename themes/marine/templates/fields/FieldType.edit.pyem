@@ -8,4 +8,4 @@ if brick.layout.has_key('size'):
 elif hasattr(brick, 'maxlength'):
     additional_attrs += ' size="%s"' % min(brick.maxlength+1, 80)
 %>
-<td width="100%"><input type="text" name="<%= name %>" value="<%= quoteHTML(str(value)) %><%= additional_attrs %>"></td>
+<td width="100%"><input type="text" name="<%= name %>" value="<%= quoteHTML(str(value)) %>"<%= additional_attrs %>></td>

@@ -10,4 +10,4 @@ elif hasattr(brick, 'maxlength'):
 if str(value):
     %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= value %>"><%
 %>
-<input type="text" name="qps-new:<%= field_suffix %>" value="<%= quoteHTML(str(value)) %><%= additional_attrs %>">
+<input type="text" name="qps-new:<%= field_suffix %>" value="<%= quoteHTML(str(value)) %>"<%= additional_attrs %>>
