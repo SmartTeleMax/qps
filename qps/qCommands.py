@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.2 2004/03/18 15:27:35 ods Exp $
+# $Id: qCommands.py,v 1.3 2004/06/04 10:13:52 corva Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -55,6 +55,27 @@ class FieldNameCommandDispatcher(BaseCommandDispatcher):
             return self.cmd_defaultCommand(request, response, form, **kwargs)
 
 
+class FieldCommandDispatcher(BaseCommandDispatcher):
+    '''Class for commands based web-scripts. Action is determined from
+    field "qps-action" or is passed to dipatch method'''
+    def dispatch(self, request, response, field_name='qps-action', **kwargs):
+        form = qps.qHTTP.Form(request, self.getClientCharset(request))
+        action = form.getfirst(field_name)
+        if action:
+            try:
+                method = getattr(self, 'do_'+action)
+            except AttributeError:
+                logger.warn('Invalid command %r', action)
+                return self.cmd_invalidCommand(request, response, form,
+                                               **kwargs)
+            else:
+                logger.debug('Dispatching for command %r', action)
+                return method(request, response, form, **kwargs)
+        else:
+            logger.debug('Assuming default command')
+            return self.cmd_defaultCommand(request, response, form, **kwargs)
+
+        
 class PathInfoCommandDispatcher(BaseCommandDispatcher):
     '''Class for commands based web-scripts where action is determined from
     request.pathInfo.'''
