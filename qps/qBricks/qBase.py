@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.2 2004/04/07 14:08:09 ods Exp $
+# $Id: qBase.py,v 1.3 2004/06/04 10:09:14 ods Exp $
 
 '''Base brick classes'''
 
@@ -70,9 +70,12 @@ class Item(Brick):
     def __eq__(self, other):
         # Note that the same objects taken from different streams are not
         # equal!
-        return self is other or \
-                (self.__class__ is other.__class__ and \
-                 self.stream==other.stream and self.id==other.id)
+        if self is other:
+            return 1
+        elif self.__class__ is other.__class__:
+            return self.stream==other.stream and self.id==other.id
+        else:
+            return NotImplemented
 
     def __ne__(self, other):
         return not (self==other)
