@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.8 2004/06/09 07:17:41 ods Exp $
+# $Id: qMake.py,v 1.9 2004/07/26 08:56:17 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -217,7 +217,7 @@ class ImagesMaker(Maker):
                 image = getattr(item, field_name)
                 if image:
                     fp = self.writer.getFP(image.path)
-                    fp.write(open(field_type.editRoot+image.path).read())
+                    fp.write(open(field_type.editRoot+image.path, 'rb').read())
                     fp.close()
                 else:
                     path = None
