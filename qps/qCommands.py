@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.3 2004/06/04 10:13:52 corva Exp $
+# $Id: qCommands.py,v 1.4 2004/09/14 12:44:37 corva Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -59,7 +59,7 @@ class FieldCommandDispatcher(BaseCommandDispatcher):
     '''Class for commands based web-scripts. Action is determined from
     field "qps-action" or is passed to dipatch method'''
     def dispatch(self, request, response, field_name='qps-action', **kwargs):
-        form = qps.qHTTP.Form(request, self.getClientCharset(request))
+        form = qHTTP.Form(request, self.getClientCharset(request))
         action = form.getfirst(field_name)
         if action:
             try:
