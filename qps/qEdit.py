@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.13 2004/06/04 14:44:17 ods Exp $
+# $Id: qEdit.py,v 1.14 2004/06/04 14:52:50 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -516,7 +516,7 @@ class EditBase:
                 if new_id and (not value or value.id != new_id):
                     setattr(bound, field_name,
                             template_stream.retrieveItem(new_id))
-                    bound.store()
+                    bound.store([field_name])
             else:             # field is a sequence
                 values = list(field)
                 for item_id in old_ids:
@@ -529,7 +529,7 @@ class EditBase:
                         values.append(item)
                 if values!=getattr(bound, field_name):
                     setattr(bound, field_name, values)
-                    bound.store()
+                    bound.store([field_name])
         raise self.SeeOther(
             '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % \
                             (self.prefix, template_stream.path(), bound.path(),
