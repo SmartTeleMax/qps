@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.4 2004/06/04 10:13:52 corva Exp $
+# $Id: qWebUtils.py,v 1.5 2004/06/08 10:30:31 corva Exp $
 
 '''Template support'''
 
@@ -31,10 +31,10 @@ class TemplateGetter(object):
     
     def __new__(cls, search_dirs, charset=None):
         search_dirs = tuple(search_dirs)  # Insure sequence is immutable
-        getter_key = (tuple(search_dirs), charset)
+        getter_key = (search_dirs, charset)
         if not cls._getters.has_key(getter_key):
             self = object.__new__(cls)
-            self.search_dirs = search_dirs
+            self.source = search_dirs
             self.controller = TemplateController(
                     FileSourceFinder(search_dirs,
                                      file=qUtils.ReadUnicodeFile(charset)),
@@ -45,7 +45,7 @@ class TemplateGetter(object):
 
     def __call__(self, template_name, template_type=None):
         logger.debug('Getting template %s from %s',
-                     template_name, self.search_dirs)
+                     template_name, self.source)
         template = self.controller.getTemplate(template_name, template_type)
         logger.debug('Template has type %s', template.type)
         return template
