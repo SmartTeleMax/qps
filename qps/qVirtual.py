@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.8 2004/07/14 15:45:40 ods Exp $
+# $Id: qVirtual.py,v 1.9 2004/07/14 15:49:23 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -20,23 +20,26 @@ from qDB.qSQL import Query, Param
 
 class VirtualRule:
     '''Class for rules of virtual streams with single parameter.  Stream ID is
-    formed as prefix+'/'+item_id_from_paramStream.  Default value for prefix is
-    stream_id_of_paramStream.'''
+    formed as prefix+item_id_from_paramStream+suffix, where 
+    (prefix, suffix)=format.  If format is not set, then (paramStream+'/', '')
+    assumed.'''
 
     def defaultStreamParams(self):
         return {'streamMakers'  : [],
                 'itemMakers'    : []}
 
-    def __init__(self, templateStream, paramStream, paramName, prefix=None,
+    def __init__(self, templateStream, paramStream, paramName, format=None,
+                 prefix=None, # XXX deprecated, don't use it!
                  streamParams=None, titleTemplate=None):
         self.templateStream = templateStream
         self.paramStream = paramStream
         self.paramName = paramName
         self.titleTemplate = titleTemplate
-        if prefix is None:
-            self.prefix = paramStream
+        if format is None:
+            self.prefix = (prefix or paramStream)+'/'
+            self.suffix = ''
         else:
-            self.prefix = prefix
+            self.prefix, self.suffix = format
         self.streamParams = self.defaultStreamParams()
         if streamParams:
             self.streamParams.update(streamParams)
@@ -49,13 +52,16 @@ class VirtualRule:
         return stream.id==self.paramStream
 
     def match(self, site, stream_path, tag=None):
-        parts = stream_path.split('/')
-        if len(parts)>=2 and '/'.join(parts[:-1])==self.prefix:
+        if stream_path.startswith(self.prefix) and \
+                stream_path.endswith(self.suffix):
+            param_item_id_str = stream_path[len(self.prefix):]
+            if self.suffix:
+                param_item_id_str = param_item_id_str[:-len(self.suffix)]
             param_stream = site.retrieveStream(self.paramStream,
                                                tag=site.transmitTag(tag))
             try:
                 param_item_id = \
-                    param_stream.fields.id.convertFromString(parts[-1])
+                    param_stream.fields.id.convertFromString(param_item_id_str)
             except ValueError:
                 return
             param_item = param_stream.retrieveItem(param_item_id)
@@ -71,8 +77,8 @@ class VirtualRule:
             return
 
     def constructId(self, param_item):
-        id_str = param_item.fields.id.convertToString(param_item.id)
-        return '%s/%s' % (self.prefix, id_str)
+        param_item_id_str = param_item.fields.id.convertToString(param_item.id)
+        return '%s%s%s' % (self.prefix, param_item_id_str, self.suffix)
 
     def condition(self, stream):
         conn = stream.dbConn
