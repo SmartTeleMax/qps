@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.9 2004/07/14 15:49:23 ods Exp $
+# $Id: qVirtual.py,v 1.10 2004/11/24 15:44:31 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -49,7 +49,9 @@ class VirtualRule:
     itemParamNames = property(itemParamNames)
 
     def matchParamStream(self, stream):
-        return stream.id==self.paramStream
+        return stream.id==self.paramStream or \
+               hasattr(stream, 'virtual') and \
+               stream.virtual.templateStream == self.paramStream
 
     def match(self, site, stream_path, tag=None):
         if stream_path.startswith(self.prefix) and \
