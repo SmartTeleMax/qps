@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.42 2005/01/20 00:06:03 corva Exp $
+# $Id: qFieldTypes.py,v 1.43 2005/01/25 12:04:18 corva Exp $
 
 '''Classes for common field types'''
 
@@ -860,7 +860,7 @@ class RESTRICTED_IMAGE(IMAGE):
         value = IMAGE.convertFromForm(self, form, name, item)
         image = image_orig = value._image
 
-        if image:
+        if value.body and image:
             w,h = image.size
             maxw, maxh = self.maxWidth, self.maxHeight
 
@@ -895,16 +895,20 @@ class THUMBNAIL(IMAGE):
     def convertFromForm(self, form, name, item):
         if self.fieldToThumb:
             # we have field to thumbnail
-            image = image_orig = getattr(
-                getattr(item, self.fieldToThumb, None), '_image', None)
+            _image = getattr(item, self.fieldToThumb, None)
+            image = image_orig = getattr(_image, '_image', None)
         else:
             # field thumbnails itself
             if form.has_key(name+'-delete'):
                 old_path =  getattr(getattr(item, name), 'path', None)
                 return self._Image(self, item, '', old_path)
-            
-            image = image_orig = getattr(
-                IMAGE.convertFromForm(self, form, name, item), '_image', None)
+
+            _image = IMAGE.convertFromForm(self, form, name, item)
+            image = image_orig = getattr(_image, '_image', None)
+
+        if not _image.body:
+            # image was not updated
+            return _image
 
         if image and self.width and self.height:
             image = self.thumbnail(image)
