@@ -5,10 +5,10 @@
 <option tal:condition="brick.extra_option"
         tal:content="structure brick.extra_option" value="">Extra option label</option>
 <option tal:repeat="item stream"
-        tal:attributes="value item.id; selected value and item.id==value.id and 'selected' or None"
+        tal:attributes="value stream.itemIDField.convertToString(item.id); selected value and item.id==value.id and 'selected' or None"
         tal:content="structure brick.getLabel(item)">Option label</option>
 <option tal:condition="value and value not in stream"
-	tal:attributes="value value.id" selected="selected"
+	tal:attributes="value stream.itemIDField.convertToString(value.id)" selected="selected"
 	tal:content="structure brick.getLabel(value)">Option label</option>
 </select>
 </tal:block>
