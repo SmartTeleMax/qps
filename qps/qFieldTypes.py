@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.43 2005/01/25 12:04:18 corva Exp $
+# $Id: qFieldTypes.py,v 1.44 2005/01/26 11:33:14 corva Exp $
 
 '''Classes for common field types'''
 
@@ -746,7 +746,8 @@ class IMAGE(FieldType, ExtFieldTypeMixIn):
                 from glob import glob
                 file_list = glob(self.field_type.editRoot+self.pattern+'.*')
                 if file_list:
-                    file_name = file_list[0]
+                    # Fix slashes to work on non-POSIX platforms
+                    file_name = '/'.join(os.path.split(file_list[0]))
                     return file_name[len(self.field_type.editRoot):]
         path = qUtils.CachedAttribute(path)
         def __str__(self):
