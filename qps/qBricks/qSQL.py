@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.12 2004/07/30 14:16:03 corva Exp $
+# $Id: qSQL.py,v 1.13 2004/09/26 23:11:21 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -12,7 +12,7 @@ from qps.qDB.qSQL import Query, Param
 class SQLItem(qBase.Item):
     def initFieldsFromDB(self, row):
         '''Initialize item fields from DB row'''
-        fields = self.stream.indexFields
+        fields = self.indexFields
         for field_name, db_value in row.items():
             if fields.has_key(field_name):
                 value = fields[field_name].convertFromDB(db_value, item=self)
