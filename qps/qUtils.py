@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.2 2004/03/19 14:34:47 ods Exp $
+# $Id: qUtils.py,v 1.3 2004/04/05 10:57:29 ods Exp $
 
 '''Miscellaneous utilities'''
 
@@ -166,6 +166,62 @@ class DictRecord(dict):
             raise AttributeError(name)
     def __setattr__(self, name, value):
         self[name] = value
+
+
+class Descriptions(object):
+    """Dictionary-like storage for ordered config.
+
+    Usage:
+
+        config = Descriptions([name1, config,
+                               name2, config,
+                               ...])"""
+
+        
+    
+    def __init__(self, config):
+        self._config = config
+
+    def __repr__(self):
+        return repr(self._config)
+
+    def __nonzero__(self):
+        return self._config and True or False
+
+    def __iter__(self):
+        return iter(self._config)
+
+    def __getitem__(self, name):
+        return self._config_dict[name]
+
+    def __add__(self, other):
+        return self.__class__(self._config + other._config)
+                                 
+    def has_key(self, name):
+        return self._config_dict.has_key(name)
+
+    def iteritems(self):
+        return iter(self._config)
+
+    def iterkeys(self):
+        for fn, ft in self:
+            yield fn
+
+    def items(self):
+        return self._config[:]
+
+    def keys(self):
+        return [fn for fn, ft in self]
+
+    def _config_dict(self):
+        return dict(self._config)
+    _config_dict = CachedAttribute(_config_dict)
+
+    def has_key(self, field_name):
+        return self._config_dict.has_key(field_name)
+
+    def get(self, field_name, default=None):
+        return self._config_dict.get(field_name, default)
 
 
 class ObjectDict:
