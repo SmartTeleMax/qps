@@ -1,0 +1,22 @@
+#!%(python_executable)s
+
+import os, sys, logging
+import qps
+import Site
+
+# lets parse the params
+maker_params_opts = {'--all-pages': 'all_pages',
+                     '--skip-items': 'skip_items'}
+from getopt import getopt
+optlist, args = getopt(
+    sys.argv[1:], "", [opt.replace('--', '') for opt in maker_params_opts]
+    )
+
+opts = [x[0] for x in optlist]
+maker_params = {}
+for opt, param in maker_params_opts.items():
+    if opt in opts:
+        maker_params[param] = 1
+
+site = Site.Site()
+site.make(maker_params=maker_params)
