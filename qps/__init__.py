@@ -1,10 +1,10 @@
-# $Id: __init__.py,v 1.30 2004/03/16 14:27:15 ods Exp $
+# $Id: __init__.py,v 1.1.1.1 2004/03/18 15:17:15 ods Exp $
 
 '''Q Publishing System
 (c) 2000-2004 Sergey Barbarash, Oleg Broytmann, Pavel Barykin, Alexey
 Melchakov, Denis Otkidach'''
 
-__version__ = '2.3.2+'
+__version__ = '2.4a'
 
 import logging
 
