@@ -62,6 +62,17 @@ class qps_build(build):
             self.build_pydoc = os.path.join(self.build_base, 'pydoc')
 
 
+def rglob(dir):
+    result = []
+    for root, dirs, files in os.walk(dir):
+        if 'CVS' in dirs:
+            dirs.remove('CVS')
+        for file in files:
+            if not (file.startswith('.') or file.endswith('~')):
+                result.append(os.path.join(root, file))
+    return result
+
+
 setup(name='QPS',
       version=qps.__version__,
       description='Q Publishing System (QPS) is a framework for custom '\
@@ -83,6 +94,9 @@ setup(name='QPS',
                    'QPS-%s.tar.gz?download' % qps.__version__,
       packages=['qps', 'qps.qDB', 'qps.qBricks'],
       scripts=['bin/qps_create_site'],
+      data_files=[
+        ('share/QPS', rglob('themes')),
+      ],
       cmdclass={
         'build'         : qps_build,
         'build_pydoc'   : qps_build_pydoc,
