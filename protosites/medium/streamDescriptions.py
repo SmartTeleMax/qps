@@ -1,6 +1,6 @@
-# $Id: streamDescriptions.py,v 1.3 2004/06/08 07:42:44 ods Exp $
+# $Id: streamDescriptions.py,v 1.4 2004/06/08 07:59:57 ods Exp $
 from qps.qUtils import DictRecord
-from qps.qVirtual import CommonVirtualRule
+from qps.qVirtual import VirtualRule
 
 
 streamDescriptions = {
