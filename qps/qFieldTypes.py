@@ -7,6 +7,7 @@ import types, os, re, sys, weakref, logging
 logger = logging.getLogger(__name__)
 
 from mx import DateTime
+import time
 
 import qUtils
 
@@ -264,7 +265,8 @@ class DATETIME(FieldType):
         if value=='now':
             return DateTime.now()
         else:
-            return DateTime.strptime(value, self.format)
+            # DateTime.strptime is not available on Windows
+            return DateTime.DateTime(*time.strptime(value, self.format)[:6])
     convertFromString = convertFromCode
     def convertToString(self, value, item=None):
         return value.strftime(self.format)
@@ -273,8 +275,8 @@ class DATETIME(FieldType):
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
         try:
-            if len(value)>16: value = value[:16]
-            return DateTime.strptime(value, self.format)
+            # DateTime.strptime is not available on Windows
+            return DateTime.DateTime(*time.strptime(value, self.format)[:6])
         except:
             message = qUtils.interpolateString(self.error_message,
                                                {'brick': self})
