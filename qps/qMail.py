@@ -1,9 +1,10 @@
-# $Id: qMail.py,v 1.2 2004/10/12 05:10:40 corva Exp $
+# $Id: qMail.py,v 1.3 2004/11/16 12:06:51 corva Exp $
 
 '''Mail utilities'''
 
 
-import os, types, logging, smtplib, email, email.Message, email.MIMEText
+import os, types, logging, smtplib, email, email.Message, email.MIMEText, \
+       email.Utils, email.Header
 import qps
 logger = logging.getLogger(__name__)
 
@@ -34,10 +35,11 @@ class SendmailSender(Sender):
     options = ""
 
     def send(self, message):
-        logger.info('Sending mail to %s', message['to'])
+        addr = email.Utils.parseaddr(message['to'])[1]
+        logger.info('Sending mail to %s', addr)
 
         sendmail = os.popen(
-            "%s %s '%s'" % (self.path, self.options, message['to']),
+            "%s %s '%s'" % (self.path, self.options, addr),
             'w'
             )
         sendmail.write(message.as_string())
@@ -52,16 +54,29 @@ class SMTPSender(Sender):
     port = 25
 
     def send(self, message):
-        logger.info('Sending mail to %s', message['to'])
+        addr = email.Utils.parseaddr(message['to'])[1]
+        logger.info('Sending mail to %s', addr)
 
         smtp = self.smtpClass(self.host, self.port)
         smtp.connect()
-        smtp.sendmail(message['from'], message['to'], message.as_string())
+        smtp.sendmail(message['from'], addr, message.as_string())
         smtp.close()
 
 
 # composers
 
+def formataddr(addr, charset):
+    "Formats addresses, encodes realnames with charset and keeps emails as is"
+
+    realname, addr = email.Utils.parseaddr(addr)
+    try:
+        type(realname) == str and realname.decode('us-ascii')
+        type(realname) == unicode and realname.encode('us-ascii')
+    except UnicodeError:
+        realname = email.Header.Header(realname, charset).encode()
+    return email.Utils.formataddr((realname, addr))
+
+                
 class Composer:
     charset = 'ascii' # message charset
     contentType = 'text/plain'
@@ -87,10 +102,9 @@ class Composer:
         message.set_payload(body, self.charset)
         message.set_type(self.contentType)
 
-        message['To'] = To
-        message['From'] = From
+        message['To'] = formataddr(To, self.charset)
+        message['From'] = formataddr(From, self.charset)
 
-        from email.Header import Header
         h = self.defaultHeaders.copy()
         h.update(headers)
         for name, value in h.items():
@@ -100,7 +114,7 @@ class Composer:
                 type(value) == unicode and value.encode('us-ascii')
             except UnicodeError:
                 # i18n header is really needed
-                message[name] = Header(value, self.charset)
+                message[name] = email.Header.Header(value, self.charset)
             else:
                 message[name] = str(value)
 
