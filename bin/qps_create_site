@@ -1,84 +1,94 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.5 2004/03/19 17:30:39 ods Exp $
+# $Id: qps_create_site,v 1.6 2004/03/22 12:08:19 ods Exp $
 
-import sys, os
+import sys, os, shutil
 sys.path.append('..')  # let it work without installation
 from qps.qUtils import interpolateString
 
 python_executable = os.path.normpath(sys.executable)
 
-def indent(text, level=1):
-    return '\n'.join([' '*4*level+line for line in text.split('\n')])
-
-def escapeSQ(text):
-    return text.replace("'", r"\'")
-
 def mkdir(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-SITE_TMPL = '''\
-%(setlocale)s\
-%(site_imports)s
-from qps import qSite
+class SiteProtos:
 
-class Site(qSite.Site):
+    def __init__(self, protos_dir):
+        self.protos_dir = protos_dir
 
-    title = '%(escapeSQ(title))s'
-    makeRoot = '%(escapeSQ(make_dir))s'
-    templateDirs = ['%(escapeSQ(make_templates_dir))s']
-%(indent(stream_descs))s\
-%(indent(field_descs))s\
-%(indent(db_params))s
-'''
+    def list(self):
+        for path in os.listdir(protos_dir):
+            if os.path.isfile(os.path.join(protos_dir, path, 'MANIFEST')):
+                yield os.path.basename(path)
 
-LOCALE_TMPL = '''\
-import locale
-locale.setlocale(locale.LC_ALL, '%(escapeSQ(options.locale))s')
+    def copy(self, proto, code_dir, vars, force=0):
+        proto_dir = os.path.join(protos_dir, proto)
+        manifest = []
+        fp = open(os.path.join(proto_dir, 'MANIFEST'))
+        for line in fp:
+            if not line.startswith('#'):
+                dst, src = line.split()
+                dst = os.path.join(code_dir, dst)
+                src = os.path.join(protos_dir, src)
+                if os.path.exists(dst):
+                    if not (force and os.path.isfile(dst)):
+                        raise RuntimeError('File %r already exists' % dst)
+                print '%r -> %r' % (src, dst)
+                if os.path.isfile(src):
+                    self.copyFile(src, dst)
+                else:
+                    self.copyTemplate(src+'.in', dst, vars)
 
-'''
+    def copyFile(self, src, dst):
+        shutil.copy(src, dst)
 
-STREAM_DESCS_IMPORTS = '''\
-from qps.qUtils import DictRecord
-'''
-
-STREAM_DESCS_TMPL = '''\
-streamDescriptions = {
-    'static_stream_example': DictRecord(
-        title='Static stream title',
-        streamClass='qps.qBricks.qStatic.StaticStream',
-        itemListSpec = [
-            ('id1', {'title': 'First item title'}),
-            ('id2', {'title': 'Second item title'}),
-        ],
-        permissions=[('all', 'rx')]),
-    #'sql_stream_example': DictRecord(
-    #    title='SQL stream example',
-    #    tableName='stream_table',
-    #    condition='',  # raw SQL condition to place into WHERE clause
-    #    order='id',
-    #    indexNum=10,   # number of items on page
-    #    streamCat='sql_stream_template_category',
-    #    streamClass='qps.qBricks.qSQL.SQLStream',
-    #    permissions=[('editor', 'rwxcd'), ('all', 'rx')]),
-}
-'''
+    def copyTemplate(self, src, dst, vars):
+        fp = open(src, 'rb')
+        body = fp.read()
+        fp.close()
+        body = interpolateString(body, vars)
+        fp = open(dst, 'wb')
+        fp.write(body)
+        fp.close()
+        shutil.copystat(src, dst)
 
 from optparse import OptionParser
 parser = OptionParser(usage='%prog [options] site_root')
+parser.add_option('-l', '--list', action='store_true', dest='list',
+                  help='list available site prototypes')
 parser.add_option('-f', '--force', action='store_true', dest='force',
                   help='overwrite existing files')
-parser.add_option('-l', '--locale', dest='locale', metavar='LOCALE',
-                  help='set locale for site to LOCALE')
-parser.add_option('-s', '--size', dest='size',
-                  choices=['tiny', 'small', 'normal', 'large'],
-                  help='choose site size: tiny, small, normal (default), or '\
-                       'large')
+parser.add_option('-p', '--proto', dest='proto', default='tiny', # XXX
+                  help='choose site prototype')
 (options, args) = parser.parse_args()
+
+# look for protosites directory
+prefix = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+for dir in [os.path.join(prefix, 'protosites'),
+            os.path.join(prefix, 'share', 'QPS', 'protosites')]:
+    protos_dir = dir
+    break
+else:
+    sys.exit('"protosites" directory not found. Make sure QPS is installed '\
+             'correctly')
+edit_templates_dir = os.path.join(prefix, 'themes', 'default')
+field_templates_dir = os.path.join(prefix, 'themes', 'default', 'fields')
+
+protos = SiteProtos(protos_dir)
+protos_list = protos.list()
+
+if options.list:
+    for proto in protos_list:
+        print proto
+    sys.exit()
+
 try:
     site_root, = args
 except ValueError:
     parser.error('incorrect number of arguments')
+
+if options.proto not in protos_list:
+    sys.exit('Site prototype %r not found' % options.proto)
 
 site_root = os.path.normpath(os.path.abspath(site_root))
 make_dir = os.path.normpath(site_root+'/www')
@@ -86,25 +96,9 @@ make_templates_dir = os.path.normpath(site_root+'/templates')
 code_dir = os.path.normpath(site_root+'/code')
 
 map(mkdir, (site_root, make_dir, make_templates_dir, code_dir))
+title = 'Sample site created from %r prototype' % options.proto
 
-if options.locale is None:
-    setlocale = ''
-else:
-    setlocale = interpolateString(LOCALE_TMPL, vars())
-
-stream_descs_type, field_descs_type = {
-    'tiny'  : ('inline', 'inline'),
-    'small' : ('inline', 'module'),
-    'normal': ('module', 'module'),
-    'large' : ('module', 'package'),
-}.get(options.size, ('module', 'module'))
-
-site_imports = ''
-
-if stream_descs_type=='inline':
-    site_imports += STREAM_DESCS_IMPORTS
-    stream_descs = interpolateString(STREAM_DESCS_TMPL, vars())
-else:
-    stream_descs = 'from streamDescriptions import streamDescriptions'
-
-# field_descs_type
+#try:
+protos.copy(options.proto, code_dir, vars(), options.force)
+#except Exception, exc:
+#    sys.exit(exc)
