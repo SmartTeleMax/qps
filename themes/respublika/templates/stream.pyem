@@ -42,17 +42,7 @@ if brick:
 
 <table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6>
 <!-- fields titles -->
-    <tr bgcolor="#A0AAB1" >
-        <td nowrap><span class=t11>id</span>
-<a href="?order=id&page=<%= brick.page %>"><img src="/.ed-images/qps-asc<%
-    if brick.order=='id':
-        %>-active<%
-    %>.gif" height=11 width=11 border=0></a>
-<a href="?order=id+DESC&page<%= brick.page %>"><img src="/.ed-images/qps-desc<%
-    if brick.order=='id DESC':
-        %>-active<%
-    %>.gif" height=11 width=11 border=0></a>
-        </td><%
+    <tr bgcolor="#A0AAB1"><%
     for field_name in brick.allowedIndexFields:
         field_type = brick.allStreamFields[field_name]
         %>
@@ -79,13 +69,7 @@ if brick:
         item = repeat.value
         %>
 
-    <tr valign="top">
-        <td bgcolor=#F0F1F2>
-<a href="<%= brick.edPrefix+item.path() %><%
-        if brick.page>1:
-            %>?page=<%= brick.page %>&order=<%= quoteURLPath(brick.order) %><%
-        %>"><span class=t11b id=db1><%= item.id %></span></a>
-        </td><%
+    <tr valign="top"><%
         for field in brick.allowedIndexFields:
             %>
         <td bgcolor=#F0F1F2>

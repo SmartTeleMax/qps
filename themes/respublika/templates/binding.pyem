@@ -35,8 +35,7 @@ for repeat in Cook.Repeat(brick):
     item = repeat.value
     if repeat.isFirst:
         %>
-<tr bgcolor="#A0AAB1" >
-<td nowrap><span class=t11>id</span></td><%
+<tr bgcolor="#A0AAB1"><%
         for field_name in brick.bindingIndexFields:
             field_type = brick.allItemFields[field_name]
             %>
@@ -45,12 +44,11 @@ for repeat in Cook.Repeat(brick):
 <td nowrap><span class=t11>X</span></td>
 </tr><%
     %>
-<tr valign="top">
-<td bgcolor=#F0F1F2><span class=t12 id=db1><%= item.id %></span></td><%
+<tr valign="top"><%
     for field_name in brick.bindingIndexFields:
         field_type = brick.allItemFields[field_name]
         %>
-<td bgcolor=#F0F1F2><%= brick.showFieldInIndex(item, field_name) %></td><%
+<td bgcolor=#F0F1F2><%= brick.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
     id_str = brick.itemIDField.convertToString(item.id)
     checked = isBound(item) and 'checked'
     %>

@@ -59,12 +59,6 @@ if brick.stream.page>1:
 %>"><span class=t18b id=lb><b><%= brick.stream.title %></b></span></a><span class=t18b id=lb><b>: <%= item_title %></b></span>
 <br>
 </td></tr><%
-if brick.isNew and not brick.stream.itemIDField.omitForNew:
-    %>
-<tr bgcolor="#F0F1F2"><td>
-<%= brick.showField('id') %>
-</td></tr><%
-
 for field in brick.allowedFields:
     %>
 <tr bgcolor="#F0F1F2"><td><%
