@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.7 2004/06/09 07:17:42 ods Exp $
+# $Id: qBase.py,v 1.8 2004/06/29 08:54:16 corva Exp $
 
 '''Base brick classes'''
 
@@ -253,15 +253,7 @@ class Stream(Brick):
         return iter(self.itemList)
 
     def indexFields(self):
-        #XXX# # XXX Override it in SQLStream to add joinFields support
-        #XXX# join_fields = getattr(self, 'joinFields', {})
-        #XXX# if join_fields:
-        #XXX#     result = self.fields.copy()
-        #XXX#     result.update(join_fields)
-        #XXX#     return result
-        #XXX# else:
-        #XXX#     return self.allItemFields
-        return self.fields
+        return self.fields + self.joinFields
     indexFields = qUtils.CachedAttribute(indexFields)
 
     def virtualRules(self):
