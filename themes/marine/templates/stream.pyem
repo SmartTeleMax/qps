@@ -1,0 +1,14 @@
+<%= brick.template('inc_top') %>
+<div class="title"><%= brick.title %></div>
+<%
+permissions = brick.getPermissions()
+if 'c' in permissions:
+    %><div class="action"><a href="<%= quoteHTML(brick.edPrefix+brick.path()) %>?qps-action%3AnewItem=1">Create new</a></div><%
+%>
+<%= brick.template('inc_pages') %>
+<form action="<%= quoteHTML(brick.edPrefix+brick.path()) %>" method="POST">
+<table>
+</table>
+</form>
+<%= brick.template('inc_pages') %>
+<%= brick.template('inc_bottom') %>

@@ -1,0 +1,94 @@
+body {
+  background-color: #f4faff;
+  margin: 0;
+  padding: 0.3em;
+}
+
+form {
+  margin: 0;
+}
+
+img {
+  border: none;
+}
+
+table {
+  border: none;
+  border-spacing: 0;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+table.topmenu tr td {
+  border: 1px solid #205F8A;
+  padding: 0.2em;
+  background-color: #FFFFFF;
+  color: #205F8A;
+  text-align: center;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}
+
+table.topmenu tr td a {
+  color: #205F8A;
+}
+
+table.topmenu tr td a:hover {
+  color: #CC0000;
+}
+
+table.centermenu tr td {
+  border: 1px solid #666666;
+  padding: 0.5em;
+  background-color: #FFFFFF;
+  text-align: left;
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  color: #AA0000;
+}
+
+table.centermenu tr td a {
+  text-decoration: none;
+  color: #000000;
+}
+
+table.centermenu tr td a:hover {
+  text-decoration: underline;
+  color: #AA0000;
+}
+
+table.pages tr td {
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: smaller;
+  font-weight: bold;
+  padding: 0.3em;
+}
+
+table.pages tr td a {
+  color: #205F8A;
+}
+
+table.pages tr td a:hover {
+  color:#CC0000;
+}
+
+.title {
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  border: 1px solid #205F8A;
+  background-color: #FFFFFF;
+}
+
+.action, .action a {
+  text-align: left;
+  font-family: Tahoma, Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size: smaller;
+  color: #003366;
+  text-decoration: none;
+}
+
+.action a:hover {
+  text-decoration: underline;
+  color: #CC0000;
+}

@@ -1,0 +1,10 @@
+<%= brick.template('inc_top') %>
+<table class="centermenu">
+<%
+for stream in brick.allowedStreams:
+    if not getattr(stream, 'showInMenu', 0):
+        %><tr><td><a href="<%= brick.edPrefix+stream.path() %>"><%= stream.title %></a></td></tr>
+<%
+%></table>
+
+<%= brick.template('inc_bottom') %>
