@@ -1,0 +1,16 @@
+<td class="name"><%= getattr(brick, 'title', name) %>:</td>
+<td width="100%">
+<%
+additional_attrs = ''
+if brick.layout.has_key('size'):
+    additional_attrs += ' size="%s"' % brick.layout['size']
+%><select name="<%= name %>"<%= additional_attrs %>>
+<%
+if brick.extra_option:
+    %><option value=""><%= brick.extra_option %></option>
+<%
+for item in stream:
+    %><option value="<%= quoteHTML(stream.itemIDField.convertToString(item.id)) %>"<%= item.id==value.id and ' selected' or '' %>><%= brick.getLabel(item) %></option>
+<%
+%></select>
+</td>    
