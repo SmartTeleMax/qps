@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.7 2005/01/25 11:13:40 corva Exp $
+# $Id: qSecurity.py,v 1.8 2005/01/26 10:41:46 corva Exp $
 
 '''Function to check permissions'''
 
@@ -183,17 +183,14 @@ class CookieAuthHandler:
         except UnicodeEncodeError:
             passwd = None        
 
+        obj = objs[-1] or self.site
         if not (login and passwd):
-            if objs[-1]:
-                path = objs[-1].path()
-            else:
-                path = '/'
             template = self.renderHelperClass(self, user)
             response.setContentType('text/html',
                                     charset=self.getClientCharset(request))
-            response.write(template('login', brick=self.site, path=path))
+            response.write(template('login', brick=obj))
             raise self.EndOfRequest()
-        elif login and passwd:
+        else:
             stream = self.site.retrieveStream(self.usersStream)
             user = stream.getUser(login)
             if user and user.fields[stream.passwdField].crypt(passwd) == \
@@ -202,7 +199,18 @@ class CookieAuthHandler:
                 qHTTP.setCookie(response, self.authCookieName,
                                 "%s:%s" % (user.login, user.passwd),
                                 expires, path=self.authCookiePath)
-            raise self.SeeOther(self.prefix+objs[-1].path())
+            # lets check if new user has perms to access path it requested
+            try:
+                required_permission, error = \
+                                     self.required_object_permission[obj.type]
+            except KeyError:
+                raise RuntimeError('Object of unexpected type %r' % obj.type)
+            else:
+                if required_permission and \
+                    not user.checkPermission(required_permission,
+                                             obj.permissions):
+                    obj = self.site
+            raise self.SeeOther(self.prefix+obj.path())
 
     def do_reAuth(self, request, response, form, objs, user):
         qHTTP.expireCookie(response, self.authCookieName,

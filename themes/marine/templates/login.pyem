@@ -2,7 +2,7 @@
 
 <h1>Editor interface of <q><%= brick.site.title %></q></h1>
 
-<form action="<%= quoteHTML(template.edit.prefix+path) %>" method="POST">
+<form action="<%= quoteHTML(template.edit.prefix+brick.path()) %>" method="POST">
 <table class="loginmenu">
 <tr>
 <td>Login:</td>

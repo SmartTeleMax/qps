@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
   <head>
-    <title>Редактура <%= brick.title %></title><%
+    <title>Редактура <%= brick.site.title %></title><%
 if brick.site.clientCharset:
     %>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
@@ -17,8 +17,8 @@ if brick.site.clientCharset:
 <tr><td align="center">
 
 <table cellpadding=0 cellspacing=0><tr><td>
-<form action="<%= template.edit.prefix+path %>" method="POST">
-<span class=t18b id=lb><%= brick.title %></span><br>
+<form action="<%= template.edit.prefix+brick.path() %>" method="POST">
+<span class=t18b id=lb><%= brick.site.title %></span><br>
 <span class=s12>&nbsp;</span><br>
 <span class=t11 id=lb>имя</span><br>
 <span class=s2>&nbsp;</span><br>
