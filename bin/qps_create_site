@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.4 2004/03/19 17:00:27 ods Exp $
+# $Id: qps_create_site,v 1.5 2004/03/19 17:30:39 ods Exp $
 
 import sys, os
 sys.path.append('..')  # let it work without installation
@@ -19,7 +19,7 @@ def mkdir(path):
 
 SITE_TMPL = '''\
 %(setlocale)s\
-%(imports)s
+%(site_imports)s
 from qps import qSite
 
 class Site(qSite.Site):
@@ -68,8 +68,12 @@ from optparse import OptionParser
 parser = OptionParser(usage='%prog [options] site_root')
 parser.add_option('-f', '--force', action='store_true', dest='force',
                   help='overwrite existing files')
-parser.add_option('-l', '--locale', dest='locale',
-                  metavar='LOCALE', help='set locale for site to LOCALE')
+parser.add_option('-l', '--locale', dest='locale', metavar='LOCALE',
+                  help='set locale for site to LOCALE')
+parser.add_option('-s', '--size', dest='size',
+                  choices=['tiny', 'small', 'normal', 'large'],
+                  help='choose site size: tiny, small, normal (default), or '\
+                       'large')
 (options, args) = parser.parse_args()
 try:
     site_root, = args
@@ -87,3 +91,20 @@ if options.locale is None:
     setlocale = ''
 else:
     setlocale = interpolateString(LOCALE_TMPL, vars())
+
+stream_descs_type, field_descs_type = {
+    'tiny'  : ('inline', 'inline'),
+    'small' : ('inline', 'module'),
+    'normal': ('module', 'module'),
+    'large' : ('module', 'package'),
+}.get(options.size, ('module', 'module'))
+
+site_imports = ''
+
+if stream_descs_type=='inline':
+    site_imports += STREAM_DESCS_IMPORTS
+    stream_descs = interpolateString(STREAM_DESCS_TMPL, vars())
+else:
+    stream_descs = 'from streamDescriptions import streamDescriptions'
+
+# field_descs_type
