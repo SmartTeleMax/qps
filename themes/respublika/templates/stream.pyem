@@ -50,19 +50,8 @@ if brick:
     for field_name in template.allowedIndexFields(brick):
         field_type = brick.indexFields[field_name]
         %>
-        <td nowrap>
-        <span class=t11><%= field_type.indexTitle %></span><%
-        if not field_type.storeControl=='never':
-            %>
-<a href="?order=<%= field_name %>&page=<%= brick.page %>"><img src="/.ed-images/qps-asc<%
-            if brick.order==field_name:
-                %>-active<%
-            %>.gif" height=11 width=11 border=0></a>
-<a href="?order=<%= field_name %>+DESC&page=<%= brick.page %>"><img src="/.ed-images/qps-desc<%
-            if brick.order==(field_name+' DESC'):
-                %>-active<%
-            %>.gif" height=11 width=11 border=0></a><%
-        %>
+        <td nowrap style="height: 2em;">
+        <span class=t11><%= field_type.indexTitle %></span>
         </td><%
     %>
         <td align="center"><span class=t11b id=y1>[x]</span>

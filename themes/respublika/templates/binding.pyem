@@ -43,7 +43,7 @@ for repeat in Cook.Repeat(brick):
         for field_name in template.bindingIndexFields(brick):
             field_type = brick.allItemFields[field_name]
             %>
-<td nowrap><span class=t11><%= field_type.indexTitle %></span></td><%
+<td nowrap style="height: 2em;"><span class=t11><%= field_type.indexTitle %></span></td><%
         %>
 <td nowrap></td>
 </tr><%
