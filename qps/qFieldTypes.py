@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.12 2004/06/08 12:49:23 ods Exp $
+# $Id: qFieldTypes.py,v 1.13 2004/06/08 13:21:54 ods Exp $
 
 '''Classes for common field types'''
 
@@ -405,7 +405,7 @@ class FOREIGN_DROP(FieldType):
     
     def convertToDB(self, value, item=None):
         if value: # calls LazyItem.__nonzero__ that checks for None
-            return value.stream.itemIDField.convertToDB(value.id, item)
+            return value.stream.fields['id'].convertToDB(value.id, item)
         else:
             return self.missing_id
 
@@ -415,7 +415,7 @@ class FOREIGN_DROP(FieldType):
             stream = self._retrieve_stream(item)
             return self.proxyClass(item.site,
                                    self._stream_params(item),
-                                   stream.itemIDField.convertFromString(value)
+                                   stream.fields['id'].convertFromString(value)
                                    )
 
     def getLabel(self, item):
@@ -449,7 +449,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
             item_ids = value.split(self.fieldSeparator)
             stream = self._retrieve_stream(item)
             return self.convertFromCode(
-                        map(stream.itemIDField.convertFromString, item_ids),
+                        map(stream.fields['id'].convertFromString, item_ids),
                         item)
         else:
             return []
@@ -458,7 +458,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         value = form.getlist(name)
         stream = self._retrieve_stream(item)
         return self.convertFromCode(
-                    map(stream.itemIDField.convertFromString, value),
+                    map(stream.fields['id'].convertFromString, value),
                     item)
 
     def convertToDB(self, value, item=None):
@@ -1056,11 +1056,17 @@ class FieldDescriptions(object):
     def __repr__(self):
         return repr(self._config)
 
+    def __nonzero__(self):
+        return self._config and True or False
+
     def __iter__(self):
         return iter(self._config)
 
     def __getitem__(self, name):
         return self._config_dict[name]
+
+    def has_key(self, name):
+        return self._config_dict.has_key(name)
 
     def iteritems(self):
         return iter(self._config)
