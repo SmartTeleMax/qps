@@ -1,9 +1,10 @@
-# $Id: qMail.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
+# $Id: qMail.py,v 1.2 2004/10/12 05:10:40 corva Exp $
 
 '''Mail utilities'''
 
 
 import os, types, logging, smtplib, email, email.Message, email.MIMEText
+import qps
 logger = logging.getLogger(__name__)
 
 # i cant remember why do we have to patch email module configuration
@@ -64,42 +65,57 @@ class SMTPSender(Sender):
 class Composer:
     charset = 'ascii' # message charset
     contentType = 'text/plain'
-    defaultHeaders = {} # default headers, appended to all composed messages
+    # default headers, appended to all composed messages
+    defaultHeaders = {
+        'User-Agent': "qps.qMail/%s" % qps.__version__
+        }
     messageClass = email.Message.Message # message class
 
     def __init__(self, **kwargs):
         "Updates default configuration"
         self.__dict__.update(kwargs)
 
-    def compose(self, body, Subject, **kwargs):
+    def compose(self, From, To, body, **headers):
         '''Takes message body and headers as named params,
         replace "-" with "_" in headers names. Returns email.Message.Message
         object'''
 
+        # message body have to be string
         body = isinstance(body, unicode) and body.encode(self.charset) or body
+        
         message = self.messageClass()
         message.set_payload(body, self.charset)
         message.set_type(self.contentType)
 
+        message['To'] = To
+        message['From'] = From
+
         from email.Header import Header
-        headers = self.defaultHeaders.copy()
-        headers.update(kwargs)
-        headers['Subject'] = Subject
-        for name, value in headers.items():
-            message[name.replace('_', '-')] = Header(value, self.charset)
+        h = self.defaultHeaders.copy()
+        h.update(headers)
+        for name, value in h.items():
+            name = name.replace('_', '-')
+            try:
+                type(value) == str and value.decode('us-ascii')
+                type(value) == unicode and value.encode('us-ascii')
+            except UnicodeError:
+                # i18n header is really needed
+                message[name] = Header(value, self.charset)
+            else:
+                message[name] = str(value)
 
         return message
 
 
 # functions
 
-def send(mfrom, mto, subject, body, composer=Composer(),
+def send(From, To, subject, body, composer=Composer(),
          sender=SendmailSender()):
-    message = composer.compose(body, From=mfrom, To=mto, Subject=subject)
+    message = composer.compose(From, To, body, Subject=subject)
     return sender.send(message)
  
-def send_huge_mail(mfrom, mto, subject, body, composer = Composer(),
+def send_huge_mail(From, To, subject, body, composer = Composer(),
                    sender=SendmailSender(options="-odq")):
-    message = composer.compose(body, From=mfrom, To=mto, Subject=subject,
+    message = composer.compose(From, To, body, Subject=subject,
                                Precedence='bulk')
     return sender.send(message)
