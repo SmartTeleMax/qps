@@ -49,9 +49,7 @@ class VirtualRule:
     itemParamNames = property(itemParamNames)
 
     def matchParamStream(self, stream):
-        return stream.id==self.paramStream or \
-               hasattr(stream, 'virtual') and \
-               stream.virtual.templateStream == self.paramStream
+        return stream.id==self.paramStream
 
     def match(self, site, stream_path, tag=None):
         if stream_path.startswith(self.prefix) and \
