@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.10 2004/06/04 10:13:52 corva Exp $
+# $Id: qEdit.py,v 1.11 2004/06/04 14:20:00 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -63,7 +63,7 @@ class RenderHelper(qWebUtils.RenderHelper):
         return itemFieldsOrder
 
     def isStreamUpdatable(self, obj):
-        allowedIndexFields = self.getAllowedIndexFields(obj)
+        allowedIndexFields = self.allowedIndexFields(obj)
         # assume obj.type=='stream':
         stream = obj
         if self.user.checkPermission('w', stream.permissions):

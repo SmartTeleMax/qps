@@ -51,7 +51,7 @@ Field value</td>
 
 </table>
 
-<input tal:condition="brick.isStreamUpdatable"
+<input tal:condition="template.isStreamUpdatable(brick)"
        type="submit" name="qps-action:updateStream" value="Update"/>
 <input tal:condition="hasattr(brick, 'joinField') and 'w' in brick.getFieldPermissions(brick.allItemFields[brick.joinField])"
        type="submit" name="qps-action:unbindItems" value="Unbind selected"/>
