@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.45 2005/02/08 10:27:23 ods Exp $
+# $Id: qFieldTypes.py,v 1.46 2005/02/09 10:36:17 corva Exp $
 
 '''Classes for common field types'''
 
@@ -329,10 +329,12 @@ class AUTO_TS(DATETIME):
     permissions = []
     storeControl = "always"
     allowNull = True
+    default = None
 
     def convertToDB(self, value, item):
-        return self.getDefault(item)
-    
+        from qDB.qSQL import Raw
+        return Raw("NOW()")
+        
 
 class TEXT(STRING):
     layout = _LayoutDict({'cols': 60, 'rows': 10, 'wrap': 'virtual',
