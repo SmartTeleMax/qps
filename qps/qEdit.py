@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.26 2004/10/31 14:19:45 corva Exp $
+# $Id: qEdit.py,v 1.27 2004/11/29 01:09:50 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -459,7 +459,8 @@ class EditBase:
                                 item=binding_to_item, fieldName=field_name,
                                 bound=bound, boundPath=bound_path,
                                 isBound=is_bound,
-                                boundElementType=bound_element_type))
+                                boundElementType=bound_element_type,
+                                updated=form.getfirst('updated')))
 
     def do_updateBinding(self, request, response, form, objs, user):
         '''Store new binding.  The path corresponds to template stream (stream
@@ -538,9 +539,23 @@ class EditBase:
                     setattr(bound, field_name, values)
                     bound.store([field_name])
         raise self.SeeOther(
-            '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' % \
-                            (self.prefix, template_stream.path(), bound.path(),
-                             field_name, template_stream.page))
+            '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' \
+            '&updated=1' % (self.prefix, template_stream.path(), bound.path(),
+                            field_name, template_stream.page))
+
+    def do_showField(self, request, response, form, objs, user):
+        "Shows field like publisher.showField does"
+        
+        item = objs[-1]
+        if item.type != 'item':
+            return self.cmd_invalidCommand(request, response, form, objs, user)
+        template = self.renderHelperClass(self, user, isNew=False)
+        fieldName = form.getfirst('field', '')
+
+        response.setContentType('text/html',
+                                charset=self.getClientCharset(request))
+        response.write(template.showField(item, fieldName))
+        
 
 class Edit(EditBase, qCommands.Publisher, qCommands.FieldNameCommandDispatcher,
            qSecurity.BasicAuthHandler):
