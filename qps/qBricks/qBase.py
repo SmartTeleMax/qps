@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.8 2004/06/29 08:54:16 corva Exp $
+# $Id: qBase.py,v 1.9 2004/07/07 15:07:57 corva Exp $
 
 '''Base brick classes'''
 
@@ -320,7 +320,7 @@ class Stream(Brick):
         else:
             virtual_param_names = []
         for field_name, field_type in self.fields.iteritems():
-            if field_name!=self.fields.idFieldName:
+            if field_name!='id':
                 if field_name in virtual_param_names:
                     value = getattr(self, field_name)
                 elif defaults.has_key(field_name):
