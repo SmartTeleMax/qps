@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.5 2004/09/26 23:10:44 corva Exp $
+# $Id: qSecurity.py,v 1.6 2004/12/23 00:48:34 corva Exp $
 
 '''Function to check permissions'''
 
@@ -37,6 +37,8 @@ perm_delete = 'xd'
 # login
 # passwd (optional for auth schemas what authenticates users themselves)
 
+defaultGroups = ['anonymous']
+
 class UserBase:
 
     def __str__(self):
@@ -71,7 +73,7 @@ class PyUser(UserBase):
         self.groups_table = groups_table
 
     def groups(self):
-        groups = []
+        groups = defaultGroups
         user = self.login
         for group, users in self.groups_table.items():
             if user in users:
@@ -80,19 +82,40 @@ class PyUser(UserBase):
     groups = qUtils.CachedAttribute(groups)
 
 
-class UserItem(SQLItem, UserBase): pass
+class UserItem(SQLItem, UserBase):
+    """Basic class of Security User item stored in DB
+
+    Groups determinations is very different, due to this
+    groups attribute is set to default value.
+
+    Groups determination must be implemented in derived classes,
+    for example, if groups are stored as FOREIGN_MULTISELECT field qps_groups:
+
+    def groups(self):
+        return [x.id for x in self.qps_groups]
+    groups = qUtils.CachedAttribute(groups)"""
+    
+    groups = defaultGroups # should be overloaded
+
+    def __nonzero__(self):
+        return self.id is not None
+        
 
 class UsersStream(SQLStream):
-
     itemClass = UserItem
+    loginField = "login"
+    passwdField = "passwd"
 
-    def getUser(self, login):
-        table, fields, condition, group = self.constructQuery()
-        condition = self.dbConn.join([condition,
-                                      Query('login=', Param(login))])
-        items = self.itemsByQuery(table, fields, condition, group=group)
-        if items:
-            return items[0]
+    def getUser(self, login=None):
+        if login:
+            table, fields, condition, group = self.constructQuery()
+            condition = self.dbConn.join(
+                [condition, Query('%s=' % self.loginField, Param(login))])
+            items = self.itemsByQuery(table, fields, condition, group=group)
+            if items:
+                return items[0]
+        # return default "False" user
+        return self.createNewItem()
 
 # auth handler is a class mixed to Edit.Edit
 # it have to define following methods:
@@ -113,7 +136,6 @@ class BasicAuthHandler:
     authenticationHeader = 'Basic realm="QPS"'
     
     def getUser(self, request, response):
-        from qSecurity import PyUser
         return PyUser(request.user(), self.securityGroupTable)
 
     def cmd_notAuthorized(self, request, response, form, objs, user):
@@ -140,13 +162,16 @@ class CookieAuthHandler:
         try:
             login, passwd = cookie.split(':')
         except (ValueError, TypeError, AttributeError):
-            return None
-        else:
+            login = None
+
+        stream = self.site.retrieveStream(self.usersStream)
+        
+        if login is not None:
             stream = self.site.retrieveStream(self.usersStream)
             user = stream.getUser(login)
-            # here we assume what passwd is stored in "passwd" field
-            if user and user.passwd == passwd:
+            if user and getattr(user, user.stream.passwdField) == passwd:
                 return user
+        return stream.getUser(None)
 
     def cmd_notAuthorized(self, request, response, form, objs, user):
         login, passwd, perm_login = [form.getfirst(name) for name in \
