@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
+# $Id: qMake.py,v 1.2 2004/04/12 15:34:04 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -23,6 +23,8 @@ class AtomicWriteFile(file):
             data = data.encode(self._charset)
         file.write(self, data)
     
+    # Inherited __del__ calls file.close() and file is not renamed.  So
+    # redefined close() method is like a commit.
     def close(self):
         file.close(self)
         logger.info('Writing %r', self._real_path)
@@ -37,12 +39,11 @@ class AtomicWriteFile(file):
             else:
                 raise
 
-    def __del__(self):
-        # Inherited __del__ calls file.close() and file is not renamed.  So
-        # redefined close() method is like a commit.
-        file.__del__(self)
-        if not __debug__:
-            os.remove(self._tmp_path)
+    if not __debug__:
+        def __del__(self):
+            if not self.closed:
+                file.close(self)
+                os.remove(self._tmp_path)
 
 
 class Writer:
