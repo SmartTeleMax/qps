@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.33 2004/09/26 23:17:16 corva Exp $
+# $Id: qFieldTypes.py,v 1.35 2004/10/07 11:58:04 ods Exp $
 
 '''Classes for common field types'''
 
@@ -807,7 +807,7 @@ class RESTRICTED_IMAGE(IMAGE):
     maxHeight = None
     def resizeFilter(self):
         import PIL.Image
-        return PIL.Image.BILINEAR
+        return PIL.Image.ANTIALIAS
     resizeFilter = property(resizeFilter)
 
     def convertFromForm(self, form, name, item):
@@ -843,7 +843,7 @@ class THUMBNAIL(IMAGE):
 
     def resizeFilter(self):
         import PIL.Image
-        return PIL.Image.BILINEAR
+        return PIL.Image.ANTIALIAS
     resizeFilter = property(resizeFilter)
     
     def convertFromForm(self, form, name, item):
@@ -885,7 +885,7 @@ class THUMBNAIL(IMAGE):
             image = image.crop(rect)
         else:
             size = (self.height*w/h, self.height)
-            image = image.resize(size)
+            image = image.resize(size, self.resizeFilter)
             w,h = image.size
             logger.debug('resized image: %sx%s', w, h)
             rect = ((w-self.width)/2,
