@@ -10,7 +10,7 @@ if brick.indexNum and brick.page:
         %>
 <!-- prev -->
 <td width=17 align=right>
-<a href="<%= '%s&page=%s' % (uri, brick.page-1) %>"><img src=<%= template.edit.staticPrefix %>/prev.gif width=17 height=17 border=0></a><br>
+<a href="<%= uri % (brick.page-1) %>"><img src=<%= template.edit.staticPrefix %>/prev.gif width=17 height=17 border=0></a><br>
 </td>
 <!-- /prev --><%
     %>
@@ -22,7 +22,7 @@ if brick.indexNum and brick.page:
        %>
 <!-- next -->
 <td width=17 align=right>
-<a href="<%= '%s&page=%s' % (uri, brick.page+1) %>"><img src=<%= template.edit.staticPrefix %>/next.gif width=17 height=17 border=0></a><br>
+<a href="<%= uri % (brick.page+1) %>"><img src=<%= template.edit.staticPrefix %>/next.gif width=17 height=17 border=0></a><br>
 </td>
 <!-- /next --><%
     %>

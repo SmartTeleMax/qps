@@ -22,30 +22,7 @@ if brick.site.clientCharset:
 <!-- /nav -->
 
 <!-- right -->
-<td width="100%">
-
-<script>
-function toggleTable(id) {
-    table = document.getElementById(id);
-    rows = table.tBodies[0].rows;
-
-    for (var i=1; i < rows.length; i++) {
-        e = rows.item(i);
-
-        if (e.style.display) {
-            e.style.display = '';
-        } else {
-            e.style.display = 'none';
-        }
-    }
-}
-</script>
-
-<div align="center">
-
-</div>
-
-</td>
+<td width="100%">&nbsp;</td>
 <!-- /right -->
 </tr>
 </table>

@@ -31,7 +31,7 @@ if brick.site.clientCharset:
 <span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
 </td></tr>
 
-<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
+<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?page=%s') %>
 
 <!-- stream menu --><%
 menus = []
@@ -109,7 +109,7 @@ else:
 </td></tr><%
 %>
 
-<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?fixme=1') %>
+<%= template('inc_browse', brick=brick, uri=template.edit.prefix+brick.path()+'?page=%s') %>
 
 </table>
 </form>
