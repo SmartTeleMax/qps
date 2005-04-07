@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.49 2005/03/16 16:29:32 ods Exp $
+# $Id: qFieldTypes.py,v 1.50 2005/03/20 12:50:05 corva Exp $
 
 '''Classes for common field types'''
 
@@ -543,7 +543,34 @@ class MODE(FieldType):
     layout = ['Show', 'Hide']
 
 
-class CB_YN(FieldType): pass
+class BOOLEAN(FieldType):
+    """Bool field type, handles True/False values.
+
+    Attributes:
+    
+    dbTrue - database value of True (default 1)
+    dbFalse - database value of False (default 0)"""
+    
+    dbTrue = 1
+    dbFalse = 0
+    
+    def convertFromDB(self, value, item):
+        return bool(value)
+
+    def convertFromForm(self, form, name, item):
+        value = form.getfirst(name, '')
+        return bool(value)
+
+    def convertToDB(self, value, item):
+        return value and self.dbTrue or self.dbFalse
+    
+
+class CB_YN(BOOLEAN):
+    """Obsolete fieldtype, it was represented in database as enum('y', ''),
+    use BOOLEAN instead."""
+    
+    dbTrue = 'y'
+    dbFalse = ''
 
 
 class LazyItemList:
