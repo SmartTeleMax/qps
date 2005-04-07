@@ -1,0 +1,6 @@
+<%
+if brick.linkThrough:
+    %><a href="<%= edPrefix + item.path() %>"><%
+%><span class=t12 id=db1><%= value and 'Да' or 'Нет' %></span><%
+if brick.linkThrough:
+    %></a>
