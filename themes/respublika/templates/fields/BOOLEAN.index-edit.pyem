@@ -1,0 +1,8 @@
+<%
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
+%>
+<input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= value and brick.dbTrue or '' %>">
+<input type="checkbox" name="qps-new:<%= field_suffix %>" value="<%= brick.dbTrue %>"<%
+if value:
+    %> checked<%
+%>>
