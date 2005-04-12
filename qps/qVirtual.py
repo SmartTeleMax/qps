@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.10 2004/11/24 15:44:31 ods Exp $
+# $Id: qVirtual.py,v 1.12 2005/03/16 16:45:10 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -82,20 +82,12 @@ class VirtualRule:
 
     def condition(self, stream):
         conn = stream.dbConn
-        return conn.join([Query('%s=' % name, Param(getattr(stream, name).id))
+        item = stream.createNewItem()
+        return conn.join([Query('%s=' % name,
+                          Param(stream.fields[name].convertToDB(
+                                                        getattr(stream, name),
+                                                        item)))
                           for name in self.itemParamNames])
-        # XXX We must convert field with convertToDB
-        # But there are problems with following code when many-to-many relation
-        # is used. Try indexFields then use getattr(stream,
-        # name).stream.fields['id']?
-        #return conn.join(
-        #        ['%s=%s' % (name,
-        #                    conn.convert(
-        #                        stream.indexFields[name].convertToDB(
-        #                                            getattr(stream, name))))
-        #         for name in self.itemParamNames])
 
-
-CommonVirtualStream = VirtualRule
 
 # vim: ts=8 sts=4 sw=4 ai et
