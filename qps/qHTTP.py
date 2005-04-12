@@ -1,4 +1,4 @@
-# $Id: qHTTP.py,v 1.29 2004/03/16 15:48:21 ods Exp $
+# $Id: qHTTP.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
 
 '''HTTP-related functions'''
 
@@ -60,43 +60,26 @@ class UnicodeFieldStorage(cgi.FieldStorage):
     binary strings (except ascii strings)
     '''
     
-    def __init__(*args, **kwargs):
-        self = args[0]
-        try:
-            self._charset = kwargs['charset']
-            del kwargs['charset']
-        except KeyError:
-            self._charset = None
-        cgi.FieldStorage.__init__(*args, **kwargs)
-
-    def _decode(self, text):
-        '''This method decodes non-ascii strings with self._chatset'''
-
-        try:
-            text.decode('ascii')
-        except UnicodeError: # UnicodeDecodeError
-            text = text.decode(self._charset)
-        return text
-    
-    def getfirst(self, key, default=None):
-        value = cgi.FieldStorage.getfirst(self, key, default)
+    def __init__(self, *args, **kwargs):
+        self._charset = kwargs.pop('charset', None)
+        self._errors = kwargs.pop('errors', 'strict')
+        cgi.FieldStorage.__init__(self, *args, **kwargs)
         
-        if self._charset:
-            if type(value) is str: # it can be unicode because of default
-                value = self._decode(value)
+    def getString(self, key, default=None):
+        '''Like of getfirst, returning unicode object if charset is set'''
+        value = self.getfirst(key)
+        if value is None:
+            return default
+        elif self._charset:
+            return value.decode(self._charset, self._errors)
         return value
 
-    def getlist(self, key):
-        list = cgi.FieldStorage.getlist(self, key)
-        result = []
-        
+    def getStringList(self, key):
+        '''Like getlist, returning unicode objects if charset is set'''
+        value = self.getlist(self, key)
         if self._charset:
-            for value in list:
-                if type(value) is str:
-                    result.append(self._decode(value))
-        else:
-            result = list
-        return result
+            return [item.decode(self._charset, self._errors) for item in value]
+        return value
 
 class Form(object):
     '''Hacked cgi.FieldStorage for use with PPA HTTP adapters'''

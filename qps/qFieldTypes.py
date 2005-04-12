@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.50 2005/03/20 12:50:05 corva Exp $
+# $Id: qFieldTypes.py,v 1.51 2005/04/07 10:38:23 corva Exp $
 
 '''Classes for common field types'''
 
@@ -136,7 +136,7 @@ class STRING(FieldType):
         self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
         
     def convertFromForm(self, form, name, item=None):
-        value = form.getfirst(name, '').strip()
+        value = form.getString(name, '').strip()
         if len(value) < self.minlength or len(value) > self.maxlength:
             message = qUtils.interpolateString(self.length_error_message,
                                                {'brick': self})
