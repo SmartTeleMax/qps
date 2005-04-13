@@ -1,10 +1,10 @@
-# $Id: Site.py.in,v 1.13 2004/06/09 10:02:51 ods Exp $
+# $Id: Site.py.in,v 1.14 2004/07/05 15:19:24 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
 from qps.qUtils import DictRecord
 from qps import qFieldTypes as FT
-from qps.qVirtual import CommonVirtualStream
+from qps.qVirtual import VirtualRule
 
 class Site(qSite.Site):
 
@@ -54,10 +54,10 @@ class Site(qSite.Site):
             permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
     }
     virtualStreamRules = [
-        CommonVirtualStream('docs', 'rubrics', 'rubric',
-                            streamParams=DictRecord(
-                                streamMakers=['qps.qMake.ItemsMaker',
-                                              'qps.qMake.Maker'],
-                                itemMakers=['qps.qMake.Maker'])),
+        VirtualRule('docs', 'rubrics', 'rubric',
+                    streamParams=DictRecord(
+                        streamMakers=['qps.qMake.ItemsMaker',
+                                      'qps.qMake.Maker'],
+                        itemMakers=['qps.qMake.Maker'])),
     ]
     dbParams = {'user': 'test', 'db': 'test', 'passwd': 'secret'}
