@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.14 2004/07/05 15:19:24 ods Exp $
+# $Id: Site.py.in,v 1.15 2005/04/13 12:51:03 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -49,7 +49,7 @@ class Site(qSite.Site):
                                       indexPermissions=[('all', 'r')])),
                 ('body',    FT.TEXT(title='Body text')),
             ]),
-            streamCat='docs',
+            templateCat='docs',
             streamClass='qps.qBricks.qSQL.SQLStream',
             permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
     }
