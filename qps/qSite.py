@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.8 2004/11/30 13:05:00 corva Exp $
+# $Id: qSite.py,v 1.9 2005/02/15 15:25:28 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -175,9 +175,9 @@ class Site(object):
         streamCache = self.streamCache
         for name, stream in self.streamCache.items():
             if not getattr(stream, "persistent", None):
-                del streamCache[name]
+                streamCache.pop(name).clear()
         self.taggedStreamCache.clear()
-        self.streamList = {}
+        self.streamList.clear()
 
     def expandStreamAlias(self, stream_path, tag=None):
         '''Convert stream path to stream id (id of template stream) and
