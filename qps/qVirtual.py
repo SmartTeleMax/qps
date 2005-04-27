@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.12 2005/03/16 16:45:10 ods Exp $
+# $Id: qVirtual.py,v 1.13 2005/04/12 16:08:16 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -83,11 +83,19 @@ class VirtualRule:
     def condition(self, stream):
         conn = stream.dbConn
         item = stream.createNewItem()
-        return conn.join([Query('%s=' % name,
-                          Param(stream.fields[name].convertToDB(
-                                                        getattr(stream, name),
-                                                        item)))
-                          for name in self.itemParamNames])
-
+        conds = []
+        for name in self.itemParamNames:
+            param = getattr(stream, name)
+            if stream.fields.has_key(name):
+                param = stream.fields[name].convertToDB(param, item)
+            else:
+                param = param.id
+            conds.append(Query('%s=' % name, Param(param)))
+        return conn.join(conds)
+##        return conn.join([Query('%s=' % name,
+##                          Param(stream.fields[name].convertToDB(
+##                                                        getattr(stream, name),
+##                                                        item)))
+##                          for name in self.itemParamNames])
 
 # vim: ts=8 sts=4 sw=4 ai et
