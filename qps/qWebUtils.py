@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.5 2004/06/08 10:30:31 corva Exp $
+# $Id: qWebUtils.py,v 1.6 2004/09/16 10:25:09 corva Exp $
 
 '''Template support'''
 
@@ -8,12 +8,24 @@ logger = logging.getLogger(__name__)
 from PPA.Template.Controller import TemplateController, TemplateWrapper
 from PPA.Template.Caches import MemoryCache, DummyCache
 from PPA.Template.SourceFinders import FileSourceFinder, TemplateNotFoundError
-from StringIO import StringIO
+
+
+class Writer:
+    """Fast, but incompatible StringIO.StringIO implementation. Only supports
+    write and getvalue methods"""
+    
+    def __init__(self):
+	self.parts = []
+	self.write = self.parts.append
+    
+    def getvalue(self):
+	return ''.join(self.parts)
+	
 
 class _PPATemplateWrapper(TemplateWrapper):
     
     def __call__(self, namespace={}, **kwargs):
-        fp = StringIO()
+	fp = Writer()
         self.interpret(fp, namespace, kwargs)
         return fp.getvalue()
         
