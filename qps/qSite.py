@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.9 2005/02/15 15:25:28 ods Exp $
+# $Id: qSite.py,v 1.10 2005/04/18 14:24:46 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -89,7 +89,13 @@ class Site(object):
 
     maxAliasDepth = 5
 
-    def streamFactory(self, stream_id, page=0, tag=None, **kwargs):
+    def createStream(self, stream_id, page=0, tag=None, **kwargs):
+        '''Returns an instance of stream.
+
+        stream_id - referers the stream in configutation.
+        page      - page of stream
+        tag       - returns tagged stream.'''
+        
         params = {}
         try:
             # have we real stream with such id?
@@ -130,13 +136,47 @@ class Site(object):
             tag_params = dict.get('tagParams', {}).get(tag, default_tag_params)
             result_conf = qUtils.DictRecord(result_conf, dict, tag_params)
 
-        streamClassName = result_conf.streamClass
-        if streamClassName:
-            streamClass = self.getStreamClass(streamClassName)
-        else:
-            streamClass = qBricks.Stream
+        streamClass = self.getStreamClass(result_conf.streamClass)
         return streamClass(self, stream_id, page, **result_conf)
 
+    # XXX backward compatibility
+    streamFactory = createStream
+
+    def createAnonStream(self, stream_id, conf=None, **kwargs):
+        '''Returns anonymous (not described in streamDescriptions) stream.
+
+        conf - optional configutation dict, if ommited,
+        defaultStreamConf is used.
+
+        Additional configuration named args are possible.
+        NOTE: streamClass must be provided in conf or named args'''
+
+        if conf is None:
+            conf = self.defaultStreamConf
+        conf = qUtils.DictRecord(conf, kwargs)
+        return self.getStreamClass(conf.streamClass)(
+            self, stream_id, **conf)
+    
+    def retrieveStream(self, stream_id, retrieve=False, tag=None):
+        '''Returns an instance of stream and caches it for future calls.
+
+        stream_id - referers the stream in configutation.
+        retrieve  - if True, stream is also retrieved.
+        tag       - returns tagged stream.'''
+        
+        if tag is None:
+            cache = self.streamCache
+        else:
+            cache = self.taggedStreamCache.setdefault(tag, {})
+        if cache.has_key(stream_id):
+            stream = cache[stream_id]
+        else:
+            stream = self.createStream(stream_id, tag=tag)
+            cache[stream_id] = stream
+        if retrieve:
+            stream.retrieve()
+        return stream
+    
     def retrieve(self, ignoreStatus=0):
         '''Retrieve (initialize) streams table'''
         if not self._retrieved or ignoreStatus:
@@ -154,21 +194,6 @@ class Site(object):
 
     def transmitTag(self, tag):
         return self.transmitTags.get(tag, tag)
-
-    def retrieveStream(self, stream_id, retrieve=0, tag=None):
-        '''For internal use.  Retrieve description of one or all streams'''
-        if tag is None:
-            cache = self.streamCache
-        else:
-            cache = self.taggedStreamCache.setdefault(tag, {})
-        if cache.has_key(stream_id):
-            stream = cache[stream_id]
-        else:
-            stream = self.streamFactory(stream_id, tag=tag)
-            cache[stream_id] = stream
-        if retrieve:
-            stream.retrieve()
-        return stream
 
     def clear(self):
         '''Delete from cache all streams except marked as persistent'''
