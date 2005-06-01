@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.3 2004/11/16 12:06:51 corva Exp $
+# $Id: qMail.py,v 1.4 2004/11/18 10:09:42 corva Exp $
 
 '''Mail utilities'''
 
@@ -58,7 +58,6 @@ class SMTPSender(Sender):
         logger.info('Sending mail to %s', addr)
 
         smtp = self.smtpClass(self.host, self.port)
-        smtp.connect()
         smtp.sendmail(message['from'], addr, message.as_string())
         smtp.close()
 
