@@ -1,4 +1,4 @@
-# $Id: qHTTP.py,v 1.1.1.1 2004/03/18 15:17:16 ods Exp $
+# $Id: qHTTP.py,v 1.2 2005/04/12 17:12:02 ods Exp $
 
 '''HTTP-related functions'''
 
@@ -53,7 +53,7 @@ def getAdapter():
 
 
 import cgi
-class UnicodeFieldStorage(cgi.FieldStorage):
+class FieldStorage(cgi.FieldStorage):
     '''
     This class can take charset argument, if its not None
     getfirst and getlist methods return unicode strings instead of
@@ -81,10 +81,25 @@ class UnicodeFieldStorage(cgi.FieldStorage):
             return [item.decode(self._charset, self._errors) for item in value]
         return value
 
+    state = None
+
+    def initFields(self, site, fields):
+        """Sets self.state attribute to item of anon stream and
+        inits fields for self.state."""
+        
+        import qSecurity
+        stream = site.createAnonStream(
+            site.defaultStreamConf, streamClass="qps.qBricks.qBase.Stream",
+            fields=fields,
+            permissions=[('all', qSecurity.perm_all)])
+        self.state = stream.createNewItem()
+        return self.state.initFieldsFromForm(self)
+    
+
 class Form(object):
     '''Hacked cgi.FieldStorage for use with PPA HTTP adapters'''
     __cache = WeakKeyDictionary()
-    _formClass = UnicodeFieldStorage
+    _formClass = FieldStorage
 
     def __new__(cls, request, charset=None):
         try:
