@@ -1,8 +1,9 @@
-# $Id: qFieldTypes.py,v 1.51 2005/04/07 10:38:23 corva Exp $
+# $Id: qFieldTypes.py,v 1.52 2005/04/12 17:12:02 ods Exp $
 
 '''Classes for common field types'''
 
 from __future__ import generators
+
 import types, os, re, sys, weakref, logging
 logger = logging.getLogger(__name__)
 
@@ -181,7 +182,7 @@ class UNIQUE_STRING(STRING):
 
         from qps.qDB.qSQL import Query, Param
         conn = item.dbConn
-        query = Query("%s=" % name, Param(value))
+        query = Query("%s=" % name, Param(self.convertToDB(value, item)))
         if item.exists():
             query = conn.join([query, Query("%s !=" % item.fields.idFieldName,
                                             Param(item.id))])
@@ -549,7 +550,9 @@ class BOOLEAN(FieldType):
     Attributes:
     
     dbTrue - database value of True (default 1)
-    dbFalse - database value of False (default 0)"""
+    dbFalse - database value of False (default 0)
+
+    bool(dbTrue) must be True and bool(dbFalse) must be False"""
     
     dbTrue = 1
     dbFalse = 0
