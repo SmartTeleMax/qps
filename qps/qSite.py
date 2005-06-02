@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.11 2005/05/24 23:50:44 corva Exp $
+# $Id: qSite.py,v 1.12 2005/06/01 23:34:12 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -79,7 +79,8 @@ class Site(object):
         '''Default implementation creates connection to MySQL based on dbParams
         attribute of site.  Override this method to use another RDMS.'''
         from qDB.qMySQL import Connection
-        return Connection(self.dbCharset, **self.dbParams)
+        # XXX not named arguments to DB API module are not supported
+        return Connection(([], self.dbParams), self.dbCharset)
 
     def dbConn(self):
         # We need this dispatch method to hide magic with CachedAttribute from

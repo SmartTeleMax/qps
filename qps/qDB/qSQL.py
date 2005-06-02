@@ -1,11 +1,9 @@
-# $Id: qSQL.py,v 1.4 2004/08/27 10:51:49 ods Exp $
+# $Id: qSQL.py,v 1.5 2004/11/30 13:05:00 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
 import logging, weakref
 logger = logging.getLogger(__name__)
-
-from mx import DateTime
 
 
 class Raw:
@@ -190,14 +188,17 @@ class Connection(object):
     __connections_cache = weakref.WeakValueDictionary()
     _db_module = None  # Overwrite it in descending class
     _dbh = None
+    connectHandler = None
 
-    def __new__(cls, charset, *args, **kwargs):
-        cache_key = (cls, charset, args, tuple(kwargs.items()))
+    def __new__(cls, connection_params, charset, **kwargs):
+        a, k = connection_params
+        cache_key = (cls, tuple(a), tuple(k.items()), charset)
         if not cls.__connections_cache.has_key(cache_key):
             self = object.__new__(cls)
+            self.__connection_params = connection_params
             self.charset = charset
-            self.__connection_params = (args, kwargs)
             self.execute = self._connect_and_execute
+            self.__dict__.update(kwargs)
             cls.__connections_cache[cache_key] = self
         return cls.__connections_cache[cache_key]
 
@@ -215,10 +216,12 @@ class Connection(object):
         if not self.connected():
             args, kwargs = self.__connection_params
             self._dbh = self._connect(*args, **kwargs)
+            if self.connectHandler:
+                self.connectHandler(self)
 
     def _connect_and_execute(self, query):
-        self.connect()
         del self.execute
+        self.connect()
         return self.execute(query)
 
     def getTransaction(self):
