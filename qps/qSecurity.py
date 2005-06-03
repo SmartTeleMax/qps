@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.8 2005/01/26 10:41:46 corva Exp $
+# $Id: qSecurity.py,v 1.9 2005/02/13 14:24:29 corva Exp $
 
 '''Function to check permissions'''
 
@@ -145,6 +145,7 @@ class BasicAuthHandler:
         prev_user = form.getfirst('user')
         if prev_user==user.login:
             response.headers['WWW-Authenticate'] = self.authenticationHeader
+            self.log(user, 'reAuth')
             raise self.ClientError(401, 'Authorization Required')
         else:
             raise self.SeeOther(self.prefix+objs[-1].path())
@@ -210,11 +211,13 @@ class CookieAuthHandler:
                     not user.checkPermission(required_permission,
                                              obj.permissions):
                     obj = self.site
+            self.log(user, "login", {'perm_login': perm_login})
             raise self.SeeOther(self.prefix+obj.path())
 
     def do_reAuth(self, request, response, form, objs, user):
         qHTTP.expireCookie(response, self.authCookieName,
                            path=self.authCookiePath)
+        self.log(user, 'reAuth')
         raise self.SeeOther(self.prefix+objs[-1].path())
 
 

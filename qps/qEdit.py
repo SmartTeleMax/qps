@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.27 2004/11/29 01:09:50 corva Exp $
+# $Id: qEdit.py,v 1.28 2005/03/13 01:35:52 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -163,6 +163,8 @@ class EditBase:
         'site': (None, None)
         }
 
+    loggingStream = None # stream for user actions logging, see log method
+
     def getFieldTemplate(self):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs,
                                         self.site.templateCharset)
@@ -208,6 +210,15 @@ class EditBase:
             raise self.NotFound()
         self.dispatch(request, response, field_name_prefix='qps-action:',
                       objs=objs, user=user)
+
+    def log(self, user, command, params=None):
+        if self.loggingStream:
+            stream = self.site.retrieveStream(self.loggingStream)
+            item = stream.createNewItem()
+            item.user = user
+            item.command = command
+            item.params = params
+            item.store()
 
     def showBrick(self, request, response, obj, user, isNew=0, **kwargs):
         template = self.renderHelperClass(self, user, isNew)
@@ -276,6 +287,7 @@ class EditBase:
                                   isNew=1, fieldErrors=errors)
         else:
             item.store()
+            self.log(user, 'createItem', {'item': item.path()})
             if item.existsInStream():
                 raise self.SeeOther(self.prefix+item.path())
             else:
@@ -284,7 +296,9 @@ class EditBase:
     def do_updateItem(self, request, response, form, objs, user):
         '''Update existing item with form data.  The path corresponds to item
         being updated.'''
+        import copy
         item = objs[-1]
+        origitem = copy.copy(item)
         if item.type!='item':
             return self.cmd_invalidCommand(request, response, form, objs, user)
         if not user.checkPermission('w', item.stream.permissions):
@@ -304,6 +318,12 @@ class EditBase:
                         user.checkPermission('w', field_type.permissions):
                     fields_to_store.append(field_name)
             item.store(fields_to_store)
+            changed = []
+            for field in fields_to_store:
+                if getattr(origitem, field) != getattr(item, field):
+                    changed.append(field)
+            self.log(user, "updateItem", {'item': item.path(),
+                                          'fields': changed})
             if item.existsInStream():
                 raise self.SeeOther(self.prefix+item.path())
             else:
@@ -319,6 +339,8 @@ class EditBase:
         if item_ids:
             try:
                 stream.deleteItems(item_ids)
+                self.log(user, 'deleteItems', {'stream': stream.path(),
+                                               'items': item_ids})
             except stream.dbConn.IntegrityError:
                 raise self.ClientError(403, self.delete_integrity_error)
     
@@ -372,6 +394,8 @@ class EditBase:
                                 field_name, exc.message)
                 if changed_fields:
                     item.store(changed_fields)
+                    self.log(user, 'updateItems', {'item': item.path(),
+                                                   'fields': changed_fields})
 
     def do_updateItems(self, request, response, form, objs, user):
         '''Update several items of stream.  The path corresponds to stream, of
@@ -405,6 +429,8 @@ class EditBase:
                       if value!=binding_to_item]
             setattr(item, field_name, values)
             item.store([field_name])
+            self.log(user, 'unbindItems', {'item': item.path(),
+                                           'field': field_name})
         raise self.SeeOther(self.prefix+stream.path())
 
     def do_showBinding(self, request, response, form, objs, user):
@@ -514,6 +540,8 @@ class EditBase:
                     values.append(binding_to_item)
                     setattr(item, field_name, values)
                     item.store([field_name])
+                    self.log(user, 'updateBinding', {'item': item.path(),
+                                                     'field': field_name})
         else:  # reverse binding
             field = getattr(bound, field_name)
             try:
@@ -538,6 +566,8 @@ class EditBase:
                 if values!=getattr(bound, field_name):
                     setattr(bound, field_name, values)
                     bound.store([field_name])
+                    self.log(user, 'updateBinding', {'item': bound.path(),
+                                                     'field': field_name})
         raise self.SeeOther(
             '%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s&page=%s' \
             '&updated=1' % (self.prefix, template_stream.path(), bound.path(),
