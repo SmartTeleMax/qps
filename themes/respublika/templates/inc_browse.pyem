@@ -1,28 +1,51 @@
 <%
 if brick.indexNum and brick.page:
+    totalItems = brick.countItems()
+    page = brick.page
+    indexNum = brick.indexNum
+    rangeStart = indexNum * (page-1) + 1
+    rangeEnd = len(brick) + indexNum * (page-1)
+    if rangeStart == rangeEnd:
+        rng = '<b>%s</b>' % rangeStart
+    else:
+        rng = '<b>%s</b> - <b>%s</b>' % (rangeStart, rangeEnd)
+    a, b = divmod(totalItems, indexNum)
+    totalPages = (a + (b!=0)*1)
     %>
 <!-- browse -->
 <tr><td nowrap bgcolor="#E1E4E6">
 <table border=0 cellpadding=3 cellspacing=0 width=100%>
 <tr bgcolor=#C1C8CC>
 <%
-    if brick.page > 1:
+    if page > 1:
         %>
-<!-- prev -->
+<!-- prev --><%
+        if page - 1 > 1:
+            %>
 <td width=17 align=right>
-<a href="<%= uri % (brick.page-1) %>"><img src=<%= template.edit.staticPrefix %>/prev.gif width=17 height=17 border=0></a><br>
+<a href="<%= uri % 1 %>"><img src=<%= template.edit.staticPrefix %>/first.gif width=17 height=17 border=0></a><br>
+</td><%
+        %>
+<td width=17 align=right>
+<a href="<%= uri % (page-1) %>"><img src=<%= template.edit.staticPrefix %>/prev.gif width=17 height=17 border=0></a><br>
 </td>
 <!-- /prev --><%
     %>
 <td width=100% height=25>
-<span class=t11 id=db1>&nbsp;&nbsp;Страница <%= brick.page %></span><br>
+<span class=t11 id=db1>&nbsp;&nbsp;<%= rng %> из <b><%= totalItems %></b>
+</span><br>
 </td>
 <%
-    if len(brick) >= brick.indexNum:
+    if len(brick) >= indexNum:
        %>
 <!-- next -->
 <td width=17 align=right>
-<a href="<%= uri % (brick.page+1) %>"><img src=<%= template.edit.staticPrefix %>/next.gif width=17 height=17 border=0></a><br>
+<a href="<%= uri % (page+1) %>"><img src=<%= template.edit.staticPrefix %>/next.gif width=17 height=17 border=0></a><br>
+</td><%
+       if page + 1 < totalPages:
+           %>
+<td width=17 align=right>
+<a href="<%= uri % totalPages %>"><img src=<%= template.edit.staticPrefix %>/last.gif width=17 height=17 border=0></a><br>
 </td>
 <!-- /next --><%
     %>
