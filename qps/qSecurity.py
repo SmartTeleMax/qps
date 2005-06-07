@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.9 2005/02/13 14:24:29 corva Exp $
+# $Id: qSecurity.py,v 1.10 2005/06/03 20:45:17 corva Exp $
 
 '''Function to check permissions'''
 
@@ -82,7 +82,7 @@ class PyUser(UserBase):
     groups = qUtils.CachedAttribute(groups)
 
 
-class UserItem(SQLItem, UserBase):
+class UserItem(UserBase, SQLItem):
     """Basic class of Security User item stored in DB
 
     Groups determinations is very different, due to this
@@ -96,6 +96,9 @@ class UserItem(SQLItem, UserBase):
     groups = qUtils.CachedAttribute(groups)"""
     
     groups = defaultGroups # should be overloaded
+
+    def __str__(self):
+        return getattr(self, self.stream.loginField)
 
     def __nonzero__(self):
         return self.id is not None
