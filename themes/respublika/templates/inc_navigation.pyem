@@ -15,9 +15,8 @@ else:
 <%
 for stream in template.allowedStreams:
     %>
-<p style="padding:  4px 0px 4px 0px;"><a href="<%= template.edit.prefix + stream.path() %>" class=v10b id=db1><%= stream.title %></a></p>
-<img src=<%= template.edit.staticPrefix %>/lb3.gif width=100% height=1><br>
-<img src=<%= template.edit.staticPrefix %>/lb2.gif width=100% height=1><br><%
+<div style="padding:  4px 0px 4px 0px;"><a href="<%= template.edit.prefix + stream.path() %>" class=v10b id=db1><%= stream.title %></a></div>
+<div style="border-top: 1px solid #C1C8CC; border-bottom: 1px solid #F0F1F2;"></div><%
 %>
 </td></tr>
 <tr bgcolor="#E1E4E6" valign="bottom"><td valign="bottom" align="right">
