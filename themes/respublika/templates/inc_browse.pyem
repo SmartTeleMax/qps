@@ -3,7 +3,7 @@ if brick.indexNum and brick.page:
     totalItems = brick.countItems()
     page = brick.page
     indexNum = brick.indexNum
-    rangeStart = indexNum * (page-1) + 1
+    rangeStart = indexNum * (page-1) + 1 * (len(brick) != 0)
     rangeEnd = len(brick) + indexNum * (page-1)
     if rangeStart == rangeEnd:
         rng = '<b>%s</b>' % rangeStart
