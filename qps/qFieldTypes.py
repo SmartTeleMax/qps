@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.52 2005/04/12 17:12:02 ods Exp $
+# $Id: qFieldTypes.py,v 1.53 2005/06/01 23:31:50 corva Exp $
 
 '''Classes for common field types'''
 
@@ -345,11 +345,7 @@ class TEXT(STRING):
 
 
 class DROP(FieldType):
-
-    extra = ''
-    maxlen = 0
-    size = 0
-    undefined_label = '(undefined)'
+    extraOption = None
     labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
 
     def show(self, item, name, template_type, template_getter,
