@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.12 2005/06/01 23:34:12 corva Exp $
+# $Id: qSite.py,v 1.13 2005/06/02 00:28:40 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -152,7 +152,9 @@ class Site(object):
         Additional configuration named args are possible.
         NOTE: streamClass must be provided in conf or named args'''
 
-        if conf is None:
+        if conf:
+            conf = qUtils.DictRecord(self.defaultStreamConf, conf)
+        else:
             conf = self.defaultStreamConf
         kwargs['tag'] = None
         conf = qUtils.DictRecord(conf, kwargs)
