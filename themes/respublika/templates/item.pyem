@@ -45,12 +45,12 @@ alert('Внимание, произошла ошибка заполнения полей кирпича, информация не была с
 </script><%
 %>
 
-<form action="<%= template.edit.prefix %><%
+<form id="itemForm" action="<%= template.edit.prefix %><%
 if template.isNew:
     %><%= brick.stream.path() %><%
 else:
     %><%= brick.path() %><%
-%>" method="POST" enctype="multipart/form-data" onsubmit="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста, подождите.'; n.style.display='';">
+%>" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="order" value="<%= brick.stream.order %>">
 <input type="hidden" name="page" value="<%= brick.stream.page %>">
 
@@ -76,7 +76,10 @@ for field in template.allowedFields(brick):
 <%
 if 'w' in template.user.getPermissions(brick.permissions):
     %>
-<tr bgcolor="#E1E4E6"><td><center><input type="submit" name="qps-action:<%= template.isNew and 'createItem' or 'updateItem' %>" value="Готово"></center></td></tr><%
+<tr bgcolor="#E1E4E6"><td><center><input type="submit" name="qps-action:<%= template.isNew and 'createItem' or 'updateItem' %>" value="Сохранить" onclick="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста, подождите.'; n.style.display=''; document.getElementById('itemForm').target='_self'; return true;"><%
+    if template.isItemPreviewable(brick):
+        %>&nbsp; <input type="submit" name="qps-action:showItemPreview" value="Предпросмотр" onclick="document.getElementById('itemForm').target='_blank'; return true;"><%
+    %></center></td></tr><%
 %>
 
 </table>
