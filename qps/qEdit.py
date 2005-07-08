@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.28 2005/03/13 01:35:52 corva Exp $
+# $Id: qEdit.py,v 1.29 2005/06/03 20:45:16 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -84,6 +84,21 @@ class RenderHelper(qWebUtils.RenderHelper):
     def isStreamDeletable(self, stream):
         return self.user.checkPermission('d', stream.permissions)
 
+    def isItemPreviewable(self, item):
+        """Returns is it possible to show preview page for brick or not.
+        Preview page is available only for existing items, if stream has
+        templateCat defined and Edit.showPreviews is True."""
+
+        name = self.edit.previewTemplateName(item)
+        if self.edit.showPreviews and not self.isNew and name:
+            from PPA.Template.SourceFinders import TemplateNotFoundError
+            try:
+                self.edit.site.getTemplateGetter()(name)
+            except TemplateNotFoundError:
+                return False
+            else:
+                return True
+
     def bindingIndexFields(self, stream):
         # assume stream.type=='stream':
         itemFieldsOrder = []
@@ -164,6 +179,7 @@ class EditBase:
         }
 
     loggingStream = None # stream for user actions logging, see log method
+    showPreviews = True # show brick previews
 
     def getFieldTemplate(self):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs,
@@ -585,7 +601,39 @@ class EditBase:
         response.setContentType('text/html',
                                 charset=self.getClientCharset(request))
         response.write(template.showField(item, fieldName))
+
+    def previewTemplateName(self, brick):
+        """Returns preview template name for brick or None if
+        templateName is not available"""
         
+        templateCat = hasattr(brick, 'templateCat') and brick.templateCat or \
+                      (hasattr(brick, 'stream') and \
+                       hasattr(brick.stream, 'templateCat')) and \
+                       brick.stream.templateCat
+        if templateCat:
+            return "%s.%s" % (templateCat, brick.type)
+
+    def do_showItemPreview(self, request, response, form, objs, user):
+        """Inits item fields from form and shows preview page"""
+        
+        item = objs[-1]
+        errors = item.initFieldsFromForm(
+                    form, names=self.storableFields(item, user))
+        if errors:
+            for field_name, message in errors.items():
+                logger.warning('Invalid content of field %r: %s',
+                               field_name, message)
+            return self.showBrick(request, response, item, user,
+                                  fieldErrors=errors)
+        else:
+            publisher = qWebUtils.Publisher(self.site)
+            template = qWebUtils.RenderHelper(publisher)
+            response.setContentType('text/html',
+                                    charset=self.getClientCharset(request))
+            response.write(template(self.previewTemplateName(item),
+                                    brick=item))
+        
+
 
 class Edit(EditBase, qCommands.Publisher, qCommands.FieldNameCommandDispatcher,
            qSecurity.BasicAuthHandler):
