@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.54 2005/07/06 23:26:37 corva Exp $
+# $Id: qFieldTypes.py,v 1.55 2005/07/10 20:06:11 corva Exp $
 
 '''Classes for common field types'''
 
@@ -122,6 +122,31 @@ class FieldType(object):
         def __init__(self, message):
             self.message = message
 
+
+class ExternalStoredField:
+    "Interface for external stored fields"
+    
+    def retrieve(self, item):
+        "Returns a field value from external storage"
+
+    def store(self, value, item):
+        "Stores a value in external storage"
+
+    def delete(self, item_ids, stream):
+        "Deletes values in external storage for item_ids"
+
+
+class ExternalTableStoredField(ExternalStoredField):
+    "Interface for fields stored in external tables"
+
+    tableName = None       # Table name where values are stored.
+    valueFieldName = None  # Name of table field where field value is stored.
+    idFieldName = 'id'     # Name of table  where id of item is stored.
+
+    def condition(self, item):
+        from qDB.qSQL import Query, Param
+        return Query('%s=' % self.idFieldName, Param(item.id))
+    
 
 class STRING(FieldType):
     layout = _LayoutDict({'style': 'width: 100%'})
@@ -434,12 +459,14 @@ class RetrievedLazyItem(LazyItem):
         return self._stream().retrieveItem(self._item_id)
     _item = qUtils.CachedAttribute(_item)
 
+
 class GettedLazyItem(LazyItem):
     """This class retrieves item retrieves stream and get item with getItem"""
     
     def _item(self):
         return self._stream().getItem(self._item_id)
     _item = qUtils.CachedAttribute(_item)
+
 
 class FOREIGN_DROP(FieldType):
     proxyClass = RetrievedLazyItem
@@ -532,14 +559,6 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         return ', '.join(views)
 
         
-class FOREIGN(FOREIGN_DROP):
-    proxyClass = RetrievedLazyItem
-
-
-class MODE(FieldType):
-    layout = ['Show', 'Hide']
-
-
 class BOOLEAN(FieldType):
     """Bool field type, handles True/False values.
 
@@ -572,80 +591,70 @@ class CB_YN(BOOLEAN):
     dbFalse = ''
 
 
-class LazyItemList:
-    def __init__(self, field_type, item):
-        self.field_type = field_type
-        self.item = weakref.proxy(item)
-
-    def _items(self):
-        conn = self.item.dbConn
-        field_type = self.field_type
-        db_values = conn.selectFieldAsList(
-                field_type.tableName, field_type.valueFieldName,
-                field_type.condition(self.item))
-        items = []
-        for db_value in db_values:
-            items.append(field_type.itemField.convertFromDB(db_value,
-                                                            item=self.item))
-        return filter(None, items)
-    _items = qUtils.CachedAttribute(_items)
-
-    def __getitem__(self, index):
-        return self._items[index]
-
-    def __setitem__(self, index, value):
-        self._items[index] = value
-
-    def __len__(self):
-        return len(self._items)
-
-    def __iter__(self):
-        return iter(self._items)
-
-    def append(self, obj):
-        self._items.append(obj)
-
-    def index(self, obj):
-        return self._items.index(obj)
-
-    def __contains__(self, obj):
-        return obj in self._items
-
-    def __delitem__(self, index):
-        del self._items[index]
-
-    def __eq__(self, other):
-        return self._items==other
-
-    def __ne__(self, other):
-        return not (self==other)
-
-    def remove(self, value):
-        return self._items.remove(value)
-
-
-class ExtFieldTypeMixIn:
-    '''Mix-in for for fields stored outside main table.  Base class is defined
-    to store list of items in separate table.'''
-    tableName = None       # Table name where values are stored. Must be
-                           # redefined in configuration.
-    itemField = STRING()   # Field type of values.
-    valueFieldName = None  # Fild name in DB where value (in most cases it's id
-                           # of referenced item) is stored. Must be defined in
-                           # configuration.
-    idFieldName = 'id'     # Fild name in DB where id of item (for which this
-                           # field is defined) is stored.
-
-    def condition(self, item):
-        from qDB.qSQL import Query, Param
-        return Query('%s=' % self.idFieldName, Param(item.id))
-
-    def insert(self, item, db_value):
-        item.dbConn.insert(self.tableName, {self.idFieldName: item.id,
-                                            self.valueFieldName: db_value})
+class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExternalTableStoredField):
+    linkThrough = 0
+    countTemplate = '%(count or "no")s item(s)'
+    itemField = STRING() # field type of values
     
+    class LazyItemList:
+        def __init__(self, field_type, item):
+            self.field_type = field_type
+            self.item = weakref.proxy(item)
+
+        def _items(self):
+            conn = self.item.dbConn
+            field_type = self.field_type
+            db_values = conn.selectFieldAsList(
+                    field_type.tableName, field_type.valueFieldName,
+                    field_type.condition(self.item))
+            items = []
+            for db_value in db_values:
+                items.append(
+                    field_type.itemField.convertFromDB(db_value,
+                                                       item=self.item))
+            return filter(None, items)
+        _items = qUtils.CachedAttribute(_items)
+
+        def __getitem__(self, index):
+            return self._items[index]
+
+        def __setitem__(self, index, value):
+            self._items[index] = value
+
+        def __len__(self):
+            return len(self._items)
+
+        def __iter__(self):
+            return iter(self._items)
+
+        def append(self, obj):
+            self._items.append(obj)
+
+        def index(self, obj):
+            return self._items.index(obj)
+
+        def __contains__(self, obj):
+            return obj in self._items
+
+        def __delitem__(self, index):
+            del self._items[index]
+
+        def __eq__(self, other):
+            return self._items==other
+
+        def __ne__(self, other):
+            return not (self==other)
+
+        def remove(self, value):
+            return self._items.remove(value)
+
+
+    def __init__(self, **kwargs):
+        FOREIGN_MULTISELECT.__init__(self, **kwargs)
+        self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
+
     def retrieve(self, item):
-        return LazyItemList(self, item)
+        return self.LazyItemList(self, item)
 
     def store(self, values, item):
         db_values = []
@@ -662,7 +671,8 @@ class ExtFieldTypeMixIn:
         conn.delete(self.tableName, delete_cond)
         for db_value in db_values:
             if db_value not in old_db_values:
-                self.insert(item, db_value)
+                item.dbConn.insert(self.tableName, {self.idFieldName: item.id,
+                                            self.valueFieldName: db_value})
         tnx.close()
 
     def delete(self, item_ids, stream):
@@ -672,22 +682,12 @@ class ExtFieldTypeMixIn:
                                  stream.dbConn.IN(self.idFieldName, item_ids))
             tnx.close()
 
-
-class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExtFieldTypeMixIn):
-    
-    linkThrough = 0
-    countTemplate = '%(count or "no")s item(s)'
-
-    def __init__(self, **kwargs):
-        FOREIGN_MULTISELECT.__init__(self, **kwargs)
-        self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
-
     def getIndexLabel(self, value):
         count = len(value)
         return qUtils.interpolateString(self.countTemplate, {'count': count})
 
 
-class EXT_VIRTUAL_REFERENCE(FieldType):
+class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
 
     default = None
     paramName = None       # optional
@@ -752,7 +752,7 @@ class EXT_VIRTUAL_REFERENCE(FieldType):
         return self.retrieve(item)
 
 
-class IMAGE(FieldType, ExtFieldTypeMixIn):
+class IMAGE(FieldType, ExternalStoredField):
 
     editRoot = None
     pathTemplate = '/images/%(brick.id)s'
