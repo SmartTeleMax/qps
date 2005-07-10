@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.53 2005/06/01 23:31:50 corva Exp $
+# $Id: qFieldTypes.py,v 1.54 2005/07/06 23:26:37 corva Exp $
 
 '''Classes for common field types'''
 
@@ -348,17 +348,17 @@ class DROP(FieldType):
     extraOption = None
     labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
 
+    def _retrieve_stream(self, item):
+        stream, tag = self._stream_params(item)
+        return item.site.retrieveStream(stream, tag=item.site.transmitTag(tag))
+
+    def _stream_params(self, item):
+        return (self.stream, item.stream.tag)
+
     def show(self, item, name, template_type, template_getter,
              global_namespace={}):
-        if not hasattr(self, 'optionList'):
-            stream = item.site.retrieveStream(self.stream,
-                                    tag=item.site.transmitTag(item.stream.tag))
-            # retrieve stream of items used as options in drop menu
-            stream.retrieve()
-            namespace = global_namespace.copy()
-            namespace['stream'] = stream
-            # current value
-            value = getattr(item, name)
+        namespace = global_namespace.copy()
+        namespace.update({'stream': self._retrieve_stream(item)})
         return FieldType.show(self, item, name, template_type, template_getter,
                               namespace)
 
@@ -1019,8 +1019,7 @@ class AgregateFieldType(FieldType):
 
 class CONTAINER(AgregateFieldType):
 
-    itemFieldsOrder = []
-    itemFields = {}
+    fields = [] # FieldDescriptions instance needed
     dictClass = qUtils.DictRecord
 
     def _split(self, string):
@@ -1042,16 +1041,14 @@ class CONTAINER(AgregateFieldType):
     def convertFromCode(self, value, item=None):
         # XXX Looks like broken. Need to test it
         result = self.dictClass()
-        for key in self.itemFieldsOrder:
-            field_type = self.itemFields[key]
+        for key, field_type in self.fields:
             result[key] = field_type.convertFromCode(value, item)
         return result
     
     def convertFromString(self, string, item=None):
         result = self.dictClass()
         key_field_map = dict(self._split(string))
-        for key in self.itemFieldsOrder:
-            field_type = self.itemFields[key]
+        for key, field_type in self.fields:
             try:
                 field = key_field_map[key]
             except KeyError:
@@ -1063,14 +1060,13 @@ class CONTAINER(AgregateFieldType):
     def convertToString(self, value, item=None):
         seq = []
         for key, field in value.items():
-            field_type = self.itemFields[key]
+            field_type = self.fields[key]
             seq.append((key, field_type.convertToString(field, item)))
         return self._join(seq)
 
     def convertFromForm(self, form, name, item=None):
         result = self.dictClass()
-        for subname in self.itemFieldsOrder:
-            field_type = self.itemFields[subname]
+        for subname, field_type in self.fields:
             result[subname] = field_type.convertFromForm(form,
                                     self._child_name(name, subname), item)
         return result
@@ -1079,8 +1075,7 @@ class CONTAINER(AgregateFieldType):
              global_namespace={}):
         value = getattr(item, name)
         subfields = []
-        for subname in self.itemFieldsOrder:
-            field_type = self.itemFields[subname]
+        for subname, field_type in self.fields:
             full_name = self._child_name(name, subname)
             proxied_item = self._Proxy(item, {full_name: value[subname]})
             subfields.append(field_type.show(proxied_item, full_name,
