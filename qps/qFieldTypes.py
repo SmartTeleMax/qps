@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.55 2005/07/10 20:06:11 corva Exp $
+# $Id: qFieldTypes.py,v 1.56 2005/07/10 21:35:16 corva Exp $
 
 '''Classes for common field types'''
 
@@ -214,8 +214,8 @@ class UNIQUE_STRING(STRING):
 
         row = conn.selectRow(item.stream.tableName, [name], query)
         if row:
-            message = qps.qUtils.interpolateString(self.unique_error,
-                                                   {'brick': self})
+            message = qUtils.interpolateString(self.unique_error,
+                                               {'brick': self})
             raise self.InvalidFieldContent(message)
         return value
 
@@ -472,8 +472,10 @@ class FOREIGN_DROP(FieldType):
     proxyClass = RetrievedLazyItem
     extraOption = None
     missingID = None # representation of missing value in DB (default is NULL)
+    allowNull = True # allow null values from form
     default = None
     labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
+    null_not_allowed_error = "Your have to select something"
 
     def _retrieve_stream(self, item):
         stream, tag = self._stream_params(item)
@@ -502,10 +504,13 @@ class FOREIGN_DROP(FieldType):
         value = form.getfirst(name, '')
         if value:
             stream = self._retrieve_stream(item)
-            return self.proxyClass(item.site,
-                                   self._stream_params(item),
-                                   stream.fields.id.convertFromString(value))
-        
+            value = self.proxyClass(item.site,
+                                    self._stream_params(item),
+                                    stream.fields.id.convertFromString(value))
+            if not (self.allowNull or value):
+                raise self.InvalidFieldContent(self.null_not_allowed_error)
+            else:
+                return value
 
     def getLabel(self, item):
         namespace = item.site.globalNamespace.copy()
@@ -523,6 +528,7 @@ class FOREIGN_DROP(FieldType):
 class FOREIGN_MULTISELECT(FOREIGN_DROP):
     fieldSeparator = ','
     default = []
+    columns = 3 # number of columns to display in field template
     
     def inList(self, id, items):
         return id in [item.id for item in items]
