@@ -51,7 +51,7 @@ if (req != null) {
 </td></tr>
 <!-- /header -->
 
-<%= template('inc_browse', brick=brick, uri='?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (boundPath, fieldName)) %>
+<%= template('inc_browse', brick=brick, uri='?qps-action:showBinding=1&bound=%s&field=%s&page=%%s' % (boundPath, fieldName)) %>
 
 <tr bgcolor="#E1E4E6"><td>
 <table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6><%
@@ -92,7 +92,7 @@ for repeat in Cook.Repeat(brick):
 
 </td></tr>
 
-<%= template('inc_browse', brick=brick, uri='?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (boundPath, fieldName)) %>
+<%= template('inc_browse', brick=brick, uri='?qps-action:showBinding=1&bound=%s&field=%s&page=%%s' % (boundPath, fieldName)) %>
 
 </table>
 </td></tr>
