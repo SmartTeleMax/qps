@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.9 2004/07/26 08:56:17 ods Exp $
+# $Id: qMake.py,v 1.10 2005/02/08 13:52:28 ods Exp $
 
 '''Defines common maker classes'''
 
@@ -177,13 +177,13 @@ class ItemsMaker(BaseMaker):
             for maker in makers:
                 item.make(maker)
         if self.all_pages and stream.indexNum:
-            stream = self.site.streamFactory(stream.id, tag=self.tag, page=2)
+            stream = self.site.createStream(stream.id, tag=self.tag, page=2)
             while stream:
                 for item in stream:
                     for maker in makers:
                         item.make(maker)
-                stream = self.site.streamFactory(stream.id, tag=self.tag,
-                                                 page=stream.page+1)
+                stream = self.site.createStream(stream.id, tag=self.tag,
+                                                page=stream.page+1)
 
 
 class VirtualsMaker(BaseMaker):

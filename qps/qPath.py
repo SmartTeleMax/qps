@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.3 2004/06/29 08:54:15 corva Exp $
+# $Id: qPath.py,v 1.4 2004/07/06 08:58:32 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -69,7 +69,7 @@ class PagedStreamLoader:
             page = 1
         _params = self.params.copy()
         _params.update(params)
-        return self.site.streamFactory(stream_id, page=page, **_params)
+        return self.site.createStream(stream_id, page=page, **_params)
 
 
 class FilteredStreamLoader(PagedStreamLoader):
@@ -106,7 +106,7 @@ class FilteredStreamLoader(PagedStreamLoader):
             # we dont need paged stream anymore
             _params = self.params.copy()
             _params.update(params)
-            stream = self.site.streamFactory(stream_id, **_params)
+            stream = self.site.createStream(stream_id, **_params)
             for cond in conds:
                 stream.addToCondition(cond)
         return stream 

@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.30 2005/07/08 18:34:04 corva Exp $
+# $Id: qEdit.py,v 1.31 2005/08/02 17:13:16 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -30,7 +30,7 @@ class RenderHelper(qWebUtils.RenderHelper):
         for stream_id, stream_conf in site.streamDescriptions.items():
             if self.user.checkPermission('x',
                                          stream_conf.get('permissions', [])):
-                streams.append(site.streamFactory(stream_id, tag='edit'))
+                streams.append(site.createStream(stream_id, tag='edit'))
         return streams
     allowedStreams = qUtils.CachedAttribute(allowedStreams)
 
@@ -136,7 +136,7 @@ class RenderHelper(qWebUtils.RenderHelper):
             return ''
         template_type = 'index-' + template_type
         ns = self.fieldGlobalNamespace.copy()
-        ns.update({'linkThrough': self.user.checkPermissionf(
+        ns.update({'linkThrough': self.user.checkPermission(
             'r', item.permissions) and field_type.linkThrough})
         return field_type.show(item, name, template_type,
                                self.edit.getFieldTemplate,
