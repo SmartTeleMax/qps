@@ -1,4 +1,4 @@
-# $Id: qHTTP.py,v 1.2 2005/04/12 17:12:02 ods Exp $
+# $Id: qHTTP.py,v 1.3 2005/06/01 23:41:12 corva Exp $
 
 '''HTTP-related functions'''
 
@@ -81,19 +81,20 @@ class FieldStorage(cgi.FieldStorage):
             return [item.decode(self._charset, self._errors) for item in value]
         return value
 
-    state = None
-
     def initFields(self, site, fields):
-        """Sets self.state attribute to item of anon stream and
-        inits fields for self.state."""
-        
-        import qSecurity
+        """Inits fields from form and returns a tuple of (item, errors)"""
+
+        import qSecurity, qFieldTypes
+
+        if not isinstance(fields, qFieldTypes.FieldDescriptions):
+            fields = qFieldTypes.FieldDescriptions(fields)
         stream = site.createAnonStream(
             site.defaultStreamConf, streamClass="qps.qBricks.qBase.Stream",
             fields=fields,
             permissions=[('all', qSecurity.perm_all)])
-        self.state = stream.createNewItem()
-        return self.state.initFieldsFromForm(self)
+        item = stream.createNewItem()
+        errors = item.initFieldsFromForm(self)
+        return (item, errors)
     
 
 class Form(object):
