@@ -1,8 +1,8 @@
 <%
 if value:
-    if brick.linkThrough:
-        %><a href="<%= edPrefix + item.path() %>"><%
+    if linkThrough:
+        %><a href="<%= template.edit.prefix + item.path() %>"><%
     %><img src="<%= value.path %>" border="0"><%
-    if brick.linkThrough:
+    if linkThrough:
         %></a><%
 %>

@@ -1,7 +1,7 @@
 <span class=t11b id=db1><%= brick.title %>: </span><br><span class=s3>&nbsp;</span><br>
 <span class=a12><%
 if stream.indexNum:
-    href = edPrefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name
+    href = template.edit.prefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name
     if value:
         %><span id="span_<%= name %>"><%= brick.getLabel(value) %><br></span>
 <input id="input_<%= name %>" type="hidden" name="<%= name %>" value="<%= value.id %>"><%

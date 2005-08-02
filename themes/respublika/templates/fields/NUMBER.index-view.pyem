@@ -1,5 +1,6 @@
 <%
-if brick.linkThrough:
-    %><a href="<%= edPrefix + item.path() %>"><span class=t12 id=db1><%= value %></span><%
-if brick.linkThrough:
+if linkThrough:
+    %><a href="<%= template.edit.prefix + item.path() %>"><%
+%><span class=t12 id=db1><%= value %></span><%
+if linkThrough:
     %></a>

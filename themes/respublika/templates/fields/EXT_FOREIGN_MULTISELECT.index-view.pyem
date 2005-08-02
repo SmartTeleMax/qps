@@ -1,4 +1,4 @@
 <span class=t12 id=db1><%= brick.getIndexLabel(value) %><%
 if brick.itemField._retrieve_stream(item).indexNum:
-    %> <a href="<%= '%s/%s/?qps-action%%3AshowBinding=1&amp;bound=%s&amp;field=%s' % (edPrefix, brick.stream, item.path(), brick.name) %>">&gt;&gt;</a><%
+    %> <a href="<%= '%s/%s/?qps-action%%3AshowBinding=1&amp;bound=%s&amp;field=%s' % (template.edit.prefix, brick.stream, item.path(), brick.name) %>">&gt;&gt;</a><%
 %></span>
