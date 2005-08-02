@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.29 2005/06/03 20:45:16 corva Exp $
+# $Id: qEdit.py,v 1.30 2005/07/08 18:34:04 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -21,11 +21,6 @@ class RenderHelper(qWebUtils.RenderHelper):
     def fieldGlobalNamespace(self):
         namespace = self.edit.globalNamespace.copy()
         namespace['template'] = self
-        # following 3 lines are here only for compatibility reasons
-        # after all field templates will be changed they will gone
-        namespace['edPrefix'] = self.edit.prefix
-        namespace['edUser'] = self.user
-        namespace['isNew'] = self.isNew
         return namespace
     fieldGlobalNamespace = qUtils.CachedAttribute(fieldGlobalNamespace)
 
@@ -140,9 +135,12 @@ class RenderHelper(qWebUtils.RenderHelper):
         else:
             return ''
         template_type = 'index-' + template_type
+        ns = self.fieldGlobalNamespace.copy()
+        ns.update({'linkThrough': self.user.checkPermissionf(
+            'r', item.permissions) and field_type.linkThrough})
         return field_type.show(item, name, template_type,
                                self.edit.getFieldTemplate,
-                               self.fieldGlobalNamespace) # XXX namespace
+                               ns) # XXX namespace
 
     def getPermissions(self, obj):
         return self.user.getPermissions(obj.permissions)
