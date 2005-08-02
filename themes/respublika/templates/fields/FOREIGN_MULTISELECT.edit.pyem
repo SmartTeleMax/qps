@@ -28,7 +28,7 @@ if count < full:
 %>
 </div>
 <%
-if stream.indexNum and not isNew:
+if stream.indexNum and not template.isNew:
     %>
 <span class=s3>&nbsp;</span><br><a href="<%= template.edit.prefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>" onclick="javascript:var new_window=window.open('<%= template.edit.prefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;"><span class=t12 id=db1>&gt;&gt;</span></a><%
 %>
