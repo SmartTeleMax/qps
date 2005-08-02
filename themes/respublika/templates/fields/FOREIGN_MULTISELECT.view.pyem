@@ -1,0 +1,5 @@
+<span class=t11b id=db1><%= brick.title %>:</span><br>
+<span class=s3>&nbsp;</span><br><%
+if value:
+    %><span class=a12><%= ', '.join([brick.getLabel(i) for i in value]) %></span><%
+%>
