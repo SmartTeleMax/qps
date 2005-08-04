@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.4 2004/07/06 08:58:32 corva Exp $
+# $Id: qPath.py,v 1.5 2005/08/02 23:17:50 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -73,42 +73,23 @@ class PagedStreamLoader:
 
 
 class FilteredStreamLoader(PagedStreamLoader):
-
-    # XXX
-    '''WARNING! This is expirimental class. Its known to contain security
-    vulnerabilities. Use it in your own risk.'''
-    
     def __call__(self, stream_id, **params):
         stream = PagedStreamLoader.__call__(self, stream_id, **params)
-        item = stream.createNewItem() # we need something to pass into
-                                      # convert from form
-
-        conds = []
-        for field_name in self.form.keys():
-            if field_name.startswith('qps-pattern:'):
-                db_field = field_name[len('qps-pattern:'):]
-                pattern = self.form.getfirst(field_name)
-                if type(pattern) is unicode:
-                    pattern = pattern.encode(self.site.dbCharset)
-                conds.append("%s LIKE '%%%s%%'" % (
-                    db_field,
-                    stream.dbConn.escape(pattern))
-                             )
-            elif field_name.startswith('qps-exactmatch:'):
-                db_field = field_name[len('qps-exactmatch:'):]
-                field_type = stream.fields[db_field]
-                value = field_type.convertFromForm(self.form, field_name, item)
-                conds.append("%s=%s" % \
-                             (db_field, field_type.convertToDB(value, item))
-                             )
-
-        if conds:
-            # we dont need paged stream anymore
-            _params = self.params.copy()
-            _params.update(params)
-            stream = self.site.createStream(stream_id, **_params)
-            for cond in conds:
-                stream.addToCondition(cond)
-        return stream 
-
+        if hasattr(stream, 'filter'):
+            filter = stream.filter.__class__()
+            state = stream.createNewItem()
+            names = filter.fields(stream)
+            method = "AND" # no functionality to define method at the moment
+            for name in names:
+                field = filter.createField(stream.fields[name])
+                value = field.convertFromForm(self.form, name, state)
+                setattr(state, name, value)
+                if value:
+                    field.applyToFilter(filter, state, name, value)
+            if filter:
+                stream = filter.createStream(
+                    stream, PagedStreamLoader(self.site, self.form), method)
+                stream.filterState = state # XXX need to store somethere
+        return stream
+    
 # vim: ts=8 sts=4 sw=4 ai et

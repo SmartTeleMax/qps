@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.31 2005/08/02 17:13:16 corva Exp $
+# $Id: qEdit.py,v 1.32 2005/08/02 23:17:50 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -146,6 +146,18 @@ class RenderHelper(qWebUtils.RenderHelper):
         return self.user.getPermissions(obj.permissions)
 
     getFieldPermissions = getPermissions
+
+    def filterFields(self, stream):
+        return hasattr(stream, 'filter') and \
+               stream.filter.fields(stream) or []
+
+    def showFilterField(self, item, name):
+        '''Return representation of filter field'''
+
+        field = item.stream.filter.createField(item.fields[name])
+        return field.show(item, name, 'edit', # always editable
+                          self.edit.getFieldTemplate,
+                          self.fieldGlobalNamespace)
 
 
 class EditBase:
@@ -630,7 +642,6 @@ class EditBase:
                                     charset=self.getClientCharset(request))
             response.write(template(self.previewTemplateName(item),
                                     brick=item))
-        
 
 
 class Edit(EditBase, qCommands.Publisher, qCommands.FieldNameCommandDispatcher,

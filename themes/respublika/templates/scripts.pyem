@@ -1,3 +1,13 @@
+<script>
+function toggleElement(id) {
+    e = document.getElementById(id);
+    if (e.style.display) {
+        e.style.display = '';
+    } else {
+        e.style.display = 'none';
+    }
+}
+
 function request() {
   res = null;
   if (typeof XMLHttpRequest!="undefined") {
@@ -13,3 +23,4 @@ function request() {
   }
   return res;
 }
+</script>

@@ -8,11 +8,8 @@ if brick.site.clientCharset:
 %>
 <style>
 <%= template('style', brick=brick) %>
-</style><%
-if updated:
-    %>
-<script src="<%= template.publisher.staticPrefix %>/rpc.js">
-</script>
+</style>
+<%= template('scripts', brick=brick) %>
 
 <script>
 url = '<%= template.publisher.prefix+bound.path() %>?qps-action:showField=1&field=<%= fieldName %>';
@@ -30,16 +27,26 @@ if (req != null) {
 </script><%
 %>
 </head>
+<%
+filter_fields = template.filterFields(brick)
+browse_uri = '%s%s?qps-action:showBinding=1&bound=%s&field=%s&page=%%s' % (template.edit.prefix, brick.path(), boundPath, fieldName)
+if hasattr(brick, 'filterState'):
+   state = brick.filterState
+   chunks = []
+   for name in filter_fields:
+      field = brick.filter.createField(state.fields[name])
+      value = getattr(state, name)
+      if value:
+          chunks.append('%s=%s' % (name, field.convertToString(value)))
+   browse_uri = '&'.join([browse_uri]+chunks)
+%>
 <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
 <table cellpadding=12 cellspacing=0 height="100%" width="100%">
 <tr valign="top">
 <td width="100%">
 <div align="center">
 
-<form action="<%= template.edit.prefix + brick.path() %>" method="POST">
-<input type="hidden" name="bound" value="<%= boundPath %>">
-<input type="hidden" name="field" value="<%= fieldName %>">
-<input type="hidden" name="page" value="<%= brick.page %>">
+
 
 <table border="0" bgcolor="#000000" cellspacing="0" cellpadding="0" width=100%>
 <tr><td>
@@ -51,8 +58,52 @@ if (req != null) {
 </td></tr>
 <!-- /header -->
 
-<%= template('inc_browse', brick=brick, uri='?qps-action:showBinding=1&bound=%s&field=%s&page=%%s' % (boundPath, fieldName)) %>
+<%= template('inc_browse', brick=brick, uri=browse_uri) %>
 
+<!-- binding menu --><%
+menus = []
+if template.filterFields(brick):
+    menus.append('<a href="#" onclick="toggleElement(\'filter\'); return false"><span class=t12b id=y1>'+'Фильтр'+'</span></a>')
+if menus:
+    %>
+<tr bgcolor="#E1E4E6"><td align="right"><%
+    for num, item in enumerate(menus):
+        %><%= item %><%
+        if num != len(menus)-1:
+            %>&nbsp; <span id=y1>|</span>&nbsp; <%
+    %></td></tr><%
+%>
+<!-- /binding menu -->
+
+<!-- filter -->
+<%
+has_state = hasattr(brick, 'filterState')
+filterState = getattr(brick, 'filterState', brick.createNewItem())
+if filter_fields:
+    %>
+<form action="<%= template.edit.prefix+brick.path() %>" method="POST">
+<input type="hidden" name="bound" value="<%= boundPath %>">
+<input type="hidden" name="field" value="<%= fieldName %>">
+<input type="hidden" name="qps-action:showBinding" value="1">
+<tr bgcolor="#E1E4E6" id="filter"<%= not has_state and ' style="display: none;"' or '' %>><td>
+<%
+    for name in filter_fields:
+        %><%= template.showFilterField(filterState, name) %><br>
+<span class="s3">&nbsp;</span><br><%
+    %>
+<span class="s12">&nbsp;</span><br>
+<div style="text-align: right">
+<input type="submit" value="Показать">
+</div>
+</td></tr>
+</form><%
+%>
+<!-- /filter -->
+
+<form action="<%= template.edit.prefix + brick.path() %>" method="POST">
+<input type="hidden" name="bound" value="<%= boundPath %>">
+<input type="hidden" name="field" value="<%= fieldName %>">
+<input type="hidden" name="page" value="<%= brick.page %>">
 <tr bgcolor="#E1E4E6"><td>
 <table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6><%
 for repeat in Cook.Repeat(brick):
@@ -91,15 +142,14 @@ for repeat in Cook.Repeat(brick):
 </table>
 
 </td></tr>
+</form>
 
-<%= template('inc_browse', brick=brick, uri='?qps-action:showBinding=1&bound=%s&field=%s&page=%%s' % (boundPath, fieldName)) %>
+<%= template('inc_browse', brick=brick, uri=browse_uri) %>
 
 </table>
 </td></tr>
 
 </table>
-
-</form>
 
 </div>
 </td>
