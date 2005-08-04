@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.56 2005/07/10 21:35:16 corva Exp $
+# $Id: qFieldTypes.py,v 1.57 2005/07/26 21:57:51 corva Exp $
 
 '''Classes for common field types'''
 
@@ -500,6 +500,12 @@ class FOREIGN_DROP(FieldType):
         else:
             return self.missingID
 
+    def convertToString(self, value):
+        if value:
+            return value.stream.fields.id.convertToString(value.id)
+        else:
+            return ''
+
     def convertFromForm(self, form, name, item):
         value = form.getfirst(name, '')
         if value:
@@ -899,7 +905,7 @@ class RESTRICTED_IMAGE(IMAGE):
     maxHeight = None
     width  = qUtils.ReadAliasAttribute('maxWidth')
     height = qUtils.ReadAliasAttribute('maxHeight')
-    
+
     def resizeFilter(self):
         import PIL.Image
         return PIL.Image.ANTIALIAS
