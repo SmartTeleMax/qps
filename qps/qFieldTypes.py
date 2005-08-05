@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.57 2005/07/26 21:57:51 corva Exp $
+# $Id: qFieldTypes.py,v 1.58 2005/08/04 13:24:43 corva Exp $
 
 '''Classes for common field types'''
 
@@ -169,6 +169,9 @@ class STRING(FieldType):
             raise self.InvalidFieldContent(message)
         if self.pattern and not re.match(self.pattern, value):
             raise self.InvalidFieldContent(self.not_match_error_message)
+        return value
+
+    def convertToString(self, value, item=None):
         return value
 
     def convertFromDB(self, value, item):
@@ -500,7 +503,7 @@ class FOREIGN_DROP(FieldType):
         else:
             return self.missingID
 
-    def convertToString(self, value):
+    def convertToString(self, value, item=None):
         if value:
             return value.stream.fields.id.convertToString(value.id)
         else:
