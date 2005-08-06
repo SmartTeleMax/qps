@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.32 2005/08/02 23:17:50 corva Exp $
+# $Id: qEdit.py,v 1.33 2005/08/04 13:31:17 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -155,9 +155,10 @@ class RenderHelper(qWebUtils.RenderHelper):
         '''Return representation of filter field'''
 
         field = item.stream.filter.createField(item.fields[name])
+        ns = self.fieldGlobalNamespace.copy()
+        ns['name'] = 'filter-'+name
         return field.show(item, name, 'edit', # always editable
-                          self.edit.getFieldTemplate,
-                          self.fieldGlobalNamespace)
+                          self.edit.getFieldTemplate, ns)
 
 
 class EditBase:

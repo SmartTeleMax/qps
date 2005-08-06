@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.5 2005/08/02 23:17:50 corva Exp $
+# $Id: qPath.py,v 1.6 2005/08/04 13:31:17 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -73,6 +73,24 @@ class PagedStreamLoader:
 
 
 class FilteredStreamLoader(PagedStreamLoader):
+
+    class PrefixForm:
+        def __init__(self, form, prefix):
+            self.form = form
+            self.prefix = prefix
+            
+        def getString(self, key, default=None):
+            return self.form.getString(self.prefix+key, default)
+        
+        def getStringList(self, key):
+            return self.form.getStringList(self.prefix+key)
+        
+        def getfirst(self, key, default=None):
+            return self.form.getfirst(self.prefix+key, default)
+        
+        def getlist(self, key):
+            return self.form.getlist(self.prefix+key)
+    
     def __call__(self, stream_id, **params):
         stream = PagedStreamLoader.__call__(self, stream_id, **params)
         if hasattr(stream, 'filter'):
@@ -80,9 +98,10 @@ class FilteredStreamLoader(PagedStreamLoader):
             state = stream.createNewItem()
             names = filter.fields(stream)
             method = "AND" # no functionality to define method at the moment
+            form = self.PrefixForm(self.form, 'filter-')
             for name in names:
                 field = filter.createField(stream.fields[name])
-                value = field.convertFromForm(self.form, name, state)
+                value = field.convertFromForm(form, name, state)
                 setattr(state, name, value)
                 if value:
                     field.applyToFilter(filter, state, name, value)
