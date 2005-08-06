@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.58 2005/08/04 13:24:43 corva Exp $
+# $Id: qFieldTypes.py,v 1.59 2005/08/05 11:53:08 corva Exp $
 
 '''Classes for common field types'''
 
@@ -38,6 +38,11 @@ class FieldType(object):
     # showField in binding view
     showInBinding    = 0
     linkThrough      = 1
+    # Tells storeHandlers to handle changes for field's value
+    handleStore      = 0
+    # Tells storeHandlers to iter field's value and handle changes
+    # for each entry
+    iterHandleStore = 0
     
     templateCat = None
     default     = ''                            # default value
@@ -74,8 +79,9 @@ class FieldType(object):
         else:
             value = self.convertToForm(value)
         namespace = global_namespace.copy()
-        namespace.update({'name': name, 'title': name, 'value': value,
+        namespace.update({'title': name, 'value': value,
                           'item': item, 'brick': self})
+        namespace.setdefault('name', name)
         template = self.getTemplate(template_type, template_getter)
         return template(namespace)
 
@@ -479,6 +485,7 @@ class FOREIGN_DROP(FieldType):
     default = None
     labelTemplate = '%(quoteHTML(getattr(brick, "title", str(brick.id))))s'
     null_not_allowed_error = "Your have to select something"
+    handleStore = 1
 
     def _retrieve_stream(self, item):
         stream, tag = self._stream_params(item)
@@ -538,6 +545,8 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
     fieldSeparator = ','
     default = []
     columns = 3 # number of columns to display in field template
+    handleStore = 1
+    iterHandleStore = 1
     
     def inList(self, id, items):
         return id in [item.id for item in items]
@@ -572,6 +581,9 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         views = [FOREIGN_DROP.getLabel(self, i)
                  for i in value]
         return ', '.join(views)
+
+    def setValue(self, item, name, value):
+        setattr(item, name, getattr(item, name)+ [value])
 
         
 class BOOLEAN(FieldType):
