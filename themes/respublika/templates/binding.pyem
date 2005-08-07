@@ -37,7 +37,7 @@ if hasattr(brick, 'filterState'):
       field = brick.filter.createField(state.fields[name])
       value = getattr(state, name)
       if value:
-          chunks.append('%s=%s' % (name, field.convertToString(value)))
+          chunks.append('filter-%s=%s' % (name, field.convertToString(value)))
    browse_uri = '&'.join([browse_uri]+chunks)
 %>
 <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
