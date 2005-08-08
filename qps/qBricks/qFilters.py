@@ -1,4 +1,23 @@
-# $Id: qFieldTypes.py,v 1.58 2005/08/04 13:24:43 corva Exp $
+# $Id: qFilters.py,v 1.1 2005/08/04 13:31:17 corva Exp $
+
+"""Support for filtering QPS streams.
+
+This module defines two types of classes:
+
+StreamFilter - defines how stream is filtered. SQL stream filtering differs
+               from XMLStream and Static strea,
+FilterFieldsType - defines how fields are filtered. String fields can be
+                   filtered with different methods - LIKE, EQUALS etc.
+
+Configuration example.
+
+1. Apply a filter object to streamDecsription:
+DictRecord(title='Some stream', filter=SQLStreamFilter())
+
+2. Apply filter fields classes to fieldDescriptions:
+('title', FT.STRING(title='Document title',
+                    filterFieldClass=SQL_LIKE_STRING))
+"""
 
 #
 # Filter classes
@@ -36,7 +55,11 @@ class SQLStreamFilter(StreamFilter):
         return bool(self.conditions or self.joinTemplates)
 
     def createStream(self, stream, loader, cond_method="AND"):
-        condition = stream.dbConn.join(self.conditions, cond_method)
+        if stream.condition:
+            conditions = [stream.condition]+self.conditions
+        else:
+            conditions = self.conditions
+        condition = stream.dbConn.join(conditions, cond_method)
         jt = getattr(stream, "joinTemplate", "%(brick.tableName)s")
         jt = ' '.join([jt]+self.joinTemplates)
         return loader(stream.id, condition=condition, joinTemplate=jt)
