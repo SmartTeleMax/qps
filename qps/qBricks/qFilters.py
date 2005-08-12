@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.1 2005/08/04 13:31:17 corva Exp $
+# $Id: qFilters.py,v 1.2 2005/08/08 11:37:37 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -55,14 +55,11 @@ class SQLStreamFilter(StreamFilter):
         return bool(self.conditions or self.joinTemplates)
 
     def createStream(self, stream, loader, cond_method="AND"):
-        if stream.condition:
-            conditions = [stream.condition]+self.conditions
-        else:
-            conditions = self.conditions
-        condition = stream.dbConn.join(conditions, cond_method)
         jt = getattr(stream, "joinTemplate", "%(brick.tableName)s")
         jt = ' '.join([jt]+self.joinTemplates)
-        return loader(stream.id, condition=condition, joinTemplate=jt)
+        stream = loader(stream.id, joinTemplate=jt)
+        stream.addToCondition(stream.dbConn.join(self.conditions, cond_method))
+        return stream
 
 
 #
