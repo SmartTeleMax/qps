@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.34 2005/08/06 00:39:33 corva Exp $
+# $Id: qEdit.py,v 1.35 2005/08/07 23:56:01 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -148,11 +148,14 @@ class RenderHelper(qWebUtils.RenderHelper):
     getFieldPermissions = getPermissions
 
     def filterFields(self, stream):
-        fields = hasattr(stream, 'filter') and \
-                 stream.filter.fields(stream) or []
-        return [name for name in fields if \
-                self.user.checkPermission('r', stream.fields[name].permissions)
-                ]
+        fields = []
+        for name in hasattr(stream, 'filter') and \
+                stream.filter.fields(stream) or []:
+            field = stream.fields[name]
+            perms = getattr(field, 'filterPermissions', field.permissions)
+            if self.user.checkPermission('r', perms):
+                fields.append(name)
+        return fields
 
     def showFilterField(self, item, name):
         '''Return representation of filter field'''
