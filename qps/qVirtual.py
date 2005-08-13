@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.13 2005/04/12 16:08:16 ods Exp $
+# $Id: qVirtual.py,v 1.14 2005/04/27 22:54:47 corva Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -88,14 +88,18 @@ class VirtualRule:
             param = getattr(stream, name)
             if stream.fields.has_key(name):
                 param = stream.fields[name].convertToDB(param, item)
-            else:
-                param = param.id
-            conds.append(Query('%s=' % name, Param(param)))
+                conds.append(Query('%s.%s=' % (stream.tableName, name),
+                                   Param(param)))
+            else: # param is in join table
+                param = param.fields.id.convertToDB(param.id, param)
+                if hasattr(stream, 'joinTable'):
+                    left = '%s.%s=' % (stream.joinTable, name)
+                else:
+                    # cant determine join table.. but it still may work
+                    # if there are not field name collisions in joined tables
+                    left = '%s=' % name
+                conds.append(Query(left, Param(param)))
         return conn.join(conds)
-##        return conn.join([Query('%s=' % name,
-##                          Param(stream.fields[name].convertToDB(
-##                                                        getattr(stream, name),
-##                                                        item)))
-##                          for name in self.itemParamNames])
+
 
 # vim: ts=8 sts=4 sw=4 ai et
