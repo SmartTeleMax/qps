@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.59 2005/08/05 11:53:08 corva Exp $
+# $Id: qFieldTypes.py,v 1.60 2005/08/06 00:38:34 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1027,12 +1027,6 @@ class AgregateFieldType(FieldType):
     def _unescape(self, string):
         return re.sub(r'\\(.)', r'\1', string)
 
-    def convertFromDB(self, value, item=None):
-        return self.convertFromString(value, item)
-
-    def convertToDB(self, value, item):
-        return self.convertToString(value, item)
-
     class _Proxy:
         def __init__(self, item, ext_fields):
             self.__item = item
@@ -1089,6 +1083,25 @@ class CONTAINER(AgregateFieldType):
         for key, field in value.items():
             field_type = self.fields[key]
             seq.append((key, field_type.convertToString(field, item)))
+        return self._join(seq)
+
+    def convertFromDB(self, string, item=None):
+        result = self.dictClass()
+        key_field_map = dict(self._split(string))
+        for key, field_type in self.fields:
+            try:
+                field = key_field_map[key]
+            except KeyError:
+                result[key] = field_type.getDefault(item)
+            else:
+                result[key] = field_type.convertFromDB(field, item)
+        return result
+
+    def convertToDB(self, value, item=None):
+        seq = []
+        for key, field in value.items():
+            field_type = self.fields[key]
+            seq.append((key, field_type.convertToDB(field, item)))
         return self._join(seq)
 
     def convertFromForm(self, form, name, item=None):
@@ -1154,6 +1167,14 @@ class ARRAY(AgregateFieldType):
 
     def convertToString(self, value, item=None):
         return self._join([self.itemField.convertToString(field, item)
+                           for field in value])
+
+    def convertFromDB(self, string, item=None):
+        return self._filter([self.itemField.convertFromDB(field, item)
+                             for field in self._split(string)], item)
+
+    def convertToDB(self, value, item=None):
+        return self._join([self.itemField.convertToDB(field, item)
                            for field in value])
 
     def convertFromForm(self, form, name, item=None):
