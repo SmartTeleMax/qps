@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.60 2005/08/06 00:38:34 corva Exp $
+# $Id: qFieldTypes.py,v 1.61 2005/08/13 16:28:37 corva Exp $
 
 '''Classes for common field types'''
 
@@ -60,10 +60,10 @@ class FieldType(object):
     def __call__(self, **kwargs):
         # For compatibility: return a copy with some parameters changed.  Allow
         # us to use existing type as template.
-        copy = apply(self.__class__, (), self.__dict__)
+        copy = self.__class__(**self.__dict__)
         copy.__dict__.update(kwargs)
         return copy
-
+    
     def getDefault(self, item=None):
         return self.convertFromCode(self.default, item)
     
@@ -162,9 +162,11 @@ class STRING(FieldType):
     length_error_message = 'Text must consist of from %(brick.minlength)s ' \
                            'to %(brick.maxlength)s characters'
     not_match_error_message = 'String have to match pattern'
+    stringCharset = 'utf-8' # charset used for converting unicode values to
+                            # 8bit strings
 
     def __init__(self, **kwargs):
-        apply(FieldType.__init__, [self], kwargs)
+        FieldType.__init__(self, **kwargs)
         self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
         
     def convertFromForm(self, form, name, item=None):
@@ -178,7 +180,17 @@ class STRING(FieldType):
         return value
 
     def convertToString(self, value, item=None):
-        return value
+        if type(value) == unicode:
+            return value.encode(self.stringCharset)
+        else:
+            return value
+
+    def convertFromString(self, value, item=None):
+        # XXX dbCharset here is used as indicator of unicode mode 
+        if item.site.dbCharset:
+            return value.decode(self.stringCharset)
+        else:
+            return value
 
     def convertFromDB(self, value, item):
         value = value.strip()
@@ -522,7 +534,8 @@ class FOREIGN_DROP(FieldType):
             stream = self._retrieve_stream(item)
             value = self.proxyClass(item.site,
                                     self._stream_params(item),
-                                    stream.fields.id.convertFromString(value))
+                                    stream.fields.id.convertFromString(value,
+                                                                       item))
             if not (self.allowNull or value):
                 raise self.InvalidFieldContent(self.null_not_allowed_error)
             else:
@@ -562,7 +575,8 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
             item_ids = value.split(self.fieldSeparator)
             stream = self._retrieve_stream(item)
             return self.convertFromCode(
-                    map(stream.fields.id.convertFromString, item_ids), item)
+                [stream.fields.id.convertFromString(id, item) \
+                 for id in item_ids], item)
         else:
             return []
 
@@ -570,7 +584,8 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         value = form.getlist(name)
         stream = self._retrieve_stream(item)
         return self.convertFromCode(
-                    map(stream.fields.id.convertFromString, value), item)
+                    [stream.fields.id.convertFromString(id, item) \
+                     for id in  value], item)
 
     def convertToDB(self, value, item=None):
         item_ids = [FOREIGN_DROP.convertToString(self, item.id)
@@ -1027,6 +1042,12 @@ class AgregateFieldType(FieldType):
     def _unescape(self, string):
         return re.sub(r'\\(.)', r'\1', string)
 
+    def convertFromDB(self, value, item=None):
+        return self.convertFromString(value, item)
+
+    def convertToDB(self, value, item):
+        return self.convertToString(value, item)
+
     class _Proxy:
         def __init__(self, item, ext_fields):
             self.__item = item
@@ -1075,7 +1096,7 @@ class CONTAINER(AgregateFieldType):
             except KeyError:
                 result[key] = field_type.getDefault(item)
             else:
-                result[key] = field_type.convertFromString(field)
+                result[key] = field_type.convertFromString(field, item)
         return result
 
     def convertToString(self, value, item=None):
@@ -1083,25 +1104,6 @@ class CONTAINER(AgregateFieldType):
         for key, field in value.items():
             field_type = self.fields[key]
             seq.append((key, field_type.convertToString(field, item)))
-        return self._join(seq)
-
-    def convertFromDB(self, string, item=None):
-        result = self.dictClass()
-        key_field_map = dict(self._split(string))
-        for key, field_type in self.fields:
-            try:
-                field = key_field_map[key]
-            except KeyError:
-                result[key] = field_type.getDefault(item)
-            else:
-                result[key] = field_type.convertFromDB(field, item)
-        return result
-
-    def convertToDB(self, value, item=None):
-        seq = []
-        for key, field in value.items():
-            field_type = self.fields[key]
-            seq.append((key, field_type.convertToDB(field, item)))
         return self._join(seq)
 
     def convertFromForm(self, form, name, item=None):
@@ -1162,19 +1164,11 @@ class ARRAY(AgregateFieldType):
                              for value in values], item)
     
     def convertFromString(self, string, item=None):
-        return self._filter([self.itemField.convertFromString(field)
+        return self._filter([self.itemField.convertFromString(field, item)
                              for field in self._split(string)], item)
 
     def convertToString(self, value, item=None):
         return self._join([self.itemField.convertToString(field, item)
-                           for field in value])
-
-    def convertFromDB(self, string, item=None):
-        return self._filter([self.itemField.convertFromDB(field, item)
-                             for field in self._split(string)], item)
-
-    def convertToDB(self, value, item=None):
-        return self._join([self.itemField.convertToDB(field, item)
                            for field in value])
 
     def convertFromForm(self, form, name, item=None):
