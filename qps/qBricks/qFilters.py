@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.2 2005/08/08 11:37:37 corva Exp $
+# $Id: qFilters.py,v 1.3 2005/08/12 20:19:34 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -39,6 +39,14 @@ class StreamFilter(object):
     def createField(self, field):
         "Returns FilterFieldType for field object"
         return field.filterFieldClass.create(field)
+
+    def createState(self, stream):
+        """Returns a state item for filter"""
+        state = stream.createNewItem()
+        for name in self.fields(stream):
+            setattr(state, name,
+                    self.createField(stream.fields[name]).getDefault())
+        return state
     
     def createStream(self, stream, loader, method="AND"):
         """Returns an instance of stream with applied filter params"""
