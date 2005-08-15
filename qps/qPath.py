@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.7 2005/08/06 00:39:33 corva Exp $
+# $Id: qPath.py,v 1.8 2005/08/07 23:56:57 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -95,7 +95,7 @@ class FilteredStreamLoader(PagedStreamLoader):
         stream = PagedStreamLoader.__call__(self, stream_id, **params)
         if hasattr(stream, 'filter'):
             filter = stream.filter.__class__()
-            state = stream.createNewItem()
+            state = filter.createState(stream)
             state.stream = stream
             names = filter.fields(stream)
             method = "AND" # no functionality to define method at the moment
