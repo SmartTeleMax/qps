@@ -29,6 +29,8 @@ if (req != null) {
 </head>
 <%
 filter_fields = template.filterFields(brick)
+if filter_fields:
+    filter = brick.filter.__class__()
 browse_uri = '%s%s?qps-action:showBinding=1&bound=%s&field=%s&page=%%s' % (template.edit.prefix, brick.path(), boundPath, fieldName)
 if hasattr(brick, 'filterState'):
    state = brick.filterState
@@ -37,7 +39,7 @@ if hasattr(brick, 'filterState'):
       field = brick.filter.createField(state.fields[name])
       value = getattr(state, name)
       if value:
-          chunks.append('filter-%s=%s' % (name, field.convertToString(value)))
+          chunks.append('filter-%s=%s' % (name, quoteURLPath(field.convertToString(value,state)).replace('%', '%%')))
    browse_uri = '&'.join([browse_uri]+chunks)
 %>
 <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
@@ -62,7 +64,7 @@ if hasattr(brick, 'filterState'):
 
 <!-- binding menu --><%
 menus = []
-if template.filterFields(brick):
+if filter_fields:
     menus.append('<a href="#" onclick="toggleElement(\'filter\'); return false"><span class=t12b id=y1>'+'Фильтр'+'</span></a>')
 if menus:
     %>
@@ -77,9 +79,9 @@ if menus:
 
 <!-- filter -->
 <%
-has_state = hasattr(brick, 'filterState')
-filterState = getattr(brick, 'filterState', brick.createNewItem())
 if filter_fields:
+    has_state = hasattr(brick, 'filterState')
+    filterState = getattr(brick, 'filterState', filter.createState(brick))
     %>
 <form action="<%= template.edit.prefix+brick.path() %>" method="POST">
 <input type="hidden" name="bound" value="<%= boundPath %>">
