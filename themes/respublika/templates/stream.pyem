@@ -145,7 +145,7 @@ if brick:
 else:
     %>
 <tr bgcolor="#E1E4E6"><td>
-    <span class=t11 id=db1>В базе нет элементов этого потока.</span>
+    <span class=t11 id=db1>В списке нет ни одного элемента</span>
 </td></tr><%
 %>
 
