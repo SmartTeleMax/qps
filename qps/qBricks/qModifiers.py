@@ -1,4 +1,4 @@
-# $Id: qModifiers.py,v 1.1 2005/03/16 13:45:46 corva Exp $
+# $Id: qModifiers.py,v 1.2 2005/03/19 12:33:25 ods Exp $
 
 '''Brick modifiers classes'''
 
@@ -43,7 +43,7 @@ class ItemPathModifier(StreamModifier):
     Example:
 
     ItemPathModifier('%(brick.stream.path()' \
-                     '%(brick.fields.id.convertToString(brick.id))s')
+                     '%(brick.fields.id.convertToString(brick.id, brick))s')
 
     this modifier instance generates the same path as
     qps.qBrick.qBase.Item.path()

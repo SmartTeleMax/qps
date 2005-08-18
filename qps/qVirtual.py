@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.14 2005/04/27 22:54:47 corva Exp $
+# $Id: qVirtual.py,v 1.15 2005/08/13 00:04:57 corva Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -61,7 +61,8 @@ class VirtualRule:
                                                tag=site.transmitTag(tag))
             try:
                 param_item_id = \
-                    param_stream.fields.id.convertFromString(param_item_id_str)
+                    param_stream.fields.id.convertFromString(param_item_id_str,
+                                                             param_stream)
             except ValueError:
                 return
             param_item = param_stream.retrieveItem(param_item_id)
@@ -77,7 +78,8 @@ class VirtualRule:
             return
 
     def constructId(self, param_item):
-        param_item_id_str = param_item.fields.id.convertToString(param_item.id)
+        param_item_id_str = param_item.fields.id.convertToString(param_item.id,
+                                                                 param_item)
         return '%s%s%s' % (self.prefix, param_item_id_str, self.suffix)
 
     def condition(self, stream):

@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.35 2005/08/07 23:56:01 corva Exp $
+# $Id: qEdit.py,v 1.36 2005/08/12 20:21:57 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -367,8 +367,8 @@ class EditBase:
         "qps-select" form field.'''
         if not user.checkPermission('d', stream.permissions):
             raise self.ClientError(403, self.delete_denied_error)
-        item_ids = map(stream.fields.id.convertFromString,
-                       form.getlist('qps-select'))
+        item_ids = [stream.fields.id.convertFromString(id, stream) \
+                    for id in form.getlist('qps-select')]
         if item_ids:
             try:
                 stream.deleteItems(item_ids)
@@ -405,7 +405,8 @@ class EditBase:
                     item_id_strs[parts[1]] = 1
             for item_id_str in item_id_strs.keys():
                 changed_fields = []
-                item_id = stream.fields.id.convertFromString(item_id_str)
+                item_id = stream.fields.id.convertFromString(item_id_str,
+                                                             stream)
                 item = stream.retrieveItem(item_id)
                 if item is None:  # Somebody deleted it :)
                     continue
@@ -453,8 +454,8 @@ class EditBase:
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
         binding_to_item = getattr(stream, stream.virtual.paramName)
-        item_ids = map(stream.fields.id.convertFromString,
-                       form.getlist('qps-select'))
+        item_ids = [stream.fields.id.convertFromString(id, stream) \
+                    for id in form.getlist('qps-select')]
         for item_id in item_ids:
             item = stream.retrieveItem(item_id)
             values = getattr(item, field_name)
@@ -555,8 +556,10 @@ class EditBase:
                 user.checkPermission('w', field_type.permissions)):
             raise self.ClientError(403, self.edit_denied_error)
         convert = template_stream.fields.id.convertFromString
-        old_ids = map(convert, form.getlist('qps-old'))
-        new_ids = map(convert, form.getlist('qps-new'))
+        old_ids = [convert(id, template_stream) \
+                   for id in form.getlist('qps-old')]
+        new_ids = [convert(id, template_stream) \
+                   for id in form.getlist('qps-new')]
         if bound.type=='stream':  # direct binding
             for item_id in old_ids:
                 if item_id not in new_ids:

@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.12 2005/02/21 10:27:13 corva Exp $
+# $Id: qBase.py,v 1.13 2005/04/12 16:21:46 ods Exp $
 
 '''Base brick classes'''
 
@@ -78,7 +78,7 @@ class Item(Brick):
 
     def path(self):
         return '%s%s.html' % (self.stream.path(),
-                              self.fields.id.convertToString(self.id))
+                              self.fields.id.convertToString(self.id, self))
 
     def initFieldFromCode(self, field_name, value):
         '''Initialize field from code'''

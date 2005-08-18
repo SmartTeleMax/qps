@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.14 2005/01/19 23:46:53 corva Exp $
+# $Id: qXML.py,v 1.1 2005/04/27 14:25:32 corva Exp $
 
 '''Classes for bricks with data stored in XML file'''
 
@@ -52,7 +52,8 @@ class XMLHandler(saxutils.DefaultHandler):
 
             for name, value in self.fieldDict.items():
                 field_type = self.stream.fields[name]
-                setattr(item, name, field_type.convertFromString(value))
+                setattr(item, name, field_type.convertFromString(value,
+                                                                 self.stream))
             
             self.stream.itemList.append(item)
         elif name in self.field_names:
