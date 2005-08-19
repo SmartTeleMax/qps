@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.62 2005/08/15 12:20:17 corva Exp $
+# $Id: qFieldTypes.py,v 1.63 2005/08/18 02:15:16 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1076,7 +1076,7 @@ class CONTAINER(AgregateFieldType):
         # XXX Looks like broken. Need to test it
         result = self.dictClass()
         for key, field_type in self.fields:
-            result[key] = field_type.convertFromCode(value, item)
+            result[key] = field_type.convertFromCode(value[key], item)
         return result
     
     def convertFromString(self, string, item=None):
