@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.13 2005/04/12 16:21:46 ods Exp $
+# $Id: qBase.py,v 1.14 2005/08/18 02:17:11 corva Exp $
 
 '''Base brick classes'''
 
@@ -203,10 +203,6 @@ class Stream(Brick):
         for modifier in modifiers:
             modifier(self)
             self.features.append(modifier.__class__.__name__)
-        # It must be last, since condition() requires stream to be initialized
-        # XXX Change to self.virtual.applyToStream(self)
-        if hasattr(self, 'virtual'):
-            self.addToCondition(self.virtual.condition(self))
 
     def fields(self):
         return self.site.fields[self.tableName]
