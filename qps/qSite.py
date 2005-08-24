@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.13 2005/06/02 00:28:40 corva Exp $
+# $Id: qSite.py,v 1.14 2005/07/06 23:29:53 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -213,11 +213,16 @@ class Site(object):
         additional parameters for stream initialization.  For real streams
         stream path is equal to stream id and there is no additional
         parameters.'''
-        for stream_rec in self.virtualStreamRules:
-            virtual = stream_rec.match(self, stream_path, tag)
-            if virtual:
-                virtual[1]['virtual'] = stream_rec                
-                return virtual
+        for rule in self.virtualStreamRules:
+            match = rule.match(self, stream_path, tag)
+            if match:
+                stream_path, params = match
+                modifiers = params.setdefault('modifiers', [])
+                # Temporal solution to keep compatibility. modifyStream should
+                # be already in modifiers if needed.
+                if rule.modifyStream not in modifiers:
+                    modifiers.append(rule.modifyStream)
+                return stream_path, params
         else:
             return stream_path, {}
 

@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.15 2005/08/13 00:04:57 corva Exp $
+# $Id: qVirtual.py,v 1.16 2005/08/18 02:17:10 corva Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -82,6 +82,12 @@ class VirtualRule:
                                                                  param_item)
         return '%s%s%s' % (self.prefix, param_item_id_str, self.suffix)
 
+    def modifyStream(self, stream):
+        stream.virtual = self  # XXX do we need it?
+        condition = self.condition(stream)
+        if condition:
+            stream.addToCondition(condition)
+    
     def condition(self, stream):
         conn = stream.dbConn
         item = stream.createNewItem()
