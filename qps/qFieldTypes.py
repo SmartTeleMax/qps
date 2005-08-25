@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.63 2005/08/18 02:15:16 corva Exp $
+# $Id: qFieldTypes.py,v 1.64 2005/08/19 16:39:03 ods Exp $
 
 '''Classes for common field types'''
 
@@ -153,6 +153,7 @@ class STRING(FieldType):
     layout = _LayoutDict({'style': 'width: 100%'})
     minlength = 0
     maxlength = 255
+    allowNull = False
     pattern = ''
     length_error_message = 'Text must consist of from %(brick.minlength)s ' \
                            'to %(brick.maxlength)s characters'
@@ -166,6 +167,8 @@ class STRING(FieldType):
         
     def convertFromForm(self, form, name, item=None):
         value = form.getString(name, '').strip()
+        if self.allowNull and not value:
+            return None
         if len(value) < self.minlength or len(value) > self.maxlength:
             message = qUtils.interpolateString(self.length_error_message,
                                                {'brick': self})
@@ -175,12 +178,16 @@ class STRING(FieldType):
         return value
 
     def convertToString(self, value, item=None):
+        if self.allowNull and not value:
+            return ''
         if type(value) == unicode:
             return value.encode(self.stringCharset)
         else:
             return value
 
     def convertFromString(self, value, item=None):
+        if self.allowNull and not value:
+            return None
         # XXX dbCharset here is used as indicator of unicode mode 
         if item.site.dbCharset:
             return value.decode(self.stringCharset)
@@ -220,14 +227,14 @@ class UNIQUE_STRING(STRING):
     
     def convertFromForm(self, form, name, item=None):
         value = STRING.convertFromForm(self, form, name, item)
-
+        if value is None:
+            return value  # NULL (if allowed) is not required to be unique
         from qps.qDB.qSQL import Query, Param
         conn = item.dbConn
         query = Query("%s=" % name, Param(self.convertToDB(value, item)))
         if item.exists():
             query = conn.join([query, Query("%s !=" % item.fields.idFieldName,
                                             Param(item.id))])
-
         row = conn.selectRow(item.stream.tableName, [name], query)
         if row:
             message = qUtils.interpolateString(self.unique_error,
@@ -341,6 +348,8 @@ class DATETIME(FieldType):
         elif not value:
             return
         else:
+            logger.info(value)
+            logger.info(self.format)
             # DateTime.strptime is not available on Windows
             return DateTime.DateTime(*time.strptime(value, self.format)[:6])
     convertFromString = convertFromCode
