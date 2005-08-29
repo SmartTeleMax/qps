@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.65 2005/08/25 13:49:36 corva Exp $
+# $Id: qFieldTypes.py,v 1.66 2005/08/25 13:55:57 corva Exp $
 
 '''Classes for common field types'''
 
@@ -572,7 +572,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         return [FOREIGN_DROP.convertFromCode(self, value, item)
                 for value in values]
 
-    def convertFromDB(self, value, item):
+    def convertFromString(self, value, item):
         if value:
             item_ids = value.split(self.fieldSeparator)
             stream = self._retrieve_stream(item)
@@ -581,6 +581,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
                  for id in item_ids], item)
         else:
             return []
+    convertFromDB = convertFromString
 
     def convertFromForm(self, form, name, item):
         value = form.getlist(name)
@@ -589,10 +590,11 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
                     [stream.fields.id.convertFromString(id, item) \
                      for id in  value], item)
 
-    def convertToDB(self, value, item=None):
-        item_ids = [FOREIGN_DROP.convertToString(self, item.id, item)
+    def convertToString(self, value, item=None):
+        item_ids = [FOREIGN_DROP.convertToString(self, item, item)
                     for item in value]
         return self.fieldSeparator.join(item_ids)
+    convertToDB = convertToString
 
     def getIndexLabel(self, value):
         views = [FOREIGN_DROP.getLabel(self, i)
