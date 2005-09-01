@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.66 2005/08/25 13:55:57 corva Exp $
+# $Id: qFieldTypes.py,v 1.67 2005/08/29 14:32:26 corva Exp $
 
 '''Classes for common field types'''
 
@@ -349,8 +349,6 @@ class DATETIME(FieldType):
         elif not value:
             return
         else:
-            logger.info(value)
-            logger.info(self.format)
             # DateTime.strptime is not available on Windows
             return DateTime.DateTime(*time.strptime(value, self.format)[:6])
     convertFromString = convertFromCode
@@ -531,6 +529,14 @@ class FOREIGN_DROP(FieldType):
             return value.stream.fields.id.convertToString(value.id, item)
         else:
             return ''
+
+    def convertFromString(self, value, item=None):
+        if value:
+            stream = self._retrieve_stream(item)
+            id = stream.fields.id.convertFromString(value, item)
+            return self.proxyClass(item.site, self._stream_params(item), id)
+        else:
+            return None
 
     def convertFromForm(self, form, name, item):
         value = form.getfirst(name, '')
@@ -1121,8 +1127,9 @@ class CONTAINER(AgregateFieldType):
              global_namespace={}):
         value = getattr(item, name)
         subfields = []
+        formname = global_namespace.pop('name', name)
         for subname, field_type in self.fields:
-            full_name = self._child_name(name, subname)
+            full_name = self._child_name(formname, subname)
             proxied_item = self._Proxy(item, {full_name: value[subname]})
             subfields.append(field_type.show(proxied_item, full_name,
                                              template_type, template_getter,
