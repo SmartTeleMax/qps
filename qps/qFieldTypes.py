@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.67 2005/08/29 14:32:26 corva Exp $
+# $Id: qFieldTypes.py,v 1.68 2005/09/01 21:12:51 corva Exp $
 
 '''Classes for common field types'''
 
@@ -58,7 +58,7 @@ class FieldType(object):
         copy = self.__class__(**self.__dict__)
         copy.__dict__.update(kwargs)
         return copy
-    
+
     def getDefault(self, item=None):
         return self.convertFromCode(self.default, item)
     
@@ -266,7 +266,7 @@ class NUMBER(FieldType):
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
         if not value:
-            return self.getDefault(item)
+            value = self.getDefault(item)
         message = qUtils.interpolateString(self.error_message, {'brick': self})
         try:
             value = self.type(value)
