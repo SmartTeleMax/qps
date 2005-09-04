@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.68 2005/09/01 21:12:51 corva Exp $
+# $Id: qFieldTypes.py,v 1.69 2005/09/03 11:15:31 corva Exp $
 
 '''Classes for common field types'''
 
@@ -746,17 +746,19 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
     permissions = [('all', 'r')]
     linkThrough = 0
     templateStream = None  # must be set
+    rule = None
     omitForNew = 1
     storeControl = 'never'
     rewriteToStream = None
 
     class LazyVirtual:
         def __init__(self, item, template_stream, param_name=None,
-                     rewrite_to_stream=None):
+                     rule_id=None, rewrite_to_stream=None):
             self._item = weakref.proxy(item)
             self._template_stream = template_stream
             self._param_name = param_name
             self._rewrite_to_stream = rewrite_to_stream
+            self._rule_id = rule_id
         def _stream(self):
             item = self._item
             if self._rewrite_to_stream is not None and \
@@ -772,6 +774,8 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
             for stream in item.virtualStreams:
                 template_stream = getattr(stream.virtual, 'templateStream',
                                           None)
+                if self._rule_id and stream.virtual.id == self._rule_id:
+                    return stream
                 if template_stream is not None and \
                         template_stream==self._template_stream and \
                         (self._param_name is None or \
@@ -792,7 +796,8 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
     def retrieve(self, item):
         return self.LazyVirtual(item, self.templateStream,
                                 param_name=self.paramName,
-                                rewrite_to_stream=self.rewriteToStream)
+                                rewrite_to_stream=self.rewriteToStream,
+                                rule_id=self.rule)
 
     def store(self, value, item):
         pass

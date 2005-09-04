@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.16 2005/08/18 02:17:10 corva Exp $
+# $Id: qVirtual.py,v 1.17 2005/08/24 09:58:42 ods Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -24,13 +24,16 @@ class VirtualRule:
     (prefix, suffix)=format.  If format is not set, then (paramStream+'/', '')
     assumed.'''
 
+    id = None
+
     def defaultStreamParams(self):
         return {'streamMakers'  : [],
                 'itemMakers'    : []}
 
-    def __init__(self, templateStream, paramStream, paramName, format=None,
+    def __init__(self, id, templateStream, paramStream, paramName, format=None,
                  prefix=None, # XXX deprecated, don't use it!
                  streamParams=None, titleTemplate=None):
+        self.id = id
         self.templateStream = templateStream
         self.paramStream = paramStream
         self.paramName = paramName
