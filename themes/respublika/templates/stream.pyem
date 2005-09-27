@@ -26,20 +26,16 @@ if hasattr(brick, 'filterState'):
           chunks.append('filter-%s=%s' % (name, quoteURLPath(field.convertToString(value,state)).replace('%', '%%')))
    browse_uri = '&'.join([browse_uri]+chunks)
 %>
-<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0>
 <div id="notify" style="display: none;"></div>
-<table cellpadding=12 cellspacing=0 height="100%">
-<tr valign="top">
-<!-- nav -->
-<td width="218" bgcolor="#e1e4e6">
+
+<table cellpadding=12 cellspacing=0 height="100%" width="100%">
+    <tr valign="top">
+        <td class="leftColumn">
 <%= template('inc_navigation', brick=brick) %>
-</td>
-<!-- /nav -->
+        </td>
+        <td class="rightColumn">
 
-<!-- right -->
-<td width="100%">
-
-<div align="center">
 <table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
 <tr><td bgcolor="#354750">
 <span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
@@ -152,11 +148,9 @@ else:
 <%= template('inc_browse', brick=brick, uri=browse_uri) %>
 
 </table>
-</div>
 
-</td>
-<!-- /right -->
-</tr>
+        </td>
+    </tr>
 </table>
 </body>
 </html>

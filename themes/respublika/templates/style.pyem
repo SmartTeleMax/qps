@@ -2,7 +2,6 @@ A:active {text-decoration: none}
 A:link {text-decoration: none}
 A:visited {text-decoration: none}
 A:hover {text-decoration: none}
-P { display: block; margin-top: 0px; margin-bottom: 0px} 
 
 FORM {display: inline }
 //INPUT{display: inline}
@@ -67,4 +66,51 @@ h1, h2, h3, h4 {display: inline }
     right: 2px;
     top: 2px;
     _top: expression(eval(document.body.scrollTop+2));
+}
+
+
+body {
+    background-color: #a0aab1;
+}
+
+
+.leftColumn {
+    background-color: #e1e4e6;
+    width: 20%;
+}
+
+.rightColumn {
+    width: 80%;
+//    text-align: center;
+}
+
+.logo {
+    padding: 12px 12px 12px 12px;
+    text-align: center;
+    font: bold 17px/16px tahoma;
+    letter-spacing: -1;
+}
+
+.logo a {
+    color: #485962;
+}
+
+.menu {
+    padding: 12px 12px 12px 12px;
+    font: bold 10px/12px verdana;
+    letter-spacing: 0
+}
+
+.menuItem {
+    padding: 5px 0px 5px 0px;
+    color: #485962;
+}
+
+.menuItem a {
+    color: #485962;
+}
+
+.menuSeparator {
+    border-top: 1px solid #C1C8CC;
+    border-bottom: 1px solid #F0F1F2;
 }

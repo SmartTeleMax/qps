@@ -42,7 +42,7 @@ if hasattr(brick, 'filterState'):
           chunks.append('filter-%s=%s' % (name, quoteURLPath(field.convertToString(value,state)).replace('%', '%%')))
    browse_uri = '&'.join([browse_uri]+chunks)
 %>
-<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0>
 <table cellpadding=12 cellspacing=0 height="100%" width="100%">
 <tr valign="top">
 <td width="100%">

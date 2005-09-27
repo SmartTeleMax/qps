@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
   <head>
-    <title>Редактура <%= brick.title %></title><%
+    <title><%= template.publisher.title %></title><%
 if brick.site.clientCharset:
     %>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
@@ -12,19 +12,18 @@ if brick.site.clientCharset:
 
   </head>
 
-<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#a0aab1">
-<table cellpadding=12 cellspacing=0 height="100%">
-<tr valign="top">
-<!-- nav -->
-<td width="218" bgcolor="#e1e4e6">
-<%= template('inc_navigation', brick=brick) %>
-</td>
-<!-- /nav -->
+<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0>
 
-<!-- right -->
-<td width="100%">&nbsp;</td>
-<!-- /right -->
-</tr>
+<table cellpadding=12 cellspacing=0 height="100%" width="100%">
+    <tr valign="top">
+        <td class="leftColumn">
+<%= template('inc_navigation', brick=brick) %>
+        </td>
+        <td class="rightColumn">
+            &nbsp;
+        </td>
+    </tr>
 </table>
+
 </body>
 </html>
