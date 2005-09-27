@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.36 2005/08/12 20:21:57 corva Exp $
+# $Id: qEdit.py,v 1.37 2005/08/18 02:17:10 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -205,6 +205,7 @@ class EditBase:
 
     def __init__(self, site):
         self.site = site
+        self.title = 'Editor interface of %s' % site.title
         self.parsePath = qPath.PathParser(site,
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
