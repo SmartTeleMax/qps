@@ -81,7 +81,6 @@ body {
 
 .rightColumn {
     width: 80%;
-//    text-align: center;
 }
 
 .logo {
@@ -113,4 +112,56 @@ body {
 .menuSeparator {
     border-top: 1px solid #C1C8CC;
     border-bottom: 1px solid #F0F1F2;
+}
+
+.itemTitle {
+    background-color: #354750;
+    color: #F2F4F6;
+    padding: 9px;
+    margin: 1px;
+}
+
+.itemTitle a {
+    color: #F2F4F6;
+}
+
+
+.itemField {
+    background-color: #F0F1F2;
+    padding: 9px;
+    margin: 1px;
+    overflow: hidden;
+}
+
+.itemActions {
+    background-color: #E1E4E6;
+    text-align: center;
+    padding: 9px;
+    margin: 1px;
+}
+
+.fieldName {
+    color: #485962;
+    font: bold 11px/12px tahoma;
+    letter-spacing: 0;
+    padding-bottom: 3px;
+    float: left;
+    width: 20%;
+}
+
+.fieldValue {
+    float: left;
+    width: 79%;
+    font: 12px/15px arial;
+    letter-spacing: 0;
+    padding-left: 5px;
+}
+
+.fieldValue a {
+    color: #485962;
+}
+
+.item input {
+    font: 12px/15px arial;
+    letter-spacing: 0;
 }

@@ -1,3 +1,2 @@
-<span class=t11b id=db1><%= brick.title %>:</span><br>
-<span class=s3>&nbsp;</span><br>
-<input type="text" name="<%= name %>" value="<%= value %>" <%= brick.layout %> class=a12>
+<div class="fieldName"><%= brick.title %>:</div>
+<div class="fieldValue"><input type="text" name="<%= name %>" value="<%= value %>" <%= brick.layout %>></div>

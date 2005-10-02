@@ -1,4 +1,5 @@
-<span class=t11b id=db1><%= getattr(brick, 'title', name) %>: </span><br><span class=s3>&nbsp;</span><br><%
+<div class="fieldName"><%= getattr(brick, 'title', name) %>:</div>
+<div class="fieldValue"><%
 if value:
     %><img src="<%= value.path %>" border="0"><br><span class=s3>&nbsp;</span><br><%
 if not brick.fieldToThumb:
@@ -14,3 +15,4 @@ if not brick.fieldToThumb:
   </tr>
 </table><%
 %>
+</div>

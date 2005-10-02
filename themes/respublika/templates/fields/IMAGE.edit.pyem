@@ -1,4 +1,5 @@
-<span class=t11b id=db1><%= getattr(brick, 'title', name) %>: </span><br><span class=s3>&nbsp;</span><br><%
+<div class="fieldName"><%= getattr(brick, 'title', name) %>:</div>
+<div class="fieldValue"><%
 if value:
     %><img src="<%= quoteHTML(value.path) %>" border="0"><br><span class=s3>&nbsp;</span><br>
 <table cellspacing=0 cellpadding=0><tr valing="middle"><td>
@@ -18,4 +19,6 @@ if brick.allowFile or brick.allowUrl:
     <td class="t11" id="db1">Ссылка:</td><td><input type="text" name="<%= name %>-url" class=a12></td>
   </tr><%
     %>
-</table>
+</table><%
+%>
+</div>

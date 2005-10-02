@@ -1,16 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-<title>Редактура <%= brick.site.title + ': ' + getattr(item, 'title', str(item.id)) + ': ' + brick.title %></title><%
+<title><%= template.publisher.title + ': ' + getattr(item, 'title', str(item.id)) + ': ' + brick.title %></title><%
 if brick.site.clientCharset:
     %>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
 %>
-<style>
-<%= template('style', brick=brick) %>
-</style>
-<%= template('scripts', brick=brick) %>
-
+    <link href="<%= template.publisher.staticPrefix %>/style.css" rel="stylesheet" type="text/css">
+<script src="<%= template.publisher.staticPrefix %>/scripts.js"></script>
 <script>
 url = '<%= template.publisher.prefix+bound.path() %>?qps-action:showField=1&field=<%= fieldName %>';
 doc = window.opener.document;

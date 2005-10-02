@@ -1,11 +1,8 @@
-<span class=t11b id=db1><%= brick.title %>:</span><br>
-<span class=s3>&nbsp;</span><br>
-<input type="hidden" name="<%= name %>"<%
-if value:
-    %> value="<%= value.id %>"<%
-%>><span class=a12><%
+<div class="fieldName"><%= brick.title %>:</div>
+<div class="fieldValue"><%
 if value:
     %><%= brick.getLabel(value) %><%
 else:
     %><%= brick.extraOption %><%
-%></span>
+%>
+</div>

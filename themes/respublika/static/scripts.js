@@ -1,4 +1,3 @@
-<script>
 function toggleElement(id) {
     e = document.getElementById(id);
     if (e.style.display) {
@@ -23,4 +22,3 @@ function request() {
   }
   return res;
 }
-</script>

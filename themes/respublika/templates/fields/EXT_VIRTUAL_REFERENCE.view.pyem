@@ -1,8 +1,10 @@
-<span class=t11b id=db1><%= brick.title %>:</span><br><%
+<div class="fieldName"><%= brick.title %>:</div><%
 if value:
     %>
-<span class=s3>&nbsp;</span><br>
+<div class="fieldValue">
 <a href="<%= template.edit.prefix + (value and value.path() or '') %>"><span class=t12 id=db1>&gt;&gt;</span></a><%
     if getattr(brick, "showCountItems", 0) and value.countItems():
         %><span class=t12 id=db1> (<%= value.countItems() %>)</span><%
+    %>
+</div><%
 %>

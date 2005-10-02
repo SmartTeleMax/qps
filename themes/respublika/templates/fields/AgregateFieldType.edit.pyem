@@ -1,6 +1,7 @@
-<span class=t11b id=db1><%= getattr(brick, 'title', name) %>: </span><br>
-<span class=s3>&nbsp;</span><br>
+<div class="fieldName"><%= getattr(brick, 'title', name) %>:</div>
+<div class="fieldValue">
 <%
 for field in subfields:
-    %><div style="border: 1px solid #A0AAB1; padding: 10px;"><%= field %></div><span class=s3>&nbsp;</span><br><%
+    %><div style="border: 1px solid #A0AAB1; padding: 10px; overflow: hidden; margin-bottom: 3px;"><%= field %></div><%
 %>
+</div>

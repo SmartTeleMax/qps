@@ -1,16 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html>
-    <head>
-      <title>Редактура <%= brick.site.title %>: <%= brick.title %> (<%= brick.id %>)</title><%
-if brick.site.clientCharset:
-    %>
-    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
-%>
-<style>
-<%= template('style', brick=brick) %>
-</style>
-<%= template('scripts', brick=brick) %>
-   </head>
+<%= template('inc_top', brick=brick, title='%s: %s (%s)' % (template.publisher.title, brick.title, brick.id)) %>
 <%
 filter_fields = template.filterFields(brick)
 if filter_fields:
@@ -26,16 +14,7 @@ if hasattr(brick, 'filterState'):
           chunks.append('filter-%s=%s' % (name, quoteURLPath(field.convertToString(value,state)).replace('%', '%%')))
    browse_uri = '&'.join([browse_uri]+chunks)
 %>
-<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0>
 <div id="notify" style="display: none;"></div>
-
-<table cellpadding=12 cellspacing=0 height="100%" width="100%">
-    <tr valign="top">
-        <td class="leftColumn">
-<%= template('inc_navigation', brick=brick) %>
-        </td>
-        <td class="rightColumn">
-
 <table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
 <tr><td bgcolor="#354750">
 <span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
@@ -148,9 +127,4 @@ else:
 <%= template('inc_browse', brick=brick, uri=browse_uri) %>
 
 </table>
-
-        </td>
-    </tr>
-</table>
-</body>
-</html>
+<%= template('inc_bottom', brick=brick) %>

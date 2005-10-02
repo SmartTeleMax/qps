@@ -1,29 +1,3 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html>
-  <head>
-    <title><%= template.publisher.title %></title><%
-if brick.site.clientCharset:
-    %>
-    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
-%>
-<style>
-<%= template('style', brick=brick) %>
-</style>
-
-  </head>
-
-<body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0>
-
-<table cellpadding=12 cellspacing=0 height="100%" width="100%">
-    <tr valign="top">
-        <td class="leftColumn">
-<%= template('inc_navigation', brick=brick) %>
-        </td>
-        <td class="rightColumn">
+<%= template('inc_top', brick=brick, title=template.publisher.title) %>
             &nbsp;
-        </td>
-    </tr>
-</table>
-
-</body>
-</html>
+<%= template('inc_bottom', brick=brick) %>
