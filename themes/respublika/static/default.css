@@ -258,3 +258,34 @@ body {
     font: bold 12px/14px tahoma;
     letter-spacing: 0;
 }
+
+.streamBrowse { 
+    background-color: #E1E4E6;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamBrowse table { 
+    background-color: #C1C8CC;
+    width: 100%;
+    font: 11px/14px tahoma;
+    letter-spacing: 0;
+    color: #485962;
+}
+
+.streamFilter { 
+    background-color: #E1E4E6;
+    padding: 9px;
+    margin: 1px;
+}
+
+.filterField { 
+    margin-bottom: 3px;
+    overflow: auto;
+    _width: 100%;
+}
+
+.filterActions { 
+    text-align: right;
+    margin-top: 12px;
+}
