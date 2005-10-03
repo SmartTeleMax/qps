@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.37 2005/08/18 02:17:10 corva Exp $
+# $Id: qEdit.py,v 1.38 2005/09/27 18:01:52 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -136,11 +136,15 @@ class RenderHelper(qWebUtils.RenderHelper):
             return ''
         template_type = 'index-' + template_type
         ns = self.fieldGlobalNamespace.copy()
-        ns.update({'linkThrough': self.user.checkPermission(
-            'r', item.permissions) and field_type.linkThrough})
+        ns.update(
+            {'linkThrough': self.user.checkPermission(
+            'r', item.permissions) and field_type.linkThrough,
+             'field_suffix': '%s:%s' % \
+             (item.fields['id'].convertToString(item.id), name)}
+            )
         return field_type.show(item, name, template_type,
                                self.edit.getFieldTemplate,
-                               ns) # XXX namespace
+                               ns)
 
     def getPermissions(self, obj):
         return self.user.getPermissions(obj.permissions)
