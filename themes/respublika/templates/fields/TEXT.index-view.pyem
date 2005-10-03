@@ -1,5 +1,7 @@
 <%
 if linkThrough:
-    %><a href="<%= template.edit.prefix + item.path() %>"><span class=t12 id=db1><%= quoteHTML(value[:brick.lengthInIndex]) + '...' * (len(value) > brick.lengthInIndex) %></span><%
+    %><a href="<%= template.edit.prefix + item.path() %>"><%
+%><%= quoteHTML(value[:brick.lengthInIndex]) + '...' * (len(value) > brick.lengthInIndex) %><%
 if linkThrough:
-    %></a>
+    %></a><%
+%>

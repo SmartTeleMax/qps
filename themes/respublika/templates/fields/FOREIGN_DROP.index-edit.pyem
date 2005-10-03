@@ -1,9 +1,5 @@
-<%
-field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
-%>
-<span class=a12>
 <input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= getattr(value, 'id', '') %>">
-<select style="width: 150px" name="qps-new:<%= field_suffix %>" <%= str(brick.layout) %> class=a12>
+<select style="width: 150px" name="qps-new:<%= field_suffix %>" <%= str(brick.layout) %>>
 <%
 if brick.extraOption:
     %><option value=""><%= brick.extraOption %></option><%
@@ -14,4 +10,3 @@ for item in stream:
     %>><%= brick.getLabel(item) %></option><%
 %>
 </select>
-</span>

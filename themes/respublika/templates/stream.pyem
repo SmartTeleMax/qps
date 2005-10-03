@@ -1,4 +1,4 @@
-<%= template('inc_top', brick=brick, title='%s: %s (%s)' % (template.publisher.title, brick.title, brick.id)) %>
+<%= template('inc_top', brick=brick, title='%s: %s (%s)' % (template.publisher.title, brick.title, brick.id), scripts=True) %>
 <%
 filter_fields = template.filterFields(brick)
 if filter_fields:
@@ -14,30 +14,27 @@ if hasattr(brick, 'filterState'):
           chunks.append('filter-%s=%s' % (name, quoteURLPath(field.convertToString(value,state)).replace('%', '%%')))
    browse_uri = '&'.join([browse_uri]+chunks)
 %>
+
 <div id="notify" style="display: none;"></div>
-<table border="0" cellspacing="1" cellpadding="9" bgcolor="#A0AAB1" width="100%">
-<tr><td bgcolor="#354750">
-<span class=t18b id=lb><b><%= brick.title %> (<%= brick.id %>)<br></span>
-</td></tr>
 
+<div class="streamTitle t18b"><%= brick.title %> (<%= brick.id %>)</div>
 <%= template('inc_browse', brick=brick, uri=browse_uri) %>
-
 <!-- stream menu --><%
 menus = []
 if filter_fields:
-    menus.append('<a href="#" onclick="toggleElement(\'filter\'); return false"><span class=t12b id=y1>'+'Фильтр'+'</span></a>')
+    menus.append('<a href="#" onclick="toggleElement(\'filter\'); return false">Фильтр</a>')
 if template.isStreamCreatable(brick):
-    menus.append('<a href="'+template.edit.prefix+brick.path()+'?qps-action:newItem=1'+'"><span class=t12b id=y1>'+'Создать новый элемент'+'</span></a>')
+    menus.append('<a href="'+template.edit.prefix+brick.path()+'?qps-action:newItem=1'+'">Создать новый элемент</a>')
 if template.isStreamUnbindable(brick):
-    menus.append('<a href="'+template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()+'" onclick="javascript:var new_window=window.open(\''+template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()+'\',\'_blank\',\'width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes\'); return false;"><span class=t12b id=y1>Перевязать</span></a>')
+    menus.append('<a href="'+template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()+'" onclick="javascript:var new_window=window.open(\''+template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()+'\',\'_blank\',\'width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes\'); return false;">Перевязать</a>')
 if menus:
     %>
-<tr bgcolor="#E1E4E6"><td align="right"><%
+<div class="streamMenu"><%
     for num, item in enumerate(menus):
         %><%= item %><%
         if num != len(menus)-1:
             %>&nbsp; <span id=y1>|</span>&nbsp; <%
-    %></td></tr><%
+    %></div><%
 %>
 <!-- /stream menus -->
 
@@ -48,7 +45,7 @@ if filter_fields:
     filterState = getattr(brick, 'filterState', filter.createState(brick))
     %>
 <form action="<%= template.edit.prefix+brick.path() %>" method="POST">
-<tr bgcolor="#E1E4E6" id="filter"<%= not has_state and ' style="display: none;"' or '' %>><td>
+<div class="streamFilter" bgcolor="#E1E4E6" id="filter"<%= not has_state and ' style="display: none;"' or '' %>>
 <%
     for name in filter_fields:
         %><%= template.showFilterField(filterState, name) %><br>
@@ -58,7 +55,7 @@ if filter_fields:
 <div style="text-align: right">
 <input type="submit" value="Показать">
 </div>
-</td></tr>
+</div>
 </form><%
 %>
 <!-- /filter -->
@@ -67,21 +64,18 @@ if filter_fields:
 if brick:
     %>
 <form action="<%= template.edit.prefix + brick.path() %>" method="POST" onsubmit="n=document.getElementById('notify'); n.innerHTML='Изменения сохраняются, пожалуйста, подождите.'; n.style.display='';">
-<tr bgcolor="#E1E4E6"><td>
+<div class="streamContainer">
 
-<table border="0" cellpadding="6" cellspacing="1" width="100%" bgcolor=#E1E4E6>
+<table border="0" cellpadding="6" cellspacing="1" width="100%">
 <!-- fields titles -->
-    <tr bgcolor="#A0AAB1"><%
+    <tr class="streamFieldNames"><%
     for field_name in template.allowedIndexFields(brick):
         field_type = brick.indexFields[field_name]
         %>
-        <td nowrap style="height: 2em;">
-        <span class=t11><%= field_type.indexTitle %></span>
-        </td><%
+        <td><%= field_type.indexTitle %></td><%
     if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
         %>
-        <td align="center"><span class=t11b id=y1>[x]</span>
-        </td><%
+        <td id="selectFieldName">[x]</td><%
     %>
     </tr>
 <!-- /field titles --><%
@@ -89,23 +83,21 @@ if brick:
         item = repeat.value
         %>
 
-    <tr valign="top"><%
+    <tr class="streamItem"><%
         for field in template.allowedIndexFields(brick):
             %>
-        <td bgcolor=#F0F1F2>
-<%= template.showFieldInIndex(item, field) %>
-        </td><%
+        <td><%= template.showFieldInIndex(item, field) %></td><%
         if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
             %>
-        <td bgcolor=#F0F1F2><center><input type="checkbox" name="qps-select" value="<%= item.fields.id.convertToString(item.id) %>"></center>
-        </td><%
+        <td class="selectFieldValue"><input type="checkbox" name="qps-select" value="<%= item.fields.id.convertToString(item.id) %>"></td><%
         %>
     </tr><%
     %>
 </table>
-</td></tr>
 
-<tr bgcolor="#E1E4E6"><td align="right"><%
+</div>
+
+<div class="streamActions"><%
     if template.isStreamUpdatable(brick):
         %>
 &nbsp; <input type="submit" name="qps-action:updateItems" value="Обновить"><%
@@ -115,16 +107,14 @@ if brick:
     if template.isStreamDeletable(brick):
         %>&nbsp; <input type="submit" name="qps-action:deleteItems" value="Удалить"><%
     %>
-</td></tr>
+</div>
 </form><%
 else:
     %>
-<tr bgcolor="#E1E4E6"><td>
+<div class="streamContainer">
     <span class=t11 id=db1>В списке нет ни одного элемента</span>
-</td></tr><%
+</div><%
 %>
-
 <%= template('inc_browse', brick=brick, uri=browse_uri) %>
 
-</table>
 <%= template('inc_bottom', brick=brick) %>

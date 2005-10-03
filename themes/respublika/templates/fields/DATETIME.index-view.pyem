@@ -1,5 +1,7 @@
 <%
 if linkThrough:
-    %><a href="<%= template.edit.prefix + item.path() %>"><span class=t12 id=db1><span style="white-space: nowrap"><%= value %></span></span><%
+    %><a href="<%= template.edit.prefix + item.path() %>"><%
+%><span style="white-space: nowrap"><%= value %></span><%
 if linkThrough:
-    %></a>
+    %></a><%
+%>

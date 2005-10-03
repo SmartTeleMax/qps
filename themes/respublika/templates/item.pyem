@@ -16,7 +16,6 @@ alert('Внимание, произошла ошибка заполнения полей кирпича, информация не была с
 </script><%
 %>
 <div id="notify" style="display: none;"></div>
-<div class="item">
 <form id="itemForm" action="<%= template.edit.prefix %><%
 if template.isNew:
     %><%= brick.stream.path() %><%
@@ -25,6 +24,7 @@ else:
 %>" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="order" value="<%= brick.stream.order %>">
 <input type="hidden" name="page" value="<%= brick.stream.page %>">
+<div class="item">
 
 <div class="itemTitle t18b">
 <a href="<%= template.edit.prefix %><%= brick.stream.path() %><%
@@ -52,6 +52,6 @@ if 'w' in template.user.getPermissions(brick.permissions):
     %>
 </div><%
 %>
-</form>
 </div>
+</form>
 <%= template('inc_bottom', brick=brick) %>

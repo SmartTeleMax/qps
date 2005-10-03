@@ -1,8 +1,8 @@
-<nobr><%
+<span style="white-space: nowrap"><%
 if value:
-    %><a href="<%= template.edit.prefix + value.path() %>"><span class=t12 id=db1>&gt;&gt;</span></a><%
+    %><a href="<%= template.edit.prefix + value.path() %>">&gt;&gt;</a><%
     if getattr(brick, "showCountItemsInIndex", 0) and value.countItems():
-        %> <span class=t12 id=db1> (<%= value.countItems() %>)</span><%
+        %> (<%= value.countItems() %>)<%
 else:
-    %><span class=t12 id=db1>&mdash;</span><%
-%></nobr>
+    %>&mdash;<%
+%></span>

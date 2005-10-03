@@ -1,8 +1,7 @@
 <%
 if linkThrough:
     %><a href="<%= template.edit.prefix + item.path() %>"><%
-%>
-<span class=t12 id=db1><%= brick.getIndexLabel(value) %></span>
-<%
+%><%= brick.getIndexLabel(value) %><%
 if linkThrough:
-    %></a>
+    %></a><%
+%>

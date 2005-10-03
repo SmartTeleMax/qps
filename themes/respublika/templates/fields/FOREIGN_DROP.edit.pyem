@@ -12,7 +12,7 @@ if stream.indexNum:
         %><span id="link_<%= name %>"><a href="#" title="Очистить" onclick="document.getElementById('input_<%= name %>').value=''; document.getElementById('span_<%= name %>').innerHTML='<%= brick.extraOption and brick.extraOption + '<br>' or '' %>'; document.getElementById('link_<%= name %>').innerHTML=''; return false;"><span class=t12 id=db1>[x]</span></a></span><%
 else:
     %>
-<select name="<%= name %>" <%= str(brick.layout) %> class=a12><%
+<select name="<%= name %>" <%= str(brick.layout) %>><%
     if brick.extraOption:
         %><option value=""><%= brick.extraOption %></option><%
     for item in stream:

@@ -1,10 +1,9 @@
-A:active {text-decoration: none}
-A:link {text-decoration: none}
-A:visited {text-decoration: none}
-A:hover {text-decoration: none}
+A:active {text-decoration: none; }
+A:link {text-decoration: none; }
+A:visited {text-decoration: none; }
+A:hover {text-decoration: none; }
 
-FORM {display: inline }
-h1, h2, h3, h4 {display: inline }
+form {display: inline; }
 
 .t10 {font: 10px/12px tahoma; letter-spacing: 0}
 .t10b {font: bold 10px/12px tahoma; letter-spacing: 0}
@@ -76,9 +75,11 @@ body {
 .leftColumn {
     background-color: #e1e4e6;
     width: 20%;
+    padding: 12px;
 }
 
 .rightColumn {
+    padding: 12px;
     width: 80%;
 }
 
@@ -113,6 +114,15 @@ body {
     border-bottom: 1px solid #F0F1F2;
 }
 
+.item { 
+    width: 100%;
+}
+
+.itemField input, select, textarea {
+    font: 12px/15px arial;
+    letter-spacing: 0;
+}
+
 .itemTitle {
     background-color: #354750;
     color: #F2F4F6;
@@ -129,7 +139,8 @@ body {
     background-color: #F0F1F2;
     padding: 9px;
     margin: 1px;
-    overflow: hidden;
+    overflow: auto;
+    _width: 100%;
 }
 
 .itemActions {
@@ -155,7 +166,95 @@ body {
     color: #485962;
 }
 
-.item input {
+.stream { 
+    font: 12px/16px tahoma;
+    letter-spacing: 0;
+    color: #485962;
+    background-color: #A0AAB1;
+    width: 100%;
+}
+
+.stream a { 
+    font: 12px/16px tahoma;
+    letter-spacing: 0;
+    color: #485962;
+}
+
+.streamTitle { 
+    background-color: #354750;
+    color: #F2F4F6;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamMenu { 
+    background-color: #E1E4E6;
+    text-align: right;
+    color: #C17700;
+    font: bold 12px/14px tahoma;
+    letter-spacing: 0;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamContainer { 
+    padding: 9px;
+    margin: 1px;
+    background-color: #E1E4E6;
+}
+
+.streamContainer table { 
+    background-color: #E1E4E6;
+}
+
+.streamFieldNames { 
+    height: 3em;
+    font: 11px/14px tahoma;
+    letter-spacing: 0;
+    text-align: left;
+    background-color: #A0AAB1;
+}
+
+.streamFieldNames #selectFieldName { 
+    font: bold 11px/12px tahoma;
+    letter-spacing: 0;
+    color: #C17700;
+    text-align: center;
+    background-color: #A0AAB1;
+}
+
+.streamItem { 
+    vertical-align: top;
+    background-color: #F0F1F2;
+    color: #485962;
+    font: 12px/16px tahoma;
+    letter-spacing: 0
+}
+
+.streamItem a { 
+    color: #485962;
+    font: 12px/16px tahoma;
+    letter-spacing: 0   
+}
+
+.streamItem .selectFieldValue { 
+    text-align: center;
+}
+
+.streamItem input, select, textarea {
     font: 12px/15px arial;
+    letter-spacing: 0;
+}
+
+.streamActions { 
+    background-color: #E1E4E6;
+    text-align: right;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamMenu a { 
+    color: #C17700;
+    font: bold 12px/14px tahoma;
     letter-spacing: 0;
 }

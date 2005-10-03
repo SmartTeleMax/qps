@@ -1,9 +1,2 @@
-<%
-field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
-%>
-<span class=a12>
 <input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= quoteHTML(value) %>">
-<textarea name="qps-new:<%= field_suffix %>" class=a12 <%= brick.layout %>>
-<%= quoteHTML(value) %>
-</textarea>
-</span>
+<textarea name="qps-new:<%= field_suffix %>" <%= brick.layout %>><%= quoteHTML(value) %></textarea>

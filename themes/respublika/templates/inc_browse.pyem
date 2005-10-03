@@ -12,44 +12,29 @@ if brick.indexNum and brick.page:
     a, b = divmod(totalItems, indexNum)
     totalPages = (a + (b!=0)*1)
     %>
-<!-- browse -->
-<tr><td nowrap bgcolor="#E1E4E6">
-<table border=0 cellpadding=3 cellspacing=0 width=100%>
-<tr bgcolor=#C1C8CC>
+<!-- inc_browse starts -->
+<div class="streamBrowse">
+<table border=0 cellpadding=3 cellspacing=0>
+<tr>
 <%
     if page > 1:
-        %>
-<!-- prev --><%
         if page - 1 > 1:
             %>
-<td width=17 align=right>
-<a href="<%= uri % 1 %>"><img src=<%= template.edit.staticPrefix %>/first.gif width=17 height=17 border=0></a><br>
-</td><%
+<td width=17 align=right><a href="<%= uri % 1 %>"><img src=<%= template.edit.staticPrefix %>/first.gif width=17 height=17 border=0></a></td><%
         %>
-<td width=17 align=right>
-<a href="<%= uri % (page-1) %>"><img src=<%= template.edit.staticPrefix %>/prev.gif width=17 height=17 border=0></a><br>
-</td>
-<!-- /prev --><%
+<td width=17 align=right><a href="<%= uri % (page-1) %>"><img src=<%= template.edit.staticPrefix %>/prev.gif width=17 height=17 border=0></a></td><%
     %>
-<td width=100% height=25>
-<span class=t11 id=db1>&nbsp;&nbsp;<%= rng %> из <b><%= totalItems %></b>
-</span><br>
-</td>
+<td width=100% height=25>&nbsp;&nbsp;<%= rng %> из <b><%= totalItems %></b></td>
 <%
     if len(brick) >= indexNum:
        %>
-<!-- next -->
-<td width=17 align=right>
-<a href="<%= uri % (page+1) %>"><img src=<%= template.edit.staticPrefix %>/next.gif width=17 height=17 border=0></a><br>
-</td><%
+<td width=17 align=right><a href="<%= uri % (page+1) %>"><img src=<%= template.edit.staticPrefix %>/next.gif width=17 height=17 border=0></a></td><%
        if page + 1 < totalPages:
            %>
-<td width=17 align=right>
-<a href="<%= uri % totalPages %>"><img src=<%= template.edit.staticPrefix %>/last.gif width=17 height=17 border=0></a><br>
-</td>
-<!-- /next --><%
+<td width=17 align=right><a href="<%= uri % totalPages %>"><img src=<%= template.edit.staticPrefix %>/last.gif width=17 height=17 border=0></a></td><%
     %>
-</tr></table>
-</td></tr>
-<!-- /browse --><%
+</tr>
+</table>
+</div>
+<!-- inc_browse --><%
 %>

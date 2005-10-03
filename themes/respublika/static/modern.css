@@ -1,0 +1,267 @@
+A:active {text-decoration: none; }
+A:link {text-decoration: none; }
+A:visited {text-decoration: none; }
+A:hover {text-decoration: none; }
+
+form {display: inline; }
+
+.t10 {font: 10px/12px tahoma; letter-spacing: 0}
+.t10b {font: bold 10px/12px tahoma; letter-spacing: 0}
+.t11 {font: 11px/14px tahoma; letter-spacing: 0}
+.t11b {font: bold 11px/12px tahoma; letter-spacing: 0}
+.t12 {font: 12px/16px tahoma; letter-spacing: 0}
+.t12b {font: bold 12px/14px tahoma; letter-spacing: 0}
+.t14 {font: 14px/18px tahoma; letter-spacing: 0}
+.t15b {font: bold 17px/17px tahoma; letter-spacing: -1}
+.t18b {font: bold 17px/16px tahoma; letter-spacing: -1}
+.v10 {font: 10px/14px verdana; letter-spacing: 0}
+.v102 {font: 10px/14px verdana; letter-spacing: -1}
+.v10b {font: bold 10px/12px verdana; letter-spacing: 0}
+
+
+.a14b {font: bold 15px/18px arial; letter-spacing: 0}
+.a12 {font: 12px/15px arial; letter-spacing: 0}
+
+
+.s1 {font: 1px/1px arial } 
+.s2 {font: 2px/2px arial }
+.s3 {font: 3px/3px arial }
+.s4 {font: 4px/4px arial }
+.s5 {font: 5px/5px arial }
+.s6 {font: 6px/6px arial }
+.s9 {font: 9px/9px arial }
+.s12 {font: 12px/12px arial }
+.s18 {font: 18px/18px arial }
+.s24 {font: 24px/24px arial }
+
+.link {cursor: pointer; cursor: hand;}
+
+#lb {color: #F2F4F6}
+#lb2 {color: #CBD5DA}
+#lb3 {color: #A0AAAF}
+#db1 {color: #485962}
+#y1 {color: #C17700}
+#db2 {color: #6A7B83}
+#w {color: #FFFFFF}
+#lg {color: #F4F7F1}
+#lg1 {color: #DBE5CC}
+#lg2 {color: #EBEFE3}
+#dg {color: #717C5D}
+#dg1 {color: #849072}
+#dg2 {color: #2D4122}
+#dg3 {color: #3D5132}
+
+#notify {
+    font: bold 17px/16px tahoma;
+    letter-spacing: -1;
+    padding: 5px;
+    background-color: #a0aab1;
+    border: 1px solid #354750;
+    position: fixed;
+    _position: absolute;
+    z-index: 3;
+    color: white;
+    right: 2px;
+    top: 2px;
+    _top: expression(eval(document.body.scrollTop+2));
+}
+
+
+body {
+    background-color: #a0aab1;
+}
+
+
+.leftColumn {
+    background-color: #e1e4e6;
+    width: 20%;
+    padding: 12px;
+}
+
+.rightColumn {
+    padding: 12px;
+    width: 80%;
+}
+
+.logo {
+    padding: 12px 12px 12px 12px;
+    text-align: center;
+    font: bold 17px/16px tahoma;
+    letter-spacing: -1;
+}
+
+.logo a {
+    color: #485962;
+}
+
+.menu {
+    padding: 12px 12px 12px 12px;
+    font: bold 10px/12px verdana;
+    letter-spacing: 0
+}
+
+.menuItem {
+    padding: 5px 0px 5px 0px;
+    color: #485962;
+}
+
+.menuItem a {
+    color: #485962;
+}
+
+.menuSeparator {
+    border-top: 1px solid #C1C8CC;
+    border-bottom: 1px solid #F0F1F2;
+}
+
+.item { 
+    width: 100%;
+}
+
+.itemField input, select, textarea {
+    font: 12px/15px arial;
+    letter-spacing: 0;
+}
+
+.itemTitle {
+    background-color: #354750;
+    color: #F2F4F6;
+    padding: 9px;
+    margin: 1px;
+}
+
+.itemTitle a {
+    color: #F2F4F6;
+}
+
+
+.itemField {
+    background-color: #F0F1F2;
+    padding: 9px;
+    margin: 1px;
+    overflow: auto;
+    _width: 100%;
+}
+
+.itemActions {
+    background-color: #E1E4E6;
+    text-align: center;
+    padding: 9px;
+    margin: 1px;
+}
+
+.fieldName {
+    color: #485962;
+    font: bold 11px/12px tahoma;
+    letter-spacing: 0;
+    padding-bottom: 3px;
+
+    float: left;
+    width: 20%;
+}
+
+.fieldValue {
+    font: 12px/15px arial;
+    letter-spacing: 0;
+
+    float: left;
+    width: 79%;
+    padding-left: 5px;
+}
+
+.fieldValue a {
+    color: #485962;
+}
+
+.stream { 
+    font: 12px/16px tahoma;
+    letter-spacing: 0;
+    color: #485962;
+    background-color: #A0AAB1;
+    width: 100%;
+}
+
+.stream a { 
+    font: 12px/16px tahoma;
+    letter-spacing: 0;
+    color: #485962;
+}
+
+.streamTitle { 
+    background-color: #354750;
+    color: #F2F4F6;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamMenu { 
+    background-color: #E1E4E6;
+    text-align: right;
+    color: #C17700;
+    font: bold 12px/14px tahoma;
+    letter-spacing: 0;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamContainer { 
+    padding: 9px;
+    margin: 1px;
+    background-color: #E1E4E6;
+}
+
+.streamContainer table { 
+    background-color: #E1E4E6;
+}
+
+.streamFieldNames { 
+    height: 3em;
+    font: 11px/14px tahoma;
+    letter-spacing: 0;
+    text-align: left;
+    background-color: #A0AAB1;
+}
+
+.streamFieldNames #selectFieldName { 
+    font: bold 11px/12px tahoma;
+    letter-spacing: 0;
+    color: #C17700;
+    text-align: center;
+    background-color: #A0AAB1;
+}
+
+.streamItem { 
+    vertical-align: top;
+    background-color: #F0F1F2;
+    color: #485962;
+    font: 12px/16px tahoma;
+    letter-spacing: 0
+}
+
+.streamItem a { 
+    color: #485962;
+    font: 12px/16px tahoma;
+    letter-spacing: 0   
+}
+
+.streamItem .selectFieldValue { 
+    text-align: center;
+}
+
+.streamItem input, select, textarea {
+    font: 12px/15px arial;
+    letter-spacing: 0;
+}
+
+.streamActions { 
+    background-color: #E1E4E6;
+    text-align: right;
+    padding: 9px;
+    margin: 1px;
+}
+
+.streamMenu a { 
+    color: #C17700;
+    font: bold 12px/14px tahoma;
+    letter-spacing: 0;
+}
