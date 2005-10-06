@@ -5,6 +5,7 @@ from qps.qSecurity import perm_all, perm_read, perm_list, perm_edit, \
      perm_delete
 
 import Modifiers
+import Cfg.FieldTypes as FT
 
 qpsUserGroups = Modifiers.GroupsFeature(
     templates=[('id', 'qps_user-%(value)s')],
