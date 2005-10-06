@@ -1,7 +1,19 @@
+# -*- coding: koi8-r -*-
+
 from qps.qUtils import DictRecord, Descriptions
 from qps.qSecurity import perm_all, perm_read, perm_list, perm_edit, \
      perm_delete
-import Content
+
+import Modifiers
+
+qpsUserGroups = Modifiers.GroupsFeature(
+    templates=[('id', 'qps_user-%(value)s')],
+    collectionTemplates=[('qps_groups', '%(value.id)s')]
+    )
+
+qpsUserPermissions = Modifiers.ItemPermissionsFeature(
+    templates=[('id', ('qps_user-%(value)s', 'rw'))]
+    )
 
 class Maker(list):
     def __init__(self, *args, **kwargs):
@@ -35,7 +47,7 @@ streamDescriptions = Descriptions([
      DictRecord(title=u"Группы пользователей",
                 tableName="qps_groups",
                 templateCat="qps_groups",
-                streamClass="Bricks.Stream",
+                streamClass="qps.qBricks.qSQL.SQLStream",
                 permissions=[('wheel', perm_all)],
                 fields=FT.FieldDescriptions([
                     ('id', FT.STRING_ID()),
