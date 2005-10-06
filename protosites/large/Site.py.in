@@ -23,10 +23,8 @@ else:
 class Site(qps.qSite.Site):
     # fields configuration
     
-    from fieldDescriptions import fields
-    from streamDescriptions import streamDescriptions
-    from virtualStreamRules import virtualStreamRules
-    defaultItemIDField = qps.qFieldTypes.INTEGER_AUTO_ID()
+    from Cfg.fields import fields
+    from Cfg.streams import streamDescriptions, virtualStreamRules
     
     # site configuration
 
@@ -46,7 +44,6 @@ class Site(qps.qSite.Site):
     # templates configuration
 
     makeRoot = '%(make_dir)s'
-    makeSock = siteRoot + '/var/make.sock'
     templateDirs = ['%(make_templates_dir)s']
     siteMakers = ['Maker', 'StreamsMaker']
 
@@ -65,11 +62,3 @@ class Site(qps.qSite.Site):
         return makerClass
 
     getWriterClass = getMakerClass
-
-    def streamFactory(self, stream_id, page=0, tag=None, **kwargs):
-        stream_id = '/'.join(
-            [x for x in stream_id.split('/') if not x.startswith('_')]
-            )
-        return qps.qSite.Site.streamFactory(self, stream_id, page=page,
-                                            tag=tag, **kwargs)
-    

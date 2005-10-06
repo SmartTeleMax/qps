@@ -1,30 +1,20 @@
 #!%(python_executable)s
 
 import qps, qps.qEdit, qps.qCommands, qps.qSecurity
-import Site, Edit
-
-class CookieAuthHandler(qps.qSecurity.CookieAuthHandler):
-    def getUser(self, request, response):
-        user = qps.qSecurity.CookieAuthHandler.getUser(self, request, response)
-        if not user:
-            user = Content.SecurityUsers.AnonymousUser()
-        return user
+import Site, Handler
 
 
 class Edit(qps.qEdit.EditBase, qps.qCommands.Publisher,
            qps.qCommands.FieldNameCommandDispatcher,
            qps.qSecurity.CookieAuthHandler):
-    usersStream = "security_users"
+    usersStream = "qps_users"
     templateDirs = ["%(edit_templates_dir)s"]
     fieldTemplateDirs = ["%(field_templates_dir)s"]
 
 
-class Handler(Edit.Handler):
-    def __init__(self):
-        site = Site.Site()
-        self.__commands = Edit.Edit(site)
+site = Site.Site()
+handler = Handler.Handler(Edit(site))
 
-handler = Handler()
 
 if __name__ == '__main__':
     handler()
