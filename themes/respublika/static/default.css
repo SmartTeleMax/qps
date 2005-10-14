@@ -150,6 +150,10 @@ body {
     margin: 1px;
 }
 
+.itemActions input { 
+    margin-left: 10px;
+}
+
 .fieldName {
     color: #485962;
     font: bold 11px/12px tahoma;

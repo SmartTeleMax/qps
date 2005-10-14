@@ -43,12 +43,15 @@ for field in template.allowedFields(brick):
 <%= template.showField(brick, field) %>
 </div>
 <%
-if 'w' in template.user.getPermissions(brick.permissions):
+has_actions = template.user.getPermissions(brick.permissions) or template.isItemPreviewable(brick)
+
+if has_actions:
     %>
-<div class="itemActions">
+<div class="itemActions"><%
+    if 'w' in template.user.getPermissions(brick.permissions):
 <input type="submit" name="qps-action:<%= template.isNew and 'createItem' or 'updateItem' %>" value="Сохранить" onclick="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста, подождите.'; n.style.display=''; document.getElementById('itemForm').target='_self'; return true;"><%
     if template.isItemPreviewable(brick):
-        %>&nbsp; <input type="submit" name="qps-action:showItemPreview" value="Предпросмотр" onclick="document.getElementById('itemForm').target='_blank'; return true;"><%
+        %><input type="submit" name="qps-action:showItemPreview" value="Предпросмотр" onclick="document.getElementById('itemForm').target='_blank'; return true;"><%
     %>
 </div><%
 %>
