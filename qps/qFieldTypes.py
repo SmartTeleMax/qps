@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.69 2005/09/03 11:15:31 corva Exp $
+# $Id: qFieldTypes.py,v 1.70 2005/09/04 21:24:42 corva Exp $
 
 '''Classes for common field types'''
 
@@ -51,6 +51,9 @@ class FieldType(object):
    
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+        # quote class name to conform css rules
+        className = self.__class__.__name__.replace('_', '')
+        self.layout = _LayoutDict(self.layout, {'class': className})
 
     def __call__(self, **kwargs):
         # For compatibility: return a copy with some parameters changed.  Allow
@@ -150,7 +153,6 @@ class ExternalTableStoredField(ExternalStoredField):
     
 
 class STRING(FieldType):
-    layout = _LayoutDict({'style': 'width: 100%'})
     minlength = 0
     maxlength = 255
     allowNull = False
