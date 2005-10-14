@@ -49,6 +49,7 @@ if has_actions:
     %>
 <div class="itemActions"><%
     if 'w' in template.user.getPermissions(brick.permissions):
+        %>
 <input type="submit" name="qps-action:<%= template.isNew and 'createItem' or 'updateItem' %>" value="Сохранить" onclick="n=document.getElementById('notify'); n.innerHTML='Элемент сохраняется, пожалуйста, подождите.'; n.style.display=''; document.getElementById('itemForm').target='_self'; return true;"><%
     if template.isItemPreviewable(brick):
         %><input type="submit" name="qps-action:showItemPreview" value="Предпросмотр" onclick="document.getElementById('itemForm').target='_blank'; return true;"><%

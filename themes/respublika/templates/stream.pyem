@@ -62,7 +62,7 @@ if brick:
 <form action="<%= template.edit.prefix + brick.path() %>" method="POST" onsubmit="n=document.getElementById('notify'); n.innerHTML='Изменения сохраняются, пожалуйста, подождите.'; n.style.display='';">
 <div class="streamContainer">
 
-<table border="0" cellpadding="6" cellspacing="1" width="100%">
+<table border="0" cellpadding="6" cellspacing="1">
 <!-- fields titles -->
     <tr class="streamFieldNames"><%
     for field_name in template.allowedIndexFields(brick):
@@ -93,17 +93,21 @@ if brick:
 
 </div>
 
+<%
+    has_actions = template.isStreamUpdatable(brick) or (hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField])) or template.isStreamDeletable(brick)
+
+    if has_actions:
+        %>
 <div class="streamActions"><%
-    if template.isStreamUpdatable(brick):
+        if template.isStreamUpdatable(brick):
+            %><input type="submit" name="qps-action:updateItems" value="Обновить"><%
+        if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
+            %><input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
+        if template.isStreamDeletable(brick):
+            %><input type="submit" name="qps-action:deleteItems" value="Удалить"><%
         %>
-&nbsp; <input type="submit" name="qps-action:updateItems" value="Обновить"><%
-    if hasattr(brick, 'joinField') and 'w' in template.getFieldPermissions(brick.fields[brick.joinField]):
-        %>
-&nbsp; <input type="submit" name="qps-action:unbindItems" value="Отвязать"><%
-    if template.isStreamDeletable(brick):
-        %>&nbsp; <input type="submit" name="qps-action:deleteItems" value="Удалить"><%
+</div><%
     %>
-</div>
 </form><%
 else:
     %>
@@ -111,6 +115,7 @@ else:
     <span class=t11 id=db1>В списке нет ни одного элемента</span>
 </div><%
 %>
+
 <%= template('inc_browse', brick=brick, uri=browse_uri) %>
 
 <%= template('inc_bottom', brick=brick) %>
