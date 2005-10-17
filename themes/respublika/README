@@ -1,5 +1,10 @@
+AUTHOR.
+
 This is "respublika" theme, originally designed by yoyo for
 "Respublika.Ru" project.
+
+
+QUICK INSTALLATION.
 
 To install this theme you should:
 
@@ -10,5 +15,39 @@ class Edit(qps.qEdit.EditBase):
     staticPrefix = "/location/of/static/dir" 
     staticLogo = None
 
-staticLogo defines path to 218x85 image file. It can be None, by
-default there isn't any logo included.
+staticLogo defines path to logo image file. It can be None, by
+default there is not any logo included.
+
+
+RICH TEXT EDITOR.
+
+Respublika theme supports rich text editing.
+
+To enable rich text editor you should:
+
+1. Download FCKeditor from http://www.fckeditor.net and unpack it somewhere
+   in web root.
+2. Add fckEditorPrefix attribute to Edit class:
+
+class Edit(qps.qEdit.EditBase):
+    fckEditorPrefix = '/FCKeditor'
+
+3. Supply a richText param to TEXT field in fieldDescriptions:
+
+TEXT(richText=True)
+
+Respublika theme also offers FCKeditor predefined toolbar and skin in native
+colors.
+
+To enable toolbar:
+
+1. Copy static/FCKeditor/fckconfig.js into directory you placed FCKeditor
+   installation.
+2. Define fckEditorToolbarSet attribute in Edit class:
+
+class Edit(qps.qEdit.EditBase):
+    fckEditorPrefix = 'respublika'
+
+To enable respublika theme skin for FCKeditor:
+
+1. Copy static/FCKeditor/*.css files into $FCKeditorRoot/editor/skins/default.

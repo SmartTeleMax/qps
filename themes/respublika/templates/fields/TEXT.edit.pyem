@@ -1,2 +1,19 @@
 <div class="fieldName"><%= brick.title %>:</div>
-<div class="fieldValue"><textarea name="<%= name %>" <%= brick.layout %>><%= quoteHTML(value) %></textarea></div>
+<div class="fieldValue"><%
+if getattr(brick, 'richText', False) and \
+   getattr(template.publisher, 'fckEditorPrefix', None):
+    %>
+<script>
+if (!document.getElementById('FCKeditorScript')) {
+    document.write('<script id="FCKeditorScript" language="JavaScript" type="text/javascript" src="<%= template.publisher.fckEditorPrefix %>/fckeditor.js"><\/script>');
+}
+</script>
+<script>
+var oFCKeditor = new FCKeditor('<%= name %>', '100%', '300', '<%= getattr(template.publisher, 'fckEditorToolbarSet', 'Base') %>', '<%= Cook.quoteJS(value) %>');
+oFCKeditor.BasePath = '<%= template.publisher.fckEditorPrefix %>/';
+oFCKeditor.Create();
+</script><%
+else:
+    %><textarea name="<%= name %>" <%= brick.layout %>><%= quoteHTML(value) %></textarea><%
+%>
+</div>
