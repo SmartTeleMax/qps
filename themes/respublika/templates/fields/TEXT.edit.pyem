@@ -1,2 +1,2 @@
 <div class="fieldName"><%= brick.title %>:</div>
-<div class="fieldValue"><textarea name="<%= name %>" <%= brick.layout %> class=a12><%= quoteHTML(value) %></textarea></div>
+<div class="fieldValue"><textarea name="<%= name %>" <%= brick.layout %>><%= quoteHTML(value) %></textarea></div>

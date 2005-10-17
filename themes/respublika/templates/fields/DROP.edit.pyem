@@ -1,6 +1,6 @@
 <div class="fieldName"><%= brick.title %>:</div>
 <div class="fieldValue">
-<select name="<%= name %>" <%= str(brick.layout) %> class=a12><%
+<select name="<%= name %>" <%= str(brick.layout) %>><%
 if brick.extraOption:
     %><option value=""><%= brick.extraOption %></option><%
 for item in stream:
