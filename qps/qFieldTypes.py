@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.70 2005/09/04 21:24:42 corva Exp $
+# $Id: qFieldTypes.py,v 1.71 2005/10/14 14:23:34 corva Exp $
 
 '''Classes for common field types'''
 
@@ -61,7 +61,7 @@ class FieldType(object):
         copy = self.__class__(**self.__dict__)
         copy.__dict__.update(kwargs)
         return copy
-
+    
     def getDefault(self, item=None):
         return self.convertFromCode(self.default, item)
     
@@ -389,8 +389,7 @@ class AUTO_TS(DATETIME):
         
 
 class TEXT(STRING):
-    layout = _LayoutDict({'cols': 60, 'rows': 10, 'wrap': 'virtual',
-                          'style': 'width: 100%'})
+    layout = _LayoutDict({'cols': 60, 'rows': 10, 'wrap': 'virtual'})
     maxlength = 65535
     lengthInIndex = 250
 
@@ -635,6 +634,12 @@ class BOOLEAN(FieldType):
 
     def convertToDB(self, value, item):
         return value and self.dbTrue or self.dbFalse
+
+    def convertToString(self, value, item):
+        return value and 'True' or ''
+
+    def convertFromString(self, value, item):
+        return bool(value)
     
 
 class CB_YN(BOOLEAN):
