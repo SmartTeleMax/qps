@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.3 2005/08/12 20:19:34 corva Exp $
+# $Id: qFilters.py,v 1.4 2005/08/15 21:21:40 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -94,6 +94,8 @@ class FilterFieldType:
 from qps.qDB.qSQL import Query, Param
 
 class SQLEquals:
+    "Generates equal conditions on value"
+    
     def applyToFilter(self, filter, item, name, value):
         filter.conditions.append(
             Query("%s.%s=" % (item.stream.tableName, name),
@@ -102,6 +104,8 @@ class SQLEquals:
         
 
 class SQLLikes:
+    "Generates LIKE conditions on value"
+    
     def applyToFilter(self, filter, item, name, value):
         filter.conditions.append(
             Query("%s.%s LIKE " % (item.stream.tableName, name),
@@ -147,3 +151,48 @@ class SQL_EXT_FOREIGN_MULTISELECT(FilterFieldType, FT.FOREIGN_DROP):
             " ON %(brick.tableName)s.%(brick.fields.idFieldName)s = " + \
             "%s.%s" % (self.orig.tableName, self.orig.idFieldName)
             )
+
+
+class SQL_FOREIGN_CONTAINER(FilterFieldType, FT.CONTAINER):
+    """Filters on fields of foreign item. To be used with FOREIGN_DROP fields.
+
+    FOREIGN_DROP(stream='streamid',
+                 filterFields=FieldDescriptions(),
+                 filterFieldClass=SQL_FOREIGN_CONTAINER)
+
+    filterFields supposed to be a FieldDescription of filter field objects,
+    named with foreign item field names.
+
+    filterFields = FieldDescriptions([
+        ('firstname', SQL_EQUAL_STRING(title='First name')),
+        ('address', SQL_LIKE_STRING(title='Part of address'))
+        ])
+
+    In example above firstname and address are names of fields in streamid.
+    """
+    
+    @ classmethod
+    def create(cls, field):
+        """Returns a new instance of filter field initialized with
+        field.title, field.stream an field.filterFields"""
+        return cls(title=field.title, stream=field.stream,
+                   fields=field.filterFields)
+
+    def applyToFilter(self, filter, item, name, value):
+        # value is a dict
+        foreignStream = item.site.createStream(self.stream)
+        foreignItem = foreignStream.createNewItem()
+
+        applied = False
+        for n, v in [(n, v) for n, v in value.items() if v]:
+            applied = True
+            field = self.fields[n]
+            field.applyToFilter(filter, foreignItem, n, v)
+
+        if applied: # only add join template if subfields applied to filter
+            filter.joinTemplates.append(
+                "JOIN " + foreignStream.tableName + \
+                " ON %(brick.tableName)s." + "%s = " % name + \
+                "%s.%s" % (foreignStream.tableName,
+                           foreignStream.fields.idFieldName)
+                )
