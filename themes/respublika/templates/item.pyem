@@ -26,11 +26,18 @@ else:
 <input type="hidden" name="page" value="<%= brick.stream.page %>">
 <div class="item">
 
-<div class="itemTitle t18b">
+<div class="itemTitle t18b"><%
+streamperms = template.user.getPermissions(brick.stream.permissions)
+if 'x' in streamperms:
+    %>
 <a href="<%= template.edit.prefix %><%= brick.stream.path() %><%
-if brick.stream.page>1:
-    %>?page=<%= brick.stream.page %>&order=<%= quoteURLPath(brick.stream.order) %><%
-%>"><%= brick.stream.title %></a>: <%= item_title %>
+    if brick.stream.page>1:
+        %>?page=<%= brick.stream.page %>&order=<%= quoteURLPath(brick.stream.order) %><%
+    %>"><%
+%><%= brick.stream.title %><%
+if 'x' in streamperms:
+    %></a><%
+%>: <%= item_title %>
 </div>
 
 <%

@@ -9,7 +9,7 @@ if (!document.getElementById('FCKeditorScript')) {
 }
 </script>
 <script>
-var oFCKeditor = new FCKeditor('<%= name %>', '100%', '300', '<%= getattr(template.publisher, 'fckEditorToolbarSet', 'Base') %>', '<%= Cook.quoteJS(value) %>');
+var oFCKeditor = new FCKeditor('<%= name %>', '100%', '300', '<%= getattr(template.publisher, 'fckEditorToolbarSet', 'Default') %>', '<%= Cook.quoteJS(value) %>');
 oFCKeditor.BasePath = '<%= template.publisher.fckEditorPrefix %>/';
 oFCKeditor.Create();
 </script><%

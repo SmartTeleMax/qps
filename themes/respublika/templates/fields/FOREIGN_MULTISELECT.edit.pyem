@@ -5,7 +5,7 @@
 count=0
 full=brick.columns-1
 %>
-<table border=0 cellspacing=1 cellpadding=0><%
+<table border=0 cellspacing=1 cellpadding=0 <%= brick.layout %>><%
 for repeat in Cook.Repeat(not stream.indexNum and stream or value):
     valueitem = repeat.value
     id = valueitem.fields['id'].convertToString(valueitem.id)
@@ -16,7 +16,7 @@ for repeat in Cook.Repeat(not stream.indexNum and stream or value):
     if valueitem in value:
         %> checked<%
     %>></td>
-<td><label for="<%= name %>-<%= id %>" class=t11 id=db1><%= brick.getLabel(valueitem) %></label></td><%
+<td><label for="<%= name %>-<%= id %>"><%= brick.getLabel(valueitem) %></label></td><%
     if count==full:
         count = 0
         %></tr><%
