@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.38 2005/09/27 18:01:52 corva Exp $
+# $Id: qEdit.py,v 1.39 2005/10/03 14:20:22 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -106,13 +106,12 @@ class RenderHelper(qWebUtils.RenderHelper):
     def showField(self, item, name):
         '''Return representation of field in editor interface'''
         field_type = item.fields[name]
-        stream_perms = self.user.getPermissions(item.stream.permissions)
         if self.isNew:
             permissions = field_type.createPermissions
         else:
             permissions = field_type.permissions
         perms = self.user.getPermissions(permissions)
-        if 'w' in stream_perms and 'w' in perms:
+        if 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
             template_type = 'view'
@@ -339,7 +338,7 @@ class EditBase:
         origitem = copy.copy(item)
         if item.type!='item':
             return self.cmd_invalidCommand(request, response, form, objs, user)
-        if not user.checkPermission('w', item.stream.permissions):
+        if not user.checkPermission('w', item.permissions):
             raise self.ClientError(403, self.edit_denied_error)
         errors = item.initFieldsFromForm(
                     form, names=self.storableFields(item, user))
