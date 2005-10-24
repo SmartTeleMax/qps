@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.71 2005/10/14 14:23:34 corva Exp $
+# $Id: qFieldTypes.py,v 1.72 2005/10/17 21:47:11 corva Exp $
 
 '''Classes for common field types'''
 
@@ -547,10 +547,10 @@ class FOREIGN_DROP(FieldType):
                                     self._stream_params(item),
                                     stream.fields.id.convertFromString(value,
                                                                        item))
-            if not (self.allowNull or value):
-                raise self.InvalidFieldContent(self.null_not_allowed_error)
-            else:
-                return value
+        if not (self.allowNull or value):
+            raise self.InvalidFieldContent(self.null_not_allowed_error)
+        else:
+            return value
 
     def getLabel(self, item):
         namespace = item.site.globalNamespace.copy()
@@ -1018,13 +1018,19 @@ class THUMBNAIL(IMAGE):
             return _image
 
         if image and self.width and self.height:
-            image = self.thumbnail(image)
-            from cStringIO import StringIO
-            fp = StringIO()
-            image.save(fp, image_orig.format)
-            fp.seek(0)
-            return self._Image(self, item, fp.read(),
-                               getattr(getattr(item, name), 'path', None))
+            try:
+                image = self.thumbnail(image)
+            except IOError, why:
+                logger.warn('IOError occured while thumbnailing image: %s',
+                            why)
+                return self._Image(self, item)
+            else:
+                from cStringIO import StringIO
+                fp = StringIO()
+                image.save(fp, image_orig.format)
+                fp.seek(0)
+                return self._Image(self, item, fp.read(),
+                                   getattr(getattr(item, name), 'path', None))
         else:
             return self._Image(self, item)
 
