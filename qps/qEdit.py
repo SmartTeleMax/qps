@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.39 2005/10/03 14:20:22 corva Exp $
+# $Id: qEdit.py,v 1.40 2005/10/23 20:39:29 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -121,8 +121,14 @@ class RenderHelper(qWebUtils.RenderHelper):
                                self.edit.getFieldTemplate,
                                self.fieldGlobalNamespace) # XXX namespace
 
-    def showFieldInIndex(self, item, name, allow_edit=1):
-        '''Return representation of field in stream'''
+    def showFieldInIndex(self, item, name, allow_edit=True,
+                         allow_link_through=True):
+        '''Return representation of field in stream.
+
+        allow_edit - if False field will be shown read-only even if
+                     permissions allow edit.
+        allow_link_through - if False field wont have link even if permissions
+                             and field.linkThrough allow it'''
         stream = item.stream
         field_type = stream.indexFields[name]
         stream_perms = self.user.getPermissions(stream.permissions)
@@ -136,7 +142,7 @@ class RenderHelper(qWebUtils.RenderHelper):
         template_type = 'index-' + template_type
         ns = self.fieldGlobalNamespace.copy()
         ns.update(
-            {'linkThrough': self.user.checkPermission(
+            {'linkThrough': allow_link_through and self.user.checkPermission(
             'r', item.permissions) and field_type.linkThrough,
              'field_suffix': '%s:%s' % \
              (item.fields['id'].convertToString(item.id), name)}
