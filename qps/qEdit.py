@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.40 2005/10/23 20:39:29 corva Exp $
+# $Id: qEdit.py,v 1.41 2005/10/26 16:15:08 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -111,7 +111,8 @@ class RenderHelper(qWebUtils.RenderHelper):
         else:
             permissions = field_type.permissions
         perms = self.user.getPermissions(permissions)
-        if 'w' in perms:
+        item_perms = self.user.getPermissions(item.permissions)
+        if 'w' in item_perms and 'w' in perms:
             template_type = 'edit'
         elif 'r' in perms:
             template_type = 'view'
@@ -176,7 +177,7 @@ class RenderHelper(qWebUtils.RenderHelper):
                           self.edit.getFieldTemplate, ns)
 
 
-class EditBase:
+class EditBase(qCommands.DispatchedPublisher):
     '''Base class for editor interface'''
     streamLoaderClass = qPath.PagedStreamLoader
     renderHelperClass = RenderHelper
@@ -207,17 +208,21 @@ class EditBase:
     loggingStream = None # stream for user actions logging, see log method
     showPreviews = True # show brick previews
 
+    def title(self):
+        return 'Editor interface of %s' % self.site.title
+    title = qUtils.CachedAttribute(title)
+
     def getFieldTemplate(self):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs,
                                         self.site.templateCharset)
     getFieldTemplate = qUtils.CachedAttribute(getFieldTemplate)
 
-    def __init__(self, site):
+    def __init__(self, site, **kwargs):
         self.site = site
-        self.title = 'Editor interface of %s' % site.title
         self.parsePath = qPath.PathParser(site,
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
+        self.__dict__.update(kwargs)
 
     def storableFields(self, item, user, isNew=0):
         itemFieldsOrder = []
@@ -241,19 +246,6 @@ class EditBase:
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def handle(self, request, response):
-        form = qHTTP.Form(request, self.getClientCharset(request))
-        user = self.getUser(request, response)
-        objs = self.parsePath(request.pathInfo,
-                              self.streamLoaderClass(self.site, form,
-                                                     tag='edit'))
-        if not user:
-            self.cmd_notAuthorized(request, response, form, objs, user)
-        if objs[-1] is None:
-            raise self.NotFound()
-        self.dispatch(request, response, field_name_prefix='qps-action:',
-                      objs=objs, user=user)
-
     def log(self, user, command, params=None):
         if self.loggingStream:
             stream = self.site.retrieveStream(self.loggingStream)
@@ -269,6 +261,18 @@ class EditBase:
                                 charset=self.getClientCharset(request))
         response.write(template(obj.type, brick=obj, **kwargs))
 
+    def handle(self, request, response):
+        form = qHTTP.Form(request, self.getClientCharset(request))
+        user = self.getUser(request, response)
+        objs = self.parsePath(request.pathInfo,
+                              self.streamLoaderClass(self.site, form,
+                                                     tag='edit'))
+        if not user:
+            self.cmd_notAuthorized(request, response, form, objs, user)
+        if objs[-1] is None:
+            raise self.NotFound()
+        self.dispatcher(self, request, response, form, objs=objs, user=user)
+    
     def cmd_defaultCommand(self, request, response, form, objs, user):
         '''Default action: show brick.'''
         obj = objs[-1]
@@ -664,8 +668,7 @@ class EditBase:
                                     brick=item))
 
 
-class Edit(EditBase, qCommands.Publisher, qCommands.FieldNameCommandDispatcher,
-           qSecurity.BasicAuthHandler):
+class Edit(EditBase, qSecurity.BasicAuthHandler):
     pass
 
 # vim: ts=8 sts=4 sw=4 ai et

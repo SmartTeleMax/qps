@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.6 2004/09/16 10:25:09 corva Exp $
+# $Id: qWebUtils.py,v 1.7 2005/05/03 09:54:51 corva Exp $
 
 '''Template support'''
 
@@ -91,6 +91,7 @@ class RenderHelper(object):
 
 
 class Publisher:
+    "Basic class for publishing. In general is inhereted"
 
     proxyClass = staticmethod(lambda x: x)
     renderHelperClass = RenderHelper
@@ -100,10 +101,12 @@ class Publisher:
         self.site = site
 
     def globalNamespace(self):
+        "Is used by RenderHelper, globalNamespace is passed to template"
         return self.site.globalNamespace
     globalNamespace = qUtils.CachedAttribute(globalNamespace)
 
     def getTemplate(self):
+        "Is used by RenderHelper to find template"
         if self.templateDirs is None:
             return self.site.getTemplateGetter()
         else:

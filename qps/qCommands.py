@@ -1,11 +1,11 @@
-# $Id: qCommands.py,v 1.4 2004/09/14 12:44:37 corva Exp $
+# $Id: qCommands.py,v 1.5 2004/11/30 12:59:55 corva Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
 import logging
 logger = logging.getLogger(__name__)
 
-import qHTTP, qWebUtils
+import qHTTP, qWebUtils, qUtils
 
 
 class BaseCommandDispatcher:
@@ -15,16 +15,14 @@ class BaseCommandDispatcher:
     is called. All action methods are called with request, response and
     additional arguments.'''
 
-    from PPA.HTTP.Errors import NotFound
-    
-    def dispatch(self, request, response, **kwargs):
+    def __call__(self, publisher, request, response, form, **kwargs):
+        """Is called by publisher, dispatches request to method"""
+        
         raise NotImplementedError
 
-    def cmd_invalidCommand(self, request, response, *args, **kwargs):
-        raise self.NotFound()
-    
-    def cmd_defaultCommand(self, request, response, *args, **kwargs):
-        self.cmd_invalidCommand(request, response, *args, **kwargs)
+    def addCommand(self, url, cmd):
+        "Adds command to url"
+        raise NotImplementedError
 
 
 class FieldNameCommandDispatcher(BaseCommandDispatcher):
@@ -35,71 +33,99 @@ class FieldNameCommandDispatcher(BaseCommandDispatcher):
     # over form field names), but cannot be used due to bug in the most popular
     # browser Internet Explorer.
 
-    def dispatch(self, request, response, field_name_prefix='action:',
-                 **kwargs):
-        form = qHTTP.Form(request, self.getClientCharset(request))
+    def __init__(self, field_name_prefix):
+        self.field_name_prefix = field_name_prefix
+
+    def __call__(self, publisher, request, response, form, **kwargs):
         for field_name in form.keys():
-            if field_name.startswith(field_name_prefix):
-                action = field_name[len(field_name_prefix):]
+            if field_name.startswith(self.field_name_prefix):
+                action = field_name[len(self.field_name_prefix):]
                 try:
-                    method = getattr(self, 'do_'+action)
+                    method = getattr(publisher, 'do_'+action)
                 except AttributeError:
                     logger.warn('Invalid command %r', action)
-                    return self.cmd_invalidCommand(request, response, form,
-                                                   **kwargs)
+                    return publisher.cmd_invalidCommand(
+                        request, response, form, **kwargs)
                 else:
                     logger.debug('Dispatching for command %r', action)
                     return method(request, response, form, **kwargs)
         else:
             logger.debug('Assuming default command')
-            return self.cmd_defaultCommand(request, response, form, **kwargs)
+            return publisher.cmd_defaultCommand(
+                request, response, form, **kwargs)
+
+    def addCommand(self, url, cmd):
+         sep = '?' in url and '&' or '?'
+         return "%s%s%s%s=1" % (url, sep, self.field_name_prefix, cmd)
 
 
 class FieldCommandDispatcher(BaseCommandDispatcher):
     '''Class for commands based web-scripts. Action is determined from
     field "qps-action" or is passed to dipatch method'''
-    def dispatch(self, request, response, field_name='qps-action', **kwargs):
-        form = qHTTP.Form(request, self.getClientCharset(request))
+
+    def __init__(self, field_name):
+        self.field_name = field_name
+    
+    def __call__(self, publisher, request, response, form, **kwargs):
         action = form.getfirst(field_name)
         if action:
             try:
-                method = getattr(self, 'do_'+action)
+                method = getattr(publisher, 'do_'+action)
             except AttributeError:
                 logger.warn('Invalid command %r', action)
-                return self.cmd_invalidCommand(request, response, form,
-                                               **kwargs)
+                return publisher.cmd_invalidCommand(request, response, form,
+                                                    **kwargs)
             else:
                 logger.debug('Dispatching for command %r', action)
                 return method(request, response, form, **kwargs)
         else:
             logger.debug('Assuming default command')
-            return self.cmd_defaultCommand(request, response, form, **kwargs)
+            return publisher.cmd_defaultCommand(request, response, form,
+                                                **kwargs)
+
+    def addCommand(self, url, cmd):
+        sep = '?' in url and '&' or '?'
+        return "%s%s%s=%s" % (url, sep, self.field_name, cmd)
 
         
 class PathInfoCommandDispatcher(BaseCommandDispatcher):
     '''Class for commands based web-scripts where action is determined from
     request.pathInfo.'''
 
-    def dispatch(self, request, response, **kwargs):
-        form = qHTTP.Form(request, self.getClientCharset(request))
+    def __call__(self, publisher, request, response, form, **kwargs):
         action = request.pathInfo[1:]
         if action:
             try:
-                method = getattr(self, 'do_'+action)
+                method = getattr(publisher, 'do_'+action)
             except AttributeError:
-                method = self.cmd_invalidCommand
+                method = publisher.cmd_invalidCommand
         else:
-            method = self.cmd_defaultCommand
+            method = publisher.cmd_defaultCommand
         return method(request, response, form, **kwargs)
 
+    def addCommand(self, url, cmd):
+        sep = not url.endswith('/') and '/' or ''
+        return "%s%s%s" % (url, sep, cmd)
+        
 
 class Publisher(qWebUtils.Publisher):
-    from PPA.HTTP.Errors import SeeOther, NotFound, EndOfRequest, ClientError
+    "Basic web publisher. Handle method must be implemented by user."
     
-    def showObject(self, request, response, obj, template_name,
+    from PPA.HTTP.Errors import SeeOther, NotFound, EndOfRequest, ClientError
+
+    def handle(self, request, response):
+        """Is called by PPA.HTTP.Base.Adapter.__call__"""    
+        raise NotImplementedError
+    
+    def showObject(self, request, response, template_name,
                    content_type='text/html', **kwargs):
-        template = self.renderHelperClass(self)
+        """Renders template and writes it to response,
+
+        template_name is a name of template
+        content_type is passed to respose.setContentType
+        keyword arguments are passed to template"""
         
+        template = self.renderHelperClass(self)
         response.setContentType(content_type,
                                 charset=self.getClientCharset(request))
         response.write(template(template_name, brick=obj, **kwargs))
@@ -107,5 +133,26 @@ class Publisher(qWebUtils.Publisher):
     def getClientCharset(self, request):
         '''Reload this method to determine charset per client'''
         return self.site.clientCharset
+
+
+class DispatchedPublisher(Publisher):
+    """Dispatches requests to methods using self.dispatcher"""
+    
+    dispatcher = FieldNameCommandDispatcher(
+        field_name_prefix='qps-action:')
+
+    def cmd_invalidCommand(self, request, response, *args, **kwargs):
+        """Is called when dispatcher was unable to find method to call"""
+        raise self.NotFound()
+    
+    def cmd_defaultCommand(self, request, response, *args, **kwargs):
+        """Is called when no action was given to dispatcher"""
+        self.cmd_invalidCommand(request, response, *args, **kwargs)
+
+    def handle(self, request, response):
+        "Dispatches requests with self.dispatcher to methods"
+        form = qHTTP.Form(request, self.getClientCharset(request))
+        self.dispatcher(self, request, response, form)
+
 
 # vim: ts=8 sts=4 sw=4 ai et:
