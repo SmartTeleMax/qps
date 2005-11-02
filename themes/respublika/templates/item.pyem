@@ -42,7 +42,7 @@ if 'x' in stream_perms:
         path = stream_path +'?'+'&'.join(stream_params)
     menus.append((path, 'Вернуться к списку'))
 if 'c' in stream_perms and not template.isNew:
-    path = stream_path + '?qps-action:createNewItem=1'
+    path = stream_path + '?qps-action:newItem=1'
     menus.append((path, 'Создать новый элемент'))
 
 if menus:
