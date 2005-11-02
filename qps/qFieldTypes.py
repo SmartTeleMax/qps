@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.73 2005/10/24 12:54:52 corva Exp $
+# $Id: qFieldTypes.py,v 1.74 2005/11/02 22:06:43 corva Exp $
 
 '''Classes for common field types'''
 
@@ -38,7 +38,7 @@ class FieldType(object):
     # showField in binding view
     showInBinding    = 0
     linkThrough      = 1
-    
+
     templateCat = None
     default     = ''                            # default value
     permissions = [('all', 'rw')] # permissions for item view
@@ -73,9 +73,9 @@ class FieldType(object):
         user    - login of user, requested this operation'''
         value = getattr(item, name)
         if value is None:
-            value = self.convertToForm(self.getDefault(item))
+            value = self.convertToForm(self.getDefault(item), item)
         else:
-            value = self.convertToForm(value)
+            value = self.convertToForm(value, item)
         namespace = global_namespace.copy()
         namespace.update({'title': name, 'value': value,
                           'item': item, 'brick': self})
@@ -359,7 +359,7 @@ class DATETIME(FieldType):
             return ''
         else:
             return value.strftime(self.format)
-    def convertToForm(self, value):
+    def convertToForm(self, value, item):
         if value is None:
             return ''
         else:
@@ -855,6 +855,15 @@ class IMAGE(FieldType, ExternalStoredField):
                     file_name = '/'.join(os.path.split(file_list[0]))
                     return file_name[len(self.edit_root):]
         path = qUtils.CachedAttribute(path)
+        def width(self):
+            if self._image:
+                return self._image.size[0]
+        width = qUtils.CachedAttribute(width)
+        def height(self):
+            if self._image:
+                return self._image.size[1]
+        height = qUtils.CachedAttribute(height)
+            
         def __str__(self):
             return self.path
         def __nonzero__(self):
@@ -1005,7 +1014,7 @@ class THUMBNAIL(IMAGE):
     
     def convertFromForm(self, form, name, item):
         if self.fieldToThumb:
-            # we have field to thumbnail
+            # have field to thumbnail
             _image = getattr(item, self.fieldToThumb, None)
             image = image_orig = getattr(_image, '_image', None)
         else:
@@ -1021,22 +1030,29 @@ class THUMBNAIL(IMAGE):
             # image was not updated
             return _image
 
-        if image and self.width and self.height:
+        if not (image and self.width and self.height):
+            # nothing to do
+            return self._Image(self, item)
+
+        w, h = image.size
+        if w > self.width or h > self.height:
+            # thumbnailing
             try:
                 image = self.thumbnail(image)
             except IOError, why:
                 logger.warn('IOError occured while thumbnailing image: %s',
                             why)
                 return self._Image(self, item)
-            else:
-                from cStringIO import StringIO
-                fp = StringIO()
-                image.save(fp, image_orig.format)
-                fp.seek(0)
-                return self._Image(self, item, fp.read(),
-                                   getattr(getattr(item, name), 'path', None))
+
+            from cStringIO import StringIO
+            fp = StringIO()
+            image.save(fp, image_orig.format)
+            fp.seek(0)
+            return self._Image(self, item, fp.read(),
+                               getattr(getattr(item, name), 'path', None))
         else:
-            return self._Image(self, item)
+            # no need to resize
+            return _image
 
     def thumbnail(self, image):
         w,h = image.size
