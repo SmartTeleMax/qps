@@ -26,19 +26,35 @@ else:
 <input type="hidden" name="page" value="<%= brick.stream.page %>">
 <div class="item">
 
-<div class="itemTitle t18b"><%
-streamperms = template.user.getPermissions(brick.stream.permissions)
-if 'x' in streamperms:
+<div class="itemTitle t18b"><%= brick.stream.title %>: <%= item_title %></div>
+
+<%
+menus = []
+stream_perms = template.user.getPermissions(brick.stream.permissions)
+stream_path = '%s%s' % (template.publisher.prefix, brick.stream.path())
+stream_params = []
+if brick.stream.page:
+    stream_params.append('page=%s' % brick.stream.page)
+if brick.stream.order:
+    stream_params.append('order=%s' % quoteURLPath(brick.stream.order))
+if 'x' in stream_perms:
+    if stream_params:
+        path = stream_path +'?'+'&'.join(stream_params)
+    menus.append((path, 'Вернуться к списку'))
+if 'c' in stream_perms and not template.isNew:
+    path = stream_path + '?qps-action:createNewItem=1'
+    menus.append((path, 'Создать новый элемент'))
+
+if menus:
     %>
-<a href="<%= template.edit.prefix %><%= brick.stream.path() %><%
-    if brick.stream.page>1:
-        %>?page=<%= brick.stream.page %>&order=<%= quoteURLPath(brick.stream.order) %><%
-    %>"><%
-%><%= brick.stream.title %><%
-if 'x' in streamperms:
-    %></a><%
-%>: <%= item_title %>
-</div>
+<div class="itemMenu"><%
+    for num, (path, title) in enumerate(menus):
+        %><a href="<%= path %>"><%= title %></a><%
+        if num != len(menus)-1:
+            %>&nbsp; | &nbsp;<%
+    %>
+</div><%
+%>
 
 <%
 for field in template.allowedFields(brick):
@@ -50,7 +66,7 @@ for field in template.allowedFields(brick):
 <%= template.showField(brick, field) %>
 </div>
 <%
-has_actions = template.user.getPermissions(brick.permissions) or template.isItemPreviewable(brick)
+has_actions = 'w' in template.user.getPermissions(brick.permissions) or template.isItemPreviewable(brick)
 
 if has_actions:
     %>

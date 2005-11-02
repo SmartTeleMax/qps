@@ -140,6 +140,21 @@ body {
     color: #F2F4F6;
 }
 
+.itemMenu { 
+    background-color: #E1E4E6;
+    text-align: right;
+    color: #C17700;
+    font: bold 12px/14px tahoma;
+    letter-spacing: 0;
+    padding: 9px;
+    margin: 1px;
+}
+
+.itemMenu a { 
+    color: #C17700;
+    font: bold 12px/14px tahoma;
+    letter-spacing: 0;
+}
 
 .itemField {
     background-color: #F0F1F2;
@@ -191,6 +206,12 @@ body {
     letter-spacing: 0;
     padding: 9px;
     margin: 1px;
+}
+
+.streamMenu a { 
+    color: #C17700;
+    font: bold 12px/14px tahoma;
+    letter-spacing: 0;
 }
 
 .streamContainer { 
@@ -253,12 +274,6 @@ body {
 
 .streamActions input { 
     margin-left: 10px;
-}
-
-.streamMenu a { 
-    color: #C17700;
-    font: bold 12px/14px tahoma;
-    letter-spacing: 0;
 }
 
 .streamBrowse { 
