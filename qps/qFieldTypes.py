@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.72 2005/10/17 21:47:11 corva Exp $
+# $Id: qFieldTypes.py,v 1.73 2005/10/24 12:54:52 corva Exp $
 
 '''Classes for common field types'''
 
@@ -829,15 +829,19 @@ class IMAGE(FieldType, ExternalStoredField):
     allowFile = True
     
     class _Image:
+        edit_root = None
+        path_template = None
+        
         def __init__(self, field_type, item, body=None, old_path=None):
             self.item = weakref.proxy(item)
-            self.field_type = field_type
+            self.edit_root = field_type.editRoot
+            self.path_template = field_type.pathTemplate
             self.body = body
             self.old_path = old_path
         def pattern(self):
             namespace = self.item.site.globalNamespace.copy()
             namespace.update({'brick': self.item})
-            return qUtils.interpolateString(self.field_type.pathTemplate,
+            return qUtils.interpolateString(self.path_template,
                                             namespace)
         pattern = qUtils.CachedAttribute(pattern)
         def path(self):
@@ -845,11 +849,11 @@ class IMAGE(FieldType, ExternalStoredField):
                 return self.pattern+'.'+self._image.format.lower()
             else:
                 from glob import glob
-                file_list = glob(self.field_type.editRoot+self.pattern+'.*')
+                file_list = glob(self.edit_root+self.pattern+'.*')
                 if file_list:
                     # Fix slashes to work on non-POSIX platforms
                     file_name = '/'.join(os.path.split(file_list[0]))
-                    return file_name[len(self.field_type.editRoot):]
+                    return file_name[len(self.edit_root):]
         path = qUtils.CachedAttribute(path)
         def __str__(self):
             return self.path
@@ -859,7 +863,7 @@ class IMAGE(FieldType, ExternalStoredField):
             if self.body is None:
                 if self.path is None:
                     return
-                fp = open(self.field_type.editRoot+self.path)
+                fp = open(self.edit_root+self.path)
             elif not self.body:
                 return
             else:
@@ -929,7 +933,7 @@ class IMAGE(FieldType, ExternalStoredField):
     def store(self, value, item):
         if value.body:
             if value.old_path is not None:
-                 os.remove(self.editRoot+value.old_path)
+                 os.remove(value.edit_root+value.old_path)
             # hack to reset chached value for new item
             try:
                 del value.pattern
@@ -939,16 +943,16 @@ class IMAGE(FieldType, ExternalStoredField):
                 del value.path
             except AttributeError:
                 pass
-            qUtils.writeFile(self.editRoot+value.path, value.body)
+            qUtils.writeFile(value.edit_root+value.path, value.body)
         elif value.body is not None:
-            os.remove(self.editRoot+value.path)
+            os.remove(value.edit_root+value.path)
 
     def delete(self, item_ids, stream):
         for item_id in item_ids:
             item = stream.retrieveItem(item_id)
             image = self._Image(self, item)
             if image:
-                os.remove(self.editRoot+image.path)
+                os.remove(image.edit_root+image.path)
 
 
 class RESTRICTED_IMAGE(IMAGE):
