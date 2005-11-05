@@ -84,7 +84,7 @@ body {
 }
 
 .logo {
-    padding: 12px 12px 12px 12px;
+    padding: 12px 0px 12px 0px;
     text-align: center;
     font: bold 17px/16px tahoma;
     letter-spacing: -1;
@@ -322,14 +322,11 @@ body {
     width: 100%;
 }
 
-.EXTFOREIGNMULTISELECT {
+.EXTFOREIGNMULTISELECT, .FOREIGNMULTISELECT {
     font: 12px/15px arial;
     letter-spacing: 0;
+    border: 1px solid #A0AAB1;
     color: #485962;
-}
-
-.FOREIGNMULTISELECT {
-    font: 12px/15px arial;
-    letter-spacing: 0;
-    color: #485962;
+    padding: 10px;
+    width: 100%;
 }

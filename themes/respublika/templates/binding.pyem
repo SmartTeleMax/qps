@@ -109,7 +109,7 @@ if brick:
     <tr class="streamItem"><%
         for field in template.allowedIndexFields(brick):
             %>
-        <td><%= template.showFieldInIndex(item, field) %></td><%
+        <td><%= template.showFieldInIndex(item, field, allow_link_through=False) %></td><%
         id_str = item.fields.id.convertToString(item.id)
         checked = isBound(item) and 'checked'
         %>

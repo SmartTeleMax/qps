@@ -1,6 +1,5 @@
 <div class="fieldName"><%= getattr(brick, 'title', name) %>:</div>
 <div class="fieldValue">
-<div style="border: 1px solid #A0AAB1; padding: 10px;">
 <%
 count=0
 full=brick.columns-1
@@ -26,7 +25,6 @@ if count < full:
     %></tr><%
 %></table><%
 %>
-</div>
 <%
 if stream.indexNum and not template.isNew:
     %>
