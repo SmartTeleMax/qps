@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.5 2004/11/30 12:59:55 corva Exp $
+# $Id: qCommands.py,v 1.6 2005/11/02 23:05:55 corva Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -138,8 +138,10 @@ class Publisher(qWebUtils.Publisher):
 class DispatchedPublisher(Publisher):
     """Dispatches requests to methods using self.dispatcher"""
     
-    dispatcher = FieldNameCommandDispatcher(
-        field_name_prefix='qps-action:')
+    def __init__(self, site, **kwargs):
+        self.dispatcher = FieldNameCommandDispatcher(
+            field_name_prefix='qps-action:')
+        Publisher.__init__(self, site, **kwargs)
 
     def cmd_invalidCommand(self, request, response, *args, **kwargs):
         """Is called when dispatcher was unable to find method to call"""

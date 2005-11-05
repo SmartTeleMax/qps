@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.41 2005/10/26 16:15:08 corva Exp $
+# $Id: qEdit.py,v 1.42 2005/11/02 23:05:55 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -103,24 +103,30 @@ class RenderHelper(qWebUtils.RenderHelper):
                 itemFieldsOrder.append(field_name)
         return itemFieldsOrder
 
-    def showField(self, item, name):
+    def showField(self, item, name, type=None):
         '''Return representation of field in editor interface'''
         field_type = item.fields[name]
-        if self.isNew:
-            permissions = field_type.createPermissions
+
+        if type is None:
+            if self.isNew:
+                permissions = field_type.createPermissions
+            else:
+                permissions = field_type.permissions
+            
+            field_perms = self.user.getPermissions(permissions)
+            item_perms = self.user.getPermissions(item.permissions)
+            if 'w' in item_perms and 'w' in field_perms:
+                template_type = 'edit'
+            elif 'r' in field_perms:
+                template_type = 'view'
+            else:
+                return ''
         else:
-            permissions = field_type.permissions
-        perms = self.user.getPermissions(permissions)
-        item_perms = self.user.getPermissions(item.permissions)
-        if 'w' in item_perms and 'w' in perms:
-            template_type = 'edit'
-        elif 'r' in perms:
-            template_type = 'view'
-        else:
-            return ''
+            template_type = type
+
         return field_type.show(item, name, template_type,
                                self.edit.getFieldTemplate,
-                               self.fieldGlobalNamespace) # XXX namespace
+                               self.fieldGlobalNamespace)
 
     def showFieldInIndex(self, item, name, allow_edit=True,
                          allow_link_through=True):
@@ -208,21 +214,17 @@ class EditBase(qCommands.DispatchedPublisher):
     loggingStream = None # stream for user actions logging, see log method
     showPreviews = True # show brick previews
 
-    def title(self):
-        return 'Editor interface of %s' % self.site.title
-    title = qUtils.CachedAttribute(title)
-
     def getFieldTemplate(self):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs,
                                         self.site.templateCharset)
     getFieldTemplate = qUtils.CachedAttribute(getFieldTemplate)
 
     def __init__(self, site, **kwargs):
-        self.site = site
         self.parsePath = qPath.PathParser(site,
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
-        self.__dict__.update(kwargs)
+        self.title = 'Editor interface of %s' % site.title
+        qCommands.DispatchedPublisher.__init__(self, site, **kwargs)
 
     def storableFields(self, item, user, isNew=0):
         itemFieldsOrder = []

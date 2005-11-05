@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.7 2005/05/03 09:54:51 corva Exp $
+# $Id: qWebUtils.py,v 1.8 2005/11/02 23:05:55 corva Exp $
 
 '''Template support'''
 
@@ -97,8 +97,9 @@ class Publisher:
     renderHelperClass = RenderHelper
     templateDirs = None
 
-    def __init__(self, site):
+    def __init__(self, site, **kwargs):
         self.site = site
+        self.__dict__.update(kwargs)
 
     def globalNamespace(self):
         "Is used by RenderHelper, globalNamespace is passed to template"
