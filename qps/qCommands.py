@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.6 2005/11/02 23:05:55 corva Exp $
+# $Id: qCommands.py,v 1.7 2005/11/05 22:44:57 corva Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -67,7 +67,7 @@ class FieldCommandDispatcher(BaseCommandDispatcher):
         self.field_name = field_name
     
     def __call__(self, publisher, request, response, form, **kwargs):
-        action = form.getfirst(field_name)
+        action = form.getfirst(self.field_name)
         if action:
             try:
                 method = getattr(publisher, 'do_'+action)
