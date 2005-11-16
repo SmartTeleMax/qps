@@ -2,6 +2,6 @@
 <div class="fieldValue">
 <%
 for field in subfields:
-    %><div class="itemField" style="border: 1px solid #A0AAB1; margin: 0px 0px 3px 0px;"><%= field %></div><%
+    %><div class="itemField"><%= field %></div><%
 %>
 </div>
