@@ -1,12 +1,11 @@
-# $Id: qEdit.py,v 1.42 2005/11/02 23:05:55 corva Exp $
+# $Id: qEdit.py,v 1.43 2005/11/05 22:44:57 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
 
-import sys, types, os, Cookie, logging
-from os.path import dirname, abspath
-
+import logging
 logger = logging.getLogger(__name__)
+
 import qWebUtils, qSite, qHTTP, qUtils, qCommands, qPath, qSecurity
 
 
@@ -189,8 +188,6 @@ class EditBase(qCommands.DispatchedPublisher):
     renderHelperClass = RenderHelper
     
     prefix = '/ed'
-    templateDirs = ['%s/templates/default' % dirname(abspath(__file__))]
-    fieldTemplateDirs = ['%s/fields' % dir for dir in templateDirs]
     securityGroupTable = {}
 
     delete_integrity_error = 'Some of objects you are trying to delete are ' \
@@ -213,6 +210,12 @@ class EditBase(qCommands.DispatchedPublisher):
 
     loggingStream = None # stream for user actions logging, see log method
     showPreviews = True # show brick previews
+
+    templateDirs = None # redefine in childs to list of template dirs
+
+    def fieldTemplateDirs(self):
+        return ['%s/fields' % dir for dir in self.templateDirs]
+    fieldTemplateDirs = qUtils.CachedAttribute(fieldTemplateDirs)
 
     def getFieldTemplate(self):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs,
@@ -256,12 +259,34 @@ class EditBase(qCommands.DispatchedPublisher):
             item.command = command
             item.params = params
             item.store()
-
-    def showBrick(self, request, response, obj, user, isNew=0, **kwargs):
+    
+    def showBrick(self, request, response, obj, user, type=None, isNew=0,
+                  **kwargs):
+        """Finds suitable template for obj and renders it to response"""
+        
         template = self.renderHelperClass(self, user, isNew)
-        response.setContentType('text/html',
-                                charset=self.getClientCharset(request))
-        response.write(template(obj.type, brick=obj, **kwargs))
+
+        template_names = []
+        if not type:
+            type = obj.type
+        if obj.type == 'item' and hasattr(obj.stream, 'templateCat'):
+            template_names.append("%s.%s" % (obj.stream.templateCat, type))
+        elif obj.type == 'stream' and hasattr(obj, 'templateCat'):
+            template_names.append("%s.%s" % (obj.templateCat, type))
+        template_names.append(type)
+
+        from qWebUtils import TemplateNotFoundError
+        for template_name in template_names:
+            try:
+                rendered_text = template(template_name, brick=obj, **kwargs)
+            except TemplateNotFoundError, why:
+                pass
+            else:
+                response.setContentType('text/html',
+                                        charset=self.getClientCharset(request))
+                response.write(rendered_text)
+                raise self.EndOfRequest()
+        raise why
 
     def handle(self, request, response):
         form = qHTTP.Form(request, self.getClientCharset(request))
