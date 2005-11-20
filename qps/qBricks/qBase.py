@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.14 2005/08/18 02:17:11 corva Exp $
+# $Id: qBase.py,v 1.15 2005/08/24 11:25:45 ods Exp $
 
 '''Base brick classes'''
 
@@ -80,11 +80,17 @@ class Item(Brick):
         return '%s%s.html' % (self.stream.path(),
                               self.fields.id.convertToString(self.id, self))
 
-    def initFieldFromCode(self, field_name, value):
-        '''Initialize field from code'''
+    def initFieldFrom(self, source, field_name, value):
+        """Initializes brick's field
+
+        source     - identifier of source. Code, DB, Form, String are known
+                     sources
+        field_name - name of field
+        value      - field value in form of source"""
+        
         field_type = self.indexFields[field_name]
-        value = field_type.convertFromCode(value, item=self)
-        setattr(self, field_name, value)
+        method = getattr(field_type, 'convertFrom%s' % source)
+        setattr(self, field_name, method(value, self))
 
     def initFieldsFromForm(self, form, names=None):
         '''Initialize item fields from data in form.  Return dictionary
