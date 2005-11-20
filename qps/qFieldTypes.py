@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.74 2005/11/02 22:06:43 corva Exp $
+# $Id: qFieldTypes.py,v 1.75 2005/11/02 22:09:46 corva Exp $
 
 '''Classes for common field types'''
 
@@ -56,8 +56,8 @@ class FieldType(object):
         self.layout = _LayoutDict(self.layout, {'class': className})
 
     def __call__(self, **kwargs):
-        # For compatibility: return a copy with some parameters changed.  Allow
-        # us to use existing type as template.
+        """For compatibility: return a copy with some parameters changed.
+        Allows to use existing type as template."""
         copy = self.__class__(**self.__dict__)
         copy.__dict__.update(kwargs)
         return copy
@@ -84,10 +84,37 @@ class FieldType(object):
         return template(namespace)
 
     def getTemplate(self, template_type, template_getter):
-        if self.templateCat is not None:
-            # Such templates MUST exist and MUST NOT be cached in class
-            return template_getter('%s.%s' % (self.templateCat, template_type))
+        """Returns template instance for field.
+
+        Template name is of format category.template_type
+        Template is located with template_getter by trying different
+        categories in following order:
+
+        1. If self.templateCat is defined it's used as a category
+        2. Class names of self.__class__.__mro__ are used as categories until
+           FieldType class is reached.
+
+        If template is found it's cached in class object which name fitted,
+        self.templateCat templates are not cached.
+        If template is not found qWebUtils.TemplateNotFoundError is raised
+
+        Example:
+
+        class INTEGER(FieldType): pass
+        INTEGER(templateCat='PRIME_NUMBER').getTemplate('view', somegetter)
+
+        This call looks up templates with names:
+
+        PRIME_NUMBER.view, INTEGER.view, FieldType.view"""
+
         from qWebUtils import TemplateNotFoundError
+
+        if self.templateCat:
+            try:
+                return template_getter(
+                    '%s.%s' % (self.templateCat, template_type))
+            except TemplateNotFoundError:
+                pass
         for cls in self.__class__.__mro__:
             if not cls.__dict__.has_key('_templates'):
                 cls._templates = {}
@@ -204,6 +231,8 @@ class STRING(FieldType):
         return value
 
     def convertToDB(self, value, item):
+        if value is None:
+            return value
         if item.dbConn.charset:
             value = value.encode(item.dbConn.charset)
         return value
