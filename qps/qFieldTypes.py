@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.75 2005/11/02 22:09:46 corva Exp $
+# $Id: qFieldTypes.py,v 1.76 2005/11/20 22:49:24 corva Exp $
 
 '''Classes for common field types'''
 
@@ -653,6 +653,7 @@ class BOOLEAN(FieldType):
     
     dbTrue = 1
     dbFalse = 0
+    default = False
     
     def convertFromDB(self, value, item):
         return bool(value)
