@@ -1,3 +1,4 @@
+
 from qps.qFieldTypes import *
 
 class ORDER_NUM(INTEGER):
@@ -5,4 +6,3 @@ class ORDER_NUM(INTEGER):
     max_value = 100
     permissions = []
     indexPermissions=[('all', 'rw')]
-    title = u"Порядок"

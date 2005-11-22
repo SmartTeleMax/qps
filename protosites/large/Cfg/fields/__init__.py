@@ -1,3 +1,3 @@
 from qps.qUtils import DictImporter
 
-fields = DictImporter("fieldDescriptions", name="fields")
+fields = DictImporter("Cfg.fields", name="fields")
