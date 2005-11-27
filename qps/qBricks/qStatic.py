@@ -1,4 +1,4 @@
-# $Id: qStatic.py,v 1.3 2004/06/18 07:44:03 corva Exp $
+# $Id: qStatic.py,v 1.4 2004/06/18 08:02:12 ods Exp $
 
 '''Classes for hardcoded bricks'''
 
@@ -40,7 +40,7 @@ class StaticStream(qBase.Stream):
                 item = self.createNewItem(fields['id'])
                 for field_name, value in fields.iteritems():
                     if field_name!='id':
-                        item.initFieldFromCode(field_name, value)
+                        item.initFieldFrom('Code', field_name, value)
                 item.retrieveExtFields()
                 item._retrieved = 1
                 items.append(item)

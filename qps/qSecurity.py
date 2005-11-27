@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.10 2005/06/03 20:45:17 corva Exp $
+# $Id: qSecurity.py,v 1.11 2005/06/07 11:01:22 corva Exp $
 
 '''Function to check permissions'''
 
@@ -170,9 +170,8 @@ class CookieAuthHandler:
             login = None
 
         stream = self.site.retrieveStream(self.usersStream)
-        
+
         if login is not None:
-            stream = self.site.retrieveStream(self.usersStream)
             user = stream.getUser(login)
             if user and getattr(user, user.stream.passwdField) == passwd:
                 return user
