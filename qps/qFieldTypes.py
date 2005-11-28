@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.76 2005/11/20 22:49:24 corva Exp $
+# $Id: qFieldTypes.py,v 1.77 2005/11/21 23:27:16 corva Exp $
 
 '''Classes for common field types'''
 
@@ -594,19 +594,76 @@ class FOREIGN_DROP(FieldType):
                               namespace)
 
 
+class LazyItemList:
+    _items = [] # implement in childs
+
+    def __init__(self, field_type, item):
+        self.field_type = field_type
+        self.item = weakref.proxy(item)
+
+    def __getitem__(self, index):
+        return self._items[index]
+
+    def __setitem__(self, index, value):
+        self._items[index] = value
+
+    def __len__(self):
+        return len(self._items)
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def append(self, obj):
+        self._items.append(obj)
+
+    def index(self, obj):
+        return self._items.index(obj)
+
+    def __contains__(self, obj):
+        return obj in self._items
+
+    def __delitem__(self, index):
+        del self._items[index]
+
+    def __eq__(self, other):
+        return self._items==other
+
+    def __ne__(self, other):
+        return not (self==other)
+
+    def remove(self, value):
+        return self._items.remove(value)
+
+
 class FOREIGN_MULTISELECT(FOREIGN_DROP):
     fieldSeparator = ','
     default = []
     columns = 3 # number of columns to display in field template
+
+    class ItemList(LazyItemList):
+        def __init__(self, field_type, item, values):
+            LazyItemList.__init__(self, field_type, item)
+            self.values = values
+
+        def _items(self):
+            field_type = self.field_type
+            items = []
+            for value in self.values:
+                items.append(
+                    field_type.itemField.convertFromCode(value,
+                                                         item=self.item))
+            return filter(None, items)
+        _items = qUtils.CachedAttribute(_items)
+        
+    def __init__(self, **kwargs):
+        FOREIGN_DROP.__init__(self, **kwargs)
+        self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
     
     def inList(self, id, items):
         return id in [item.id for item in items]
 
     def convertFromCode(self, values, item):
-        # XXX Bug here! Missing (or just unpublished) items are not filtered
-        # out! We must use somethong like LazyItemList to keep laziness.
-        return [FOREIGN_DROP.convertFromCode(self, value, item)
-                for value in values]
+        return self.ItemList(self, item, values)
 
     def convertFromString(self, value, item):
         if value:
@@ -685,11 +742,7 @@ class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExternalTableStoredField):
     countTemplate = '%(count or "no")s item(s)'
     itemField = STRING() # field type of values
     
-    class LazyItemList:
-        def __init__(self, field_type, item):
-            self.field_type = field_type
-            self.item = weakref.proxy(item)
-
+    class DBItemList(LazyItemList):
         def _items(self):
             conn = self.item.dbConn
             field_type = self.field_type
@@ -704,46 +757,12 @@ class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExternalTableStoredField):
             return filter(None, items)
         _items = qUtils.CachedAttribute(_items)
 
-        def __getitem__(self, index):
-            return self._items[index]
-
-        def __setitem__(self, index, value):
-            self._items[index] = value
-
-        def __len__(self):
-            return len(self._items)
-
-        def __iter__(self):
-            return iter(self._items)
-
-        def append(self, obj):
-            self._items.append(obj)
-
-        def index(self, obj):
-            return self._items.index(obj)
-
-        def __contains__(self, obj):
-            return obj in self._items
-
-        def __delitem__(self, index):
-            del self._items[index]
-
-        def __eq__(self, other):
-            return self._items==other
-
-        def __ne__(self, other):
-            return not (self==other)
-
-        def remove(self, value):
-            return self._items.remove(value)
-
-
     def __init__(self, **kwargs):
         FOREIGN_MULTISELECT.__init__(self, **kwargs)
         self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
 
     def retrieve(self, item):
-        return self.LazyItemList(self, item)
+        return self.DBItemList(self, item)
 
     def store(self, values, item):
         db_values = []
