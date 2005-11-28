@@ -5,7 +5,7 @@ if template.edit.staticLogo:
 <a href="<%= template.edit.prefix %>/"><img src="<%= template.edit.staticLogo %>" border="0" width="218" height="85"></a><%
 else:
     %>
-<a href="<%= template.edit.prefix %>/"><%= brick.site.title %></a><%
+<a href="<%= template.edit.prefix %>/"><%= template.publisher.title %></a><%
 %>
 </div>
 <%
