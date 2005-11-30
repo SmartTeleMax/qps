@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.11 2005/06/07 11:01:22 corva Exp $
+# $Id: qSecurity.py,v 1.12 2005/11/27 23:01:10 corva Exp $
 
 '''Function to check permissions'''
 
@@ -200,7 +200,8 @@ class CookieAuthHandler:
                getattr(user, stream.passwdField):
                 expires = perm_login and self.expireTimeout or None
                 qHTTP.setCookie(response, self.authCookieName,
-                                "%s:%s" % (user.login, user.passwd),
+                                "%s:%s" % (getattr(user, stream.loginField),
+                                           getattr(user, stream.passwdField)),
                                 expires, path=self.authCookiePath)
             # lets check if new user has perms to access path it requested
             try:
