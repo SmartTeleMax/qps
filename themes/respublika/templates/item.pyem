@@ -12,7 +12,7 @@ else:
 if fieldErrors:
     %>
 <script>
-alert('Внимание, произошла ошибка заполнения полей кирпича, информация не была сохранена. Исправьте помеченные сообщениями ошибки и повторите действие')
+alert('Внимание! Вы допустили ошибки при заполнении полей формы. Элемент НЕ БЫЛ СОХРАНЕН! Исправьте помеченные сообщениями ошибки и повторите сохранение.')
 </script><%
 %>
 <div id="notify" style="display: none;"></div>
@@ -61,7 +61,7 @@ for field in template.allowedFields(brick):
     %>
 <div class="itemField" id="field-<%= field %>"><%
     if fieldErrors and fieldErrors.has_key(field):
-        %><span class="t11b" id="y1"><%= fieldErrors[field] %></span><br><span class="s3">&nbsp;</span><br><%
+        %><div class="fieldError"><%= fieldErrors[field] %></div><%
     %>
 <%= template.showField(brick, field) %>
 </div>

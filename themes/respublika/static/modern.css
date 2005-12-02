@@ -198,6 +198,13 @@ body {
     color: #485962;
 }
 
+.fieldError {
+    font: 11px/12px tahoma;
+    letter-spacing: 0;
+    color: #C17700;
+    padding-bottom: 6px;
+}
+
 .streamTitle { 
     background-color: #354750;
     color: #F2F4F6;
