@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.4 2005/08/15 21:21:40 corva Exp $
+# $Id: qFilters.py,v 1.5 2005/10/20 19:27:24 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -16,7 +16,7 @@ DictRecord(title='Some stream', filter=SQLStreamFilter())
 
 2. Apply filter fields classes to fieldDescriptions:
 ('title', FT.STRING(title='Document title',
-                    filterFieldClass=SQL_LIKE_STRING))
+                    filter=SQL_LIKE_STRING()))
 """
 
 #
@@ -34,11 +34,11 @@ class StreamFilter(object):
     def fields(self, stream):
         """Returns a list of field names used in filter"""
         return [name for name, type in stream.fields.iteritems() if \
-                getattr(type, 'filterFieldClass', False)]
+                getattr(type, 'filter', False)]
 
     def createField(self, field):
         "Returns FilterFieldType for field object"
-        return field.filterFieldClass.create(field)
+        return field.filter.create(field)
 
     def createState(self, stream):
         """Returns a state item for filter"""
@@ -77,11 +77,10 @@ class SQLStreamFilter(StreamFilter):
 import qps.qFieldTypes as FT
 
 class FilterFieldType:
-    @ classmethod
-    def create(cls, field):
+    def create(self, field):
         """Returns a new instance of filter field initialized with required
         params from field"""
-        return cls(title=field.title)
+        return self(title=field.title)
     
     def applyToFilter(self, filter, item, name, value):
         """Changes filter state"""
@@ -128,17 +127,15 @@ class SQL_EQUAL_INTEGER(SQLEquals, FilterFieldType, FT.INTEGER):
 class SQL_FOREIGN_DROP(SQLEquals, FilterFieldType, FT.FOREIGN_DROP):
     extraOption = " "
 
-    @ classmethod
-    def create(cls, field):
-        return cls(title=field.title, stream=field.stream)
+    def create(self, field):
+        return self(title=field.title, stream=field.stream)
 
 
 class SQL_EXT_FOREIGN_MULTISELECT(FilterFieldType, FT.FOREIGN_DROP):
     extraOption = " "
 
-    @ classmethod
-    def create(cls, field):
-        return cls(title=field.title, stream=field.stream, orig=field)
+    def create(self, field):
+        return self(title=field.title, stream=field.stream, orig=field)
         
     def applyToFilter(self, filter, item, name, value):
         filter.conditions.append(
@@ -157,13 +154,13 @@ class SQL_FOREIGN_CONTAINER(FilterFieldType, FT.CONTAINER):
     """Filters on fields of foreign item. To be used with FOREIGN_DROP fields.
 
     FOREIGN_DROP(stream='streamid',
-                 filterFields=FieldDescriptions(),
-                 filterFieldClass=SQL_FOREIGN_CONTAINER)
+                 filter=SQL_FOREIGN_CONTAINER(fields=FieldDescriptions())
+                )
 
-    filterFields supposed to be a FieldDescription of filter field objects,
+    fields param is supposed to be a FieldDescription of filter field objects,
     named with foreign item field names.
 
-    filterFields = FieldDescriptions([
+    fields = FieldDescriptions([
         ('firstname', SQL_EQUAL_STRING(title='First name')),
         ('address', SQL_LIKE_STRING(title='Part of address'))
         ])
@@ -171,12 +168,10 @@ class SQL_FOREIGN_CONTAINER(FilterFieldType, FT.CONTAINER):
     In example above firstname and address are names of fields in streamid.
     """
     
-    @ classmethod
-    def create(cls, field):
+    def create(self, field):
         """Returns a new instance of filter field initialized with
         field.title, field.stream an field.filterFields"""
-        return cls(title=field.title, stream=field.stream,
-                   fields=field.filterFields)
+        return self(title=field.title, stream=field.stream)
 
     def applyToFilter(self, filter, item, name, value):
         # value is a dict
