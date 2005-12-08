@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.77 2005/11/21 23:27:16 corva Exp $
+# $Id: qFieldTypes.py,v 1.78 2005/11/28 08:59:30 corva Exp $
 
 '''Classes for common field types'''
 
@@ -523,6 +523,8 @@ class GettedLazyItem(LazyItem):
 
 
 class FOREIGN_DROP(FieldType):
+    stream = None # stream id or template for
+                  # qUtils.interpolateString(stream, {'brick': item})
     proxyClass = RetrievedLazyItem
     extraOption = None
     missingID = None # representation of missing value in DB (default is NULL)
@@ -536,7 +538,8 @@ class FOREIGN_DROP(FieldType):
         return item.site.retrieveStream(stream, tag=item.site.transmitTag(tag))
 
     def _stream_params(self, item):
-        return (self.stream, item.stream.tag)
+        stream = qUtils.interpolateString(self.stream, {'brick': item})
+        return (stream, item.stream.tag)
 
     def convertFromCode(self, value, item):
         if value is not None:
