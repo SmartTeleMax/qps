@@ -1,4 +1,4 @@
-# $Id: qMySQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qMySQL.py,v 1.2 2004/06/29 08:17:33 corva Exp $
 
 '''Connection class for MySQL(tm)'''
 
@@ -27,6 +27,8 @@ class Connection(qSQL.Connection):
 
     def replace(self, table, field_dict):
         '''Construct and execute MySQL REPLACE command and return cursor.'''
+        if not self._current_transaction:
+            raise self.ExecuteOutsideOfTransaction()
         query = Query()
         for name, value in field_dict.items():
             if query:

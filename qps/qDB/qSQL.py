@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.5 2004/11/30 13:05:00 corva Exp $
+# $Id: qSQL.py,v 1.6 2005/06/02 00:28:41 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -141,18 +141,26 @@ class Transaction:
 
     def __init__(self, conn):
         self.dbConn = conn
-        if not hasattr(conn, '_current_transaction'):
-            conn._current_transaction = TransactionImpl(conn)
+        if not conn._current_transaction:
+            self.impl = conn._current_transaction = TransactionImpl(conn)
+            logger.info('New transaction')
+        else:
+            self.impl = conn._current_transaction
+            logger.info('Existing transaction level %s', self.impl.level)
         conn._current_transaction.pushLevel()
         self.opened = 1
 
     def close(self):
-        self.dbConn._current_transaction.popLevel()
-        self.opened = 0
+        if self.opened:
+            self.impl.popLevel()
+            if not self.impl:
+                self.dbConn._current_transaction = None
+            self.opened = 0
 
     def abort(self):
         if self.opened:
-            self.dbConn._current_transaction.abort()
+            self.impl.abort()
+            self.dbConn._current_transaction = None
             self.opened = 0
     __del__ = abort
 
@@ -165,42 +173,46 @@ class TransactionImpl:
         self.is_aborted = 0
 
     def pushLevel(self):
-        logger.debug('Transaction level %d -> %d', self.level, self.level+1)
+        logger.info('Transaction level %d -> %d', self.level, self.level+1)
         if not self.level:
             self.dbConn.begin()
         self.level += 1
 
     def popLevel(self):
-        assert self.level>0
-        logger.debug('Transaction level %d -> %d', self.level, self.level-1)
-        self.level -= 1
-        if not (self.level or self.is_aborted):
-            self.dbConn.commit()
+        if self.level>0:
+            logger.info('Transaction level %d -> %d', self.level,
+                         self.level-1)
+            self.level -= 1
+            if not (self.level or self.is_aborted):
+                self.dbConn.commit()
 
     def abort(self):
         if not self.is_aborted:
+            logger.info('Transaction aborted')
+            self.level = 0
             self.dbConn.rollback()
             self.is_aborted = 1
+
+    def __nonzero__(self):
+        return bool(self.level)
 
 
 class Connection(object):
 
-    __connections_cache = weakref.WeakValueDictionary()
     _db_module = None  # Overwrite it in descending class
     _dbh = None
-    connectHandler = None
+    _current_transaction = None
+    connectHandler = None    
 
-    def __new__(cls, connection_params, charset, **kwargs):
-        a, k = connection_params
-        cache_key = (cls, tuple(a), tuple(k.items()), charset)
-        if not cls.__connections_cache.has_key(cache_key):
-            self = object.__new__(cls)
-            self.__connection_params = connection_params
-            self.charset = charset
-            self.execute = self._connect_and_execute
-            self.__dict__.update(kwargs)
-            cls.__connections_cache[cache_key] = self
-        return cls.__connections_cache[cache_key]
+    DuplicateEntryError = Exception # redefine in subclasses to exception
+                                    # dbmodule raises for duplicate entries
+    ExecuteOutsideOfTransaction = RuntimeError
+
+    def __init__(self, connection_params, charset, **kwargs):
+        self.__connection_params = connection_params
+        self.charset = charset
+        self.execute = self._connect_and_execute
+        self.__dict__.update(kwargs)
 
     def __del__(self):
         if self.connected():
@@ -234,6 +246,7 @@ class Connection(object):
     
     def execute(self, query):
         '''Execute SQL command and return cursor.'''
+
         cursor = self._dbh.cursor()
         logger.debug(query)
         if isinstance(query, Query):
@@ -283,6 +296,8 @@ class Connection(object):
 
         fields is a list of field names
         values is a list of tuples of field values'''
+        if not self._current_transaction:
+            raise self.ExecuteOutsideOfTransaction()
         field_names = ','.join(fields)
         field_values = []
 
@@ -301,6 +316,8 @@ class Connection(object):
 
     def update(self, table, field_dict, condition=''):
         '''Construct and execute SQL UPDATE command and return cursor.'''
+        if not self._current_transaction:
+            raise self.ExecuteOutsideOfTransaction()
         query = Query()
         for name, value in field_dict.items():
             if query:
@@ -314,6 +331,8 @@ class Connection(object):
 
     def delete(self, table, condition):
         '''Construct and execute SQL DELETE command and return cursor.'''
+        if not self._current_transaction:
+            raise self.ExecuteOutsideOfTransaction()
         query = Query('DELETE FROM '+table)
         if condition:
             query += ' WHERE '+condition
