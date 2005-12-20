@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.43 2005/11/05 22:44:57 corva Exp $
+# $Id: qEdit.py,v 1.44 2005/11/20 22:51:59 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -229,6 +229,13 @@ class EditBase(qCommands.DispatchedPublisher):
         self.title = 'Editor interface of %s' % site.title
         qCommands.DispatchedPublisher.__init__(self, site, **kwargs)
 
+    def showObject(self, request, response, user, template_name,
+                   content_type='text/html', **kwargs):
+        template = self.renderHelperClass(self, user)
+        response.setContentType(content_type,
+                                charset=self.getClientCharset(request))
+        response.write(template(template_name, **kwargs))
+        
     def storableFields(self, item, user, isNew=0):
         itemFieldsOrder = []
         id_field_name = item.fields.idFieldName
