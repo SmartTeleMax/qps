@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.6 2005/06/02 00:28:41 corva Exp $
+# $Id: qSQL.py,v 1.7 2005/12/20 20:58:47 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -143,10 +143,10 @@ class Transaction:
         self.dbConn = conn
         if not conn._current_transaction:
             self.impl = conn._current_transaction = TransactionImpl(conn)
-            logger.info('New transaction')
+            logger.debug('Transaction started')
         else:
             self.impl = conn._current_transaction
-            logger.info('Existing transaction level %s', self.impl.level)
+            logger.debug('Transaction reused (level=%s)', self.impl.level)
         conn._current_transaction.pushLevel()
         self.opened = 1
 
@@ -173,14 +173,14 @@ class TransactionImpl:
         self.is_aborted = 0
 
     def pushLevel(self):
-        logger.info('Transaction level %d -> %d', self.level, self.level+1)
+        logger.debug('Transaction level %d -> %d', self.level, self.level+1)
         if not self.level:
             self.dbConn.begin()
         self.level += 1
 
     def popLevel(self):
         if self.level>0:
-            logger.info('Transaction level %d -> %d', self.level,
+            logger.debug('Transaction level %d -> %d', self.level,
                          self.level-1)
             self.level -= 1
             if not (self.level or self.is_aborted):
@@ -188,7 +188,7 @@ class TransactionImpl:
 
     def abort(self):
         if not self.is_aborted:
-            logger.info('Transaction aborted')
+            logger.debug('Transaction aborted')
             self.level = 0
             self.dbConn.rollback()
             self.is_aborted = 1
