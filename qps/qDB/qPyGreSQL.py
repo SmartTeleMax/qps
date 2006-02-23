@@ -2,7 +2,7 @@
 
 Connection class for PosgreSQL
 
-$Id: qPgSQL.py,v 1.7 2003/05/31 12:52:38 ods Exp $
+$Id: qPyGreSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 '''
 
 import qSQL
@@ -18,12 +18,9 @@ class Connection(qSQL.Connection):
 
     Binary = str
 
-    def _connect_and_execute(self, query):
-        args, kwargs = self.__connection_params
+    def _connect(self, *args, **kwargs):
         self._dbh = self._db_module.connect(*args, **kwargs)
         self._dbh.autocommit = 1
-        del self.execute
-        return self.execute(query)
 
     def selectRowAsList(self, table, fields, condition=''):
         '''Retrieve one row as list. It's an error when contains more than one

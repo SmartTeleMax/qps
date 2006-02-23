@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.7 2005/12/20 20:58:47 corva Exp $
+# $Id: qSQL.py,v 1.8 2005/12/21 13:33:21 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -207,11 +207,11 @@ class Connection(object):
     DuplicateEntryError = Exception # redefine in subclasses to exception
                                     # dbmodule raises for duplicate entries
     ExecuteOutsideOfTransaction = RuntimeError
+    ConnectInTransaction = RuntimeError
 
     def __init__(self, connection_params, charset, **kwargs):
         self.__connection_params = connection_params
         self.charset = charset
-        self.execute = self._connect_and_execute
         self.__dict__.update(kwargs)
 
     def __del__(self):
@@ -226,15 +226,14 @@ class Connection(object):
 
     def connect(self):
         if not self.connected():
-            args, kwargs = self.__connection_params
-            self._dbh = self._connect(*args, **kwargs)
-            if self.connectHandler:
-                self.connectHandler(self)
-
-    def _connect_and_execute(self, query):
-        del self.execute
-        self.connect()
-        return self.execute(query)
+            if not self._current_transaction:
+                logger.debug('Connecting to database')
+                args, kwargs = self.__connection_params
+                self._dbh = self._connect(*args, **kwargs)
+                if self.connectHandler:
+                    self.connectHandler(self)
+            else:
+                raise self.ConnectInTransaction()
 
     def getTransaction(self):
         return Transaction(self)
@@ -247,6 +246,7 @@ class Connection(object):
     def execute(self, query):
         '''Execute SQL command and return cursor.'''
 
+        self.connect() # only connects if connection is closed
         cursor = self._dbh.cursor()
         logger.debug(query)
         if isinstance(query, Query):

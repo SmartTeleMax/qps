@@ -1,4 +1,4 @@
-# $Id: qPgSQL.py,v 1.12 2004/03/16 15:52:48 ods Exp $
+# $Id: qPgSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 
 '''Connection class for PosgreSQL'''
 
@@ -37,12 +37,9 @@ class Connection(qSQL.Connection):
     _db_module.fetchReturnsList = 1
     Binary = str
 
-    def _connect_and_execute(self, query):
-        args, kwargs = self.__connection_params
+    def _connect(self, *args, **kwargs):
         self._dbh = self._db_module.connect(*args, **kwargs)
         self._dbh.autocommit = 1
-        del self.execute
-        return self.execute(query)
 
     def begin(self):
         self.execute('BEGIN')
