@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.14 2005/01/19 23:46:53 corva Exp $
+# $Id: qSQL.py,v 1.15 2005/02/15 15:24:37 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -174,7 +174,7 @@ class SQLStream(qBase.Stream):
             # id field in object and database has the same name
             # to prevent convertion in initFieldsFromDB we delete it from a row
             del db_row[id_field_name]
-        item = self.itemClass(self.site, self, id, self.itemModifiers)
+        item = self.createNewItem(id, init_fields=False)
         item.initFieldsFromDB(db_row)
         item._retrieved = 1
         item.retrieveExtFields()

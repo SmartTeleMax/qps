@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.15 2005/08/24 11:25:45 ods Exp $
+# $Id: qBase.py,v 1.16 2005/11/20 21:31:48 corva Exp $
 
 '''Base brick classes'''
 
@@ -24,7 +24,7 @@ class Brick(object):
         except TypeError:
             self.site = site
         self.dbConn = site.dbConn
-
+            
     def path(self):
         '''Return common path of object'''
         raise NotImplementedError()
@@ -309,23 +309,24 @@ class Stream(Brick):
             param_item = getattr(self, self.virtual.paramName)
             return param_item
 
-    def createNewItem(self, item_id=None):
+    def createNewItem(self, item_id=None, init_fields=True):
         item = self.itemClass(self.site, self, item_id, self.itemModifiers)
-        defaults = self.brickDefaults
-        if hasattr(self, 'virtual'):
-            virtual_param_names = self.virtual.itemParamNames
-        else:
-            virtual_param_names = []
-        for field_name, field_type in self.fields.iteritems():
-            if field_name!='id':
-                if field_name in virtual_param_names:
-                    value = getattr(self, field_name)
-                elif defaults.has_key(field_name):
-                    value = field_type.convertFromCode(defaults[field_name],
-                                                       item)
-                else:
-                    value = field_type.getDefault(item)
-                setattr(item, field_name, value)
+        if init_fields:
+            defaults = self.brickDefaults
+            if hasattr(self, 'virtual'):
+                virtual_param_names = self.virtual.itemParamNames
+            else:
+                virtual_param_names = []
+            for field_name, field_type in self.fields.iteritems():
+                if field_name!='id':
+                    if field_name in virtual_param_names:
+                        value = getattr(self, field_name)
+                    elif defaults.has_key(field_name):
+                        value = field_type.convertFromCode(
+                            defaults[field_name], item)
+                    else:
+                        value = field_type.getDefault(item)
+                    setattr(item, field_name, value)
         return item
 
     def makeAction(self):
