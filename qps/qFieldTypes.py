@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.79 2005/12/08 13:29:57 corva Exp $
+# $Id: qFieldTypes.py,v 1.80 2005/12/08 15:35:28 corva Exp $
 
 '''Classes for common field types'''
 
@@ -575,7 +575,7 @@ class FOREIGN_DROP(FieldType):
             return None
 
     def convertFromForm(self, form, name, item):
-        value = form.getfirst(name, '')
+        value = form.getfirst(name, None)
         if value:
             stream = self._retrieve_stream(item)
             value = self.proxyClass(item.site,
