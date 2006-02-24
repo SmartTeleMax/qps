@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.80 2005/12/08 15:35:28 corva Exp $
+# $Id: qFieldTypes.py,v 1.81 2006/02/23 22:47:24 corva Exp $
 
 '''Classes for common field types'''
 
@@ -128,6 +128,9 @@ class FieldType(object):
                     else:
                         continue
                 cls._templates[template_type] = template
+            if cls != self.__class__:
+                self.__class__._templates.setdefault(
+                    template_type, cls._templates[template_type])
             return cls._templates[template_type]
 
     def _identity(self, value, item=None): return value
@@ -556,13 +559,13 @@ class FOREIGN_DROP(FieldType):
     
     def convertToDB(self, value, item=None):
         if value: # calls LazyItem.__nonzero__ that checks for None
-            return value.stream.fields.id.convertToDB(value.id, item)
+            return value.fields.id.convertToDB(value.id, item)
         else:
             return self.missingID
 
     def convertToString(self, value, item=None):
         if value:
-            return value.stream.fields.id.convertToString(value.id, item)
+            return value.fields.id.convertToString(value.id, item)
         else:
             return ''
 
@@ -834,10 +837,10 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
                     return
             
             for stream in item.virtualStreams:
-                template_stream = getattr(stream.virtual, 'templateStream',
-                                          None)
                 if self._rule_id and stream.virtual.id == self._rule_id:
                     return stream
+                template_stream = getattr(stream.virtual, 'templateStream',
+                                          None)
                 if template_stream is not None and \
                         template_stream==self._template_stream and \
                         (self._param_name is None or \
