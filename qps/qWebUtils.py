@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.8 2005/11/02 23:05:55 corva Exp $
+# $Id: qWebUtils.py,v 1.9 2005/11/05 22:44:57 corva Exp $
 
 '''Template support'''
 
@@ -29,19 +29,12 @@ class _PPATemplateWrapper(TemplateWrapper):
         self.interpret(fp, namespace, kwargs)
         return fp.getvalue()
         
-try:
-    import _apache
-except ImportError:
-    cacheClass = MemoryCache
-else:
-    cacheClass = DummyCache
-
 
 class TemplateGetter(object):
 
     _getters = {}
     
-    def __new__(cls, search_dirs, charset=None):
+    def __new__(cls, search_dirs, charset=None, cacheClass=MemoryCache):
         search_dirs = tuple(search_dirs)  # Insure sequence is immutable
         getter_key = (search_dirs, charset)
         if not cls._getters.has_key(getter_key):
@@ -90,7 +83,7 @@ class RenderHelper(object):
         return result
 
 
-class Publisher:
+class Publisher(object):
     "Basic class for publishing. In general is inhereted"
 
     proxyClass = staticmethod(lambda x: x)
