@@ -1,4 +1,4 @@
-# $Id: qStatic.py,v 1.4 2004/06/18 08:02:12 ods Exp $
+# $Id: qStatic.py,v 1.5 2005/11/27 23:01:10 corva Exp $
 
 '''Classes for hardcoded bricks'''
 
@@ -30,6 +30,7 @@ class StaticStream(qBase.Stream):
     itemClass = StaticItem
     itemListSpec = []
     tableName = None
+    persistent = True
 
     def retrieve(self, ignoreStatus=0):
         if not self._retrieved or ignoreStatus:
