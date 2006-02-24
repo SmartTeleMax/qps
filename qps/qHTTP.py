@@ -1,4 +1,4 @@
-# $Id: qHTTP.py,v 1.3 2005/06/01 23:41:12 corva Exp $
+# $Id: qHTTP.py,v 1.4 2005/08/02 22:06:14 corva Exp $
 
 '''HTTP-related functions'''
 
@@ -89,10 +89,17 @@ class FieldStorage(cgi.FieldStorage):
         if not isinstance(fields, qFieldTypes.FieldDescriptions):
             fields = qFieldTypes.FieldDescriptions(fields)
         stream = site.createAnonStream(
-            site.defaultStreamConf, streamClass="qps.qBricks.qBase.Stream",
+            site.defaultStreamConf,
+            streamClass="qps.qBricks.qStatic.StaticStream",
             fields=fields,
             permissions=[('all', qSecurity.perm_all)])
         item = stream.createNewItem()
+        # XXX stream was not stored in any site's caches
+        # if we dont assign it to returned object explicitly
+        # stream dies after return statement.
+        # Item is not stored in stream too, i.e. no cross-references
+        # will be created.
+        item.stream = stream
         errors = item.initFieldsFromForm(self)
         return (item, errors)
     
