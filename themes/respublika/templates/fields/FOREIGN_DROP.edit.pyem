@@ -3,8 +3,10 @@
 if stream.indexNum:
     href = template.edit.prefix+stream.path()+'?qps-action%3AshowBinding=1&bound='+item.path()+'&field='+name
     if value:
-        %><span id="span_<%= name %>"><%= brick.getLabel(value) %><br></span>
+        %><span id="span_<%= name %>"><%= brick.getLabel(value) or brick.extraOption or '' %><br></span>
 <input id="input_<%= name %>" type="hidden" name="<%= name %>" value="<%= value.id %>"><%
+    elif brick.extraOption:
+        %><span id="span_<%= name %>"><%= brick.extraOption %><br></span><%
     if not template.isNew:
         %>
 <a href="<%= href %>" onclick="javascript:var new_window=window.open('<%= href %>','_blank','width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes' ); return false;" title="Выбрать" class="t12">&gt;&gt;</a> &nbsp;<%
