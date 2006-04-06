@@ -1,10 +1,10 @@
-# $Id: qFieldTypes.py,v 1.81 2006/02/23 22:47:24 corva Exp $
+# $Id: qFieldTypes.py,v 1.82 2006/02/24 18:16:04 corva Exp $
 
 '''Classes for common field types'''
 
 from __future__ import generators
 
-import types, os, re, sys, weakref, logging
+import types, os, re, sys, logging
 logger = logging.getLogger(__name__)
 
 from mx import DateTime
@@ -71,11 +71,7 @@ class FieldType(object):
         item    - item object
         name    - field name
         user    - login of user, requested this operation'''
-        value = getattr(item, name)
-        if value is None:
-            value = self.convertToForm(self.getDefault(item), item)
-        else:
-            value = self.convertToForm(value, item)
+        value = self.convertToForm(getattr(item, name), item)
         namespace = global_namespace.copy()
         namespace.update({'title': name, 'value': value,
                           'item': item, 'brick': self})
@@ -133,12 +129,21 @@ class FieldType(object):
                     template_type, cls._templates[template_type])
             return cls._templates[template_type]
 
-    def _identity(self, value, item=None): return value
-    convertToDB = convertToForm = _identity
+    def _identity(self, value, item): return value
+
+    convertToDB = _identity
+    convertFromDB = _identity
+
     def convertToString(self, value, item=None): return str(value)
-    def convertFromCode(self, value, item=None): return value
-    def convertFromDB(self, value, item=None): return value
-    def convertFromString(self, value, item=None): return value
+    convertFromString = _identity
+    convertFromCode = _identity
+
+    def convertToForm(self, value, item):
+        if value is None:
+            return ''
+        else:
+            return value
+        
     def convertFromForm(self, form, name, item=None):
         return self.convertFromString(form.getfirst(name, ''), item)
 
@@ -280,27 +285,45 @@ class UNIQUE_STRING(STRING):
     
 class NUMBER(FieldType):
 
-    type = None
-    type_name = "Number"
+    type = None # should be defined in children
     default = 0
-    min_value = 0
+    allowNull = False
+
+    minValue = qUtils.ReadAliasAttribute('min_value')
+    maxValue = qUtils.ReadAliasAttribute('max_value')
+    # for compatibility only, always use minValue and maxValue,
+    # support for _ names will be removed in the future
+    min_value = 0 
     max_value = sys.maxint
-    error_message = '%(brick.type_name)s from %(brick.min_value)s to '\
-                    '%(brick.max_value)s required'
+    
+    error_message = '%(brick.type.__name__.title())s from ' \
+                    '%(brick.minValue)s to %(brick.maxValue)s required'
 
     def __init__(self, **kwargs):
         FieldType.__init__(self, **kwargs)
-        self.maxlength = max(len(str(self.max_value)),
-                             len(str(self.min_value))) + 1
+        self.maxlength = max(len(str(self.maxValue)),
+                             len(str(self.minValue))) + 1
         self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
 
     def convertFromString(self, value, item=None):
-        return self.type(value)
+        if self.allowNull and not value:
+            return
+        else:
+            return self.type(value)
+
+    def convertToString(self, value, item):
+        if not value and self.allowNull:
+            return ''
+        else:
+            return str(value)
 
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
         if not value:
-            value = self.getDefault(item)
+            if self.allowNull:
+                return
+            else:
+                value = self.getDefault(item)
         message = qUtils.interpolateString(self.error_message, {'brick': self})
         try:
             value = self.type(value)
@@ -312,12 +335,14 @@ class NUMBER(FieldType):
             raise self.InvalidFieldContent(message)
 
     def convertFromDB(self, value, item=None):
-        return self.type(value)
+        if value is None and self.allowNull:
+            return
+        else:
+            return self.type(value)
     
 
 class INTEGER(NUMBER):
     type = int
-    type_name = "Integer"
 
 
 class INTEGER_AUTO_ID(INTEGER):
@@ -391,11 +416,7 @@ class DATETIME(FieldType):
             return ''
         else:
             return value.strftime(self.format)
-    def convertToForm(self, value, item):
-        if value is None:
-            return ''
-        else:
-            return value.strftime(self.format)
+    convertToForm = convertToString
     def convertFromForm(self, form, name, item=None):
         value = form.getfirst(name, '').strip()
         if not value and self.allowNull:
@@ -474,15 +495,15 @@ class LazyItem:
     field of item as a references to other item without retrieving it untill
     it is really neccessary"""
     
-    def __init__(self, site, stream_params, item_id):
-        self._site = site # it's already a weakref
-        self._stream_id, self._stream_tag = stream_params
+    def __init__(self, item, field, item_id):
+        self._owner = qUtils.createWeakProxy(item)
+        self._field = field
         self._item_id = item_id
 
     def _stream(self):
-        return self._site.retrieveStream(
-            self._stream_id,
-            tag=self._site.transmitTag(self._stream_tag))
+        stream, tag = self._field._stream_params(self._owner)
+        return self._owner.site.retrieveStream(
+            stream, tag=self._owner.site.transmitTag(tag))
 
     def _item(self):
         "Returns item, should be redefined in childs"
@@ -500,14 +521,15 @@ class LazyItem:
         return getattr(self._item, name)
 
     def __setattr__(self, name, value):
-        if name in ('_site', '_stream_id', '_stream_tag', '_item_id', '_item'):
+        if name in ('_owner', '_field', '_item_id', '_item'):
             self.__dict__[name] = value
         else:
             setattr(self._item, name, value)
 
     def __repr__(self):
-        return '<LazyItem for stream_id=%r id=%r>' % (self._stream_id,
-                                                      self._item_id)
+        stream, tag = self._field._stream_params(self._owner)
+        return '<LazyItem for stream_id=%r id=%r>' % (
+            stream, self._item_id)
 
 class RetrievedLazyItem(LazyItem):
     """This class retrieves item from db w/o retrieving whole stream"""
@@ -549,13 +571,11 @@ class FOREIGN_DROP(FieldType):
 
     def convertFromCode(self, value, item):
         if value is not None:
-            return self.proxyClass(item.site, self._stream_params(item),
-                                   value)
+            return self.proxyClass(item, self, value)
 
     def convertFromDB(self, value, item):
         if value!=self.missingID:
-            return self.proxyClass(item.site, self._stream_params(item),
-                                   value)
+            return self.proxyClass(item, self, value)
     
     def convertToDB(self, value, item=None):
         if value: # calls LazyItem.__nonzero__ that checks for None
@@ -573,7 +593,7 @@ class FOREIGN_DROP(FieldType):
         if value:
             stream = self._retrieve_stream(item)
             id = stream.fields.id.convertFromString(value, item)
-            return self.proxyClass(item.site, self._stream_params(item), id)
+            return self.proxyClass(item, self, id)
         else:
             return None
 
@@ -581,10 +601,8 @@ class FOREIGN_DROP(FieldType):
         value = form.getfirst(name, None)
         if value:
             stream = self._retrieve_stream(item)
-            value = self.proxyClass(item.site,
-                                    self._stream_params(item),
-                                    stream.fields.id.convertFromString(value,
-                                                                       item))
+            value = self.proxyClass(
+                item, self, stream.fields.id.convertFromString(value, item))
         if not (self.allowNull or value):
             raise self.InvalidFieldContent(self.null_not_allowed_error)
         else:
@@ -608,7 +626,7 @@ class LazyItemList:
 
     def __init__(self, field_type, item):
         self.field_type = field_type
-        self.item = weakref.proxy(item)
+        self.item = qUtils.createWeakProxy(item)
 
     def __getitem__(self, index):
         return self._items[index]
@@ -819,7 +837,7 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
     class LazyVirtual:
         def __init__(self, item, template_stream, param_name=None,
                      rule_id=None, rewrite_to_stream=None):
-            self._item = weakref.proxy(item)
+            self._item = qUtils.createWeakProxy(item)
             self._template_stream = template_stream
             self._param_name = param_name
             self._rewrite_to_stream = rewrite_to_stream
@@ -891,7 +909,7 @@ class IMAGE(FieldType, ExternalStoredField):
         path_template = None
         
         def __init__(self, field_type, item, body=None, old_path=None):
-            self.item = weakref.proxy(item)
+            self.item = qUtils.createWeakProxy(item)
             self.edit_root = field_type.editRoot
             self.path_template = field_type.pathTemplate
             self.body = body

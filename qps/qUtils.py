@@ -1,8 +1,8 @@
-# $Id: qUtils.py,v 1.3 2004/04/05 10:57:29 ods Exp $
+# $Id: qUtils.py,v 1.4 2005/01/20 00:05:32 corva Exp $
 
 '''Miscellaneous utilities'''
 
-import os, logging, sys
+import os, logging, sys, weakref
 logger = logging.getLogger(__name__)
 
 def writeFile(file_name, data):
@@ -238,5 +238,14 @@ from PPA.Template.Engines.PySI import EvalDict
 
 def interpolateString(template, namespace):
     return template % EvalDict(namespace, namespace)
+
+
+def createWeakProxy(obj):
+    "Returns weakref.proxy of obj"
+    
+    try:
+        return weakref.proxy(obj)
+    except TypeError: # obj already is a proxy
+        return obj
 
 # vim: ts=8 sts=4 sw=4 ai et

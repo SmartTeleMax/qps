@@ -1,8 +1,8 @@
-# $Id: qBase.py,v 1.16 2005/11/20 21:31:48 corva Exp $
+# $Id: qBase.py,v 1.17 2006/02/23 22:49:17 corva Exp $
 
 '''Base brick classes'''
 
-import weakref, logging
+import logging
 logger = logging.getLogger(__name__)
 from qps import qUtils, qEvents
 
@@ -19,10 +19,7 @@ class Brick(object):
         '''site      - site object collection almost all configuration
            id        - id of object (same as stream_id for stream.'''
         self.id = id
-        try:
-            self.site = weakref.proxy(site)
-        except TypeError:
-            self.site = site
+        self.site = qUtils.createWeakProxy(site)
         self.dbConn = site.dbConn
             
     def path(self):
@@ -45,10 +42,7 @@ class Item(Brick):
         # XXX A bit ugly, but there is no better solution now.  Looking forward
         # callback argument of weakref.proxy().
         if stream.tag is None:
-            try:
-                self.stream = weakref.proxy(stream)
-            except TypeError:
-                self.stream = stream
+            self.stream = qUtils.createWeakProxy(stream)
         else:
             self.stream = stream
         self.permissions = stream.permissions
