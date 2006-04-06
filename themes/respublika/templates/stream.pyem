@@ -85,7 +85,7 @@ if brick:
         <td><%= template.showFieldInIndex(item, field) %></td><%
         if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
             %>
-        <td class="selectFieldValue"><input type="checkbox" name="qps-select" value="<%= item.fields.id.convertToString(item.id) %>"></td><%
+        <td class="selectFieldValue"><input type="checkbox" name="qps-select" value="<%= item.fields.id.convertToString(item.id, item) %>"></td><%
         %>
     </tr><%
     %>

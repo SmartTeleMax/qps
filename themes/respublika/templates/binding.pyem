@@ -110,7 +110,7 @@ if brick:
         for field in template.allowedIndexFields(brick):
             %>
         <td><%= template.showFieldInIndex(item, field, allow_link_through=False) %></td><%
-        id_str = item.fields.id.convertToString(item.id)
+        id_str = item.fields.id.convertToString(item.id, item)
         checked = isBound(item) and 'checked'
         %>
         <td class="selectFieldValue"><%

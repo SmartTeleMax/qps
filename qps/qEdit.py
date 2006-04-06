@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.44 2005/11/20 22:51:59 corva Exp $
+# $Id: qEdit.py,v 1.45 2005/12/20 20:56:20 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -151,7 +151,7 @@ class RenderHelper(qWebUtils.RenderHelper):
             {'linkThrough': allow_link_through and self.user.checkPermission(
             'r', item.permissions) and field_type.linkThrough,
              'field_suffix': '%s:%s' % \
-             (item.fields['id'].convertToString(item.id), name)}
+             (item.fields['id'].convertToString(item.id, item), name)}
             )
         return field_type.show(item, name, template_type,
                                self.edit.getFieldTemplate,
