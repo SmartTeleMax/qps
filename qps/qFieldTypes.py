@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.82 2006/02/24 18:16:04 corva Exp $
+# $Id: qFieldTypes.py,v 1.83 2006/04/06 13:10:58 corva Exp $
 
 '''Classes for common field types'''
 
@@ -49,6 +49,9 @@ class FieldType(object):
     title       = '?'
     indexTitle  = qUtils.ReadAliasAttribute('title')
    
+    defaultOrderDirection = 'ASC'
+    allowOrder = False
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
         # quote class name to conform css rules

@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.17 2006/02/23 22:49:17 corva Exp $
+# $Id: qBase.py,v 1.18 2006/04/06 13:10:57 corva Exp $
 
 '''Base brick classes'''
 
@@ -6,7 +6,29 @@ import logging
 logger = logging.getLogger(__name__)
 from qps import qUtils, qEvents
 
-
+class OrderAttribute(object):
+    """Proxy for access to stream 'order' attribute. Normalizes order on set"""
+    
+    def __set__(self, inst, value):
+        if not value:
+            inst._order = ()
+        else:
+            inst._order = tuple(self._normalize(value))
+            
+    def __get__(self, inst, cls):
+        return inst._order
+    
+    def _normalize(self, order):
+        for name, direction in order:
+            try:
+                direction = direction.upper()
+            except AttributeError:
+                direction = None
+            if direction not in ('ASC', 'DESC'):
+                raise TypeError(
+                    "Order direction should be a string 'asc' or 'desc'")
+            yield name, direction
+    
 class Brick(object):
     '''Base class for all bricks (streams and items) with data stored in DB'''
 
@@ -186,16 +208,19 @@ class Stream(Brick):
     type = 'stream'
     itemClass = Item
     storeHandler = qEvents.StoreHandler()
+    order = OrderAttribute()
 
     def __init__(self, site, id, page=0, modifiers=[], **kwargs):
         Brick.__init__(self, site, id)
-        # updating stream parameters
-        self.__dict__.update(kwargs)
+        # order is property, __dict__.update doesn't match
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
         # XXX Why page is checked here and not in PagedStreamLoader?  Anyway,
         # this check is incomplete.
         if page<1:
             page = 1
         self.page = page
+            
         # the list of items
         self.itemList = []
         self.itemModifiers = []
@@ -360,6 +385,20 @@ class Stream(Brick):
     def deleteExtFields(self, item_ids):
         for field_name, field_type in self.fields.external.iteritems():
             field_type.delete(item_ids, stream=self)
+
+    # --- Order functions ---
+    def isDefaultOrder(self):
+        """Checks if current stream order is default"""        
+        default = self.site.createStream(self.id).order
+        return (default == self.order)
+
+    def getFieldOrder(self, field_name):
+        """Returns default order direction for field, matched by field_name,
+        if field doesn't allow order - returns None"""
+        field_type = self.fields.get(field_name)
+        if not field_type or not field_type.allowOrder:
+            return None
+        return field_type.defaultOrderDirection.upper()
 
 
 # vim: ts=8 sts=4 sw=4 ai et

@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.9 2005/08/15 21:22:34 corva Exp $
+# $Id: qPath.py,v 1.10 2005/08/18 02:17:10 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -70,7 +70,14 @@ class PagedStreamLoader:
             page = 1
         _params = self.params.copy()
         _params.update(params)
-        return self.site.createStream(stream_id, page=page, **_params)
+        fieldname = self.form.getfirst('order_field', None)
+        if fieldname is not None:
+            direction = self.form.getfirst('order_direction', 'asc').upper()
+        stream = self.site.createStream(stream_id, page=page, **_params)
+        if stream.getFieldOrder(fieldname) is not None \
+                and direction in ('ASC', 'DESC'):
+            stream.order = ((fieldname, direction),)
+        return stream
 
 
 class FilteredStreamLoader(PagedStreamLoader):

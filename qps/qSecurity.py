@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.12 2005/11/27 23:01:10 corva Exp $
+# $Id: qSecurity.py,v 1.13 2005/11/30 22:44:36 corva Exp $
 
 '''Function to check permissions'''
 
@@ -111,7 +111,7 @@ class UsersStream(SQLStream):
 
     def getUser(self, login=None):
         if login:
-            table, fields, condition, group = self.constructQuery()
+            table, fields, condition, group, order = self.constructQuery()
             condition = self.dbConn.join(
                 [condition, Query('%s=' % self.loginField, Param(login))])
             items = self.itemsByQuery(table, fields, condition, group=group)

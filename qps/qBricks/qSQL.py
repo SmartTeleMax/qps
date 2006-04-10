@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.15 2005/02/15 15:24:37 corva Exp $
+# $Id: qSQL.py,v 1.16 2006/02/23 22:49:17 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -52,7 +52,7 @@ class SQLItem(qBase.Item):
     def existsInStream(self):
         '''Return True if item exists and belong to self.stream in DB, False
         otherwise'''
-        table, fields, condition, group = self.stream.constructQuery()
+        table, fields, condition, group, order = self.stream.constructQuery()
         if group:
             fields = 'DISTINCT %s' % group
         elif fields[0][:len('DISTINCT')].upper()=='DISTINCT':
@@ -65,7 +65,7 @@ class SQLItem(qBase.Item):
     def retrieve(self, ignoreStatus=0):
         '''Retrieve data of item from DB'''
         if not self._retrieved or ignoreStatus:
-            table, fields, condition, group = self.stream.constructQuery()
+            table, fields, condition, group, order = self.stream.constructQuery()
             condition = self.dbConn.join([condition, self.sqlCondition()])
             rows = self.dbConn.selectRowsAsDict(table,
                         fields, condition=condition, group=group)
@@ -194,10 +194,13 @@ class SQLStream(qBase.Stream):
             if self.joinFields:
                 fields += ["%s.%s" % (self.joinTable, f) \
                            for f in self.joinFields.keys()]
-        return table, fields, condition, self.group
+
+        order = self.order and ', '.join(
+            ['%s %s' % (name, dr) for name, dr in self.order]) or ''
+        return table, fields, condition, self.group, order
 
     def retrieveItems(self, **kwargs):
-        params = dict(zip(('table', 'fields', 'condition', 'group'),
+        params = dict(zip(('table', 'fields', 'condition', 'group', 'order'),
                           self.constructQuery()))
         params.update(kwargs)
         return self.itemsByQuery(**params)
@@ -217,9 +220,9 @@ class SQLStream(qBase.Stream):
             self.clear()
             logger.debug("Retrieving stream `%s'", self.id)
             limits=self.calculateLimits()
-            table, fields, condition, group = self.constructQuery()
+            table, fields, condition, group, order = self.constructQuery()
             self.itemList = self.itemsByQuery(table, fields, condition,
-                  self.order, group, limitOffset=limits[0], limitSize=limits[1])
+                  order, group, limitOffset=limits[0], limitSize=limits[1])
             self._retrieved = 1
         return self._retrieved
 
@@ -232,7 +235,7 @@ class SQLStream(qBase.Stream):
                                     ):
                 self._count_items = len(self.itemList)
             else:
-                table, fields, condition, group = self.constructQuery()
+                table, fields, condition, group, order = self.constructQuery()
                 if group:
                     fields = 'DISTINCT %s' % group
                 elif fields[0][:len('DISTINCT')].upper()=='DISTINCT':
@@ -250,7 +253,7 @@ class SQLStream(qBase.Stream):
             tnx = self.dbConn.getTransaction()
             if self.condition:
                 # filter items existing in this stream (not it's table)
-                table, fields, condition, group = self.constructQuery()
+                table, fields, condition, group, order = self.constructQuery()
                 item_ids = self.dbConn.selectFieldAsList(
                     table,
                     fields[0],
@@ -265,5 +268,6 @@ class SQLStream(qBase.Stream):
             tnx.close()
             self.storeHandler.handleItemsDelete(self, item_ids)
         return number_of_deleted
+
 
 # vim: ts=8 sts=4 sw=4 ai et

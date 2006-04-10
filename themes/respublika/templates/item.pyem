@@ -21,9 +21,15 @@ if template.isNew:
     %><%= brick.stream.path() %><%
 else:
     %><%= brick.path() %><%
-%>" method="POST" enctype="multipart/form-data">
-<input type="hidden" name="order" value="<%= brick.stream.order %>">
-<input type="hidden" name="page" value="<%= brick.stream.page %>">
+%>" method="POST" enctype="multipart/form-data"> <%
+isDefaultOrder = brick.stream.isDefaultOrder()
+if not isDefaultOrder:
+    order_field, order_direction = brick.stream.order[0] 
+    %>
+    <input type="hidden" name="order_field" value="<%= order_field %>">
+    <input type="hidden" name="order_direction" value="<%= order_direction %>"> 
+    <%
+%><input type="hidden" name="page" value="<%= brick.stream.page %>">
 <div class="item">
 
 <div class="itemTitle t18b"><%= brick.stream.title %>: <%= item_title %></div>
@@ -35,8 +41,9 @@ stream_path = '%s%s' % (template.publisher.prefix, brick.stream.path())
 stream_params = []
 if brick.stream.page:
     stream_params.append('page=%s' % brick.stream.page)
-if brick.stream.order:
-    stream_params.append('order=%s' % quoteURLPath(brick.stream.order))
+if not isDefaultOrder:
+    stream_params.append('order_field=%s&order_direction=%s' 
+                                                % brick.stream.order[0])
 if 'x' in stream_perms:
     if stream_params:
         path = stream_path +'?'+'&'.join(stream_params)

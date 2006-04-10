@@ -3,7 +3,18 @@
 filter_fields = template.filterFields(brick)
 if filter_fields:
     filter = brick.filter.__class__()
-browse_uri = template.edit.prefix+brick.path()+'?page=%s'
+brick_path = template.edit.prefix+brick.path()
+page_uri_tmpl = brick_path +'?page=%s'
+all_stream_params = page_uri_tmpl % brick.page
+# show first page when order is changed
+order_uri_tmpl = brick_path + '?page=1&order_field=%s&order_direction=%s'
+# add order parameters to page links
+isDefaultOrder = brick.isDefaultOrder()
+if not isDefaultOrder:
+    order_params = '&order_field=%s&order_direction=%s' % brick.order[0]
+    page_uri_tmpl += order_params
+    all_stream_params += order_params
+# add filter parameters
 if hasattr(brick, 'filterState'):
    state = brick.filterState
    chunks = []
@@ -12,21 +23,30 @@ if hasattr(brick, 'filterState'):
       value = getattr(state, name)
       if value:
           chunks.append('filter-%s=%s' % (name, quoteURLPath(field.convertToString(value,state)).replace('%', '%%')))
-   browse_uri = '&'.join([browse_uri]+chunks)
+   filter_parameters_query = '&' + '&'.join(chunks)
+   page_uri_tmpl += filter_parameters_query
+   order_uri_tmpl += filter_parameters_query
+   all_stream_params += filter_parameters_query
+else:
+   filter_parameters_query = ''
 %>
 
 <div id="notify" style="display: none;"></div>
 
 <div class="streamTitle t18b"><%= brick.title %> (<%= brick.id %>)</div>
-<%= template('inc_browse', brick=brick, uri=browse_uri) %>
+<%= template('inc_browse', brick=brick, uri=page_uri_tmpl) %>
 <!-- stream menu --><%
 menus = []
 if filter_fields:
     menus.append('<a href="#" onclick="toggleElement(\'filter\'); return false">Фильтр</a>')
 if template.isStreamCreatable(brick):
-    menus.append('<a href="'+template.edit.prefix+brick.path()+'?qps-action:newItem=1'+'">Создать новый элемент</a>')
+    #menus.append('<a href="'+template.edit.prefix+brick.path()+'?qps-action:newItem=1'+'">Создать новый элемент</a>')
+    menus.append('<a href="'+brick_path+'?qps-action:newItem=1'+all_stream_params+'">Создать новый элемент</a>')
 if template.isStreamUnbindable(brick):
     menus.append('<a href="'+template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()+'" onclick="javascript:var new_window=window.open(\''+template.edit.prefix+'/'+brick.virtual.templateStream+'/?qps-action%3AshowBinding=1&bound='+brick.path()+'\',\'_blank\',\'width=620,height=460,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes\'); return false;">Перевязать</a>')
+if not isDefaultOrder:
+    menus.append('<a href="' + brick_path + '?page=%s' % brick.page +
+                    filter_parameters_query + '">Отсортировать по-умолчанию</a>')
 if menus:
     %>
 <div class="streamMenu"><%
@@ -49,6 +69,10 @@ if filter_fields:
 <%
     for name in filter_fields:
         %><div class="filterField"><%= template.showFilterField(filterState, name) %></div><%
+    if not isDefaultOrder:
+        name, direction = brick.order[0]
+        %><input type="hidden" name="order_field" value="<%= name %>">
+        <input type="hidden" name="order_direction" value="<%= direction %>"><%
     %>
 <div class="filterActions"><input type="submit" value="Показать"></div>
 </div>
@@ -62,13 +86,40 @@ if brick:
 <form action="<%= template.edit.prefix + brick.path() %>" method="POST" onsubmit="n=document.getElementById('notify'); n.innerHTML='Изменения сохраняются, пожалуйста, подождите.'; n.style.display='';">
 <div class="streamContainer">
 
-<table border="0" cellpadding="6" cellspacing="1">
+<table cellspacing="1" border="0">
 <!-- fields titles -->
+    <%
+    order = brick.order
+    if len(order) == 1:
+        current_order_field, current_order_direction = order[0]
+    else:
+        current_order_field = current_order_direction = None
+    direction_symbols = {'ASC': '&uarr;', 'DESC': '&darr;'}
+    %>
     <tr class="streamFieldNames"><%
     for field_name in template.allowedIndexFields(brick):
         field_type = brick.indexFields[field_name]
+        field_direction = brick.getFieldOrder(field_name)
+        current = field_name == current_order_field
+        if field_direction:
+            if field_name == current_order_field:
+                direction=(current_order_direction=='ASC') and 'DESC' or 'ASC'
+            else:
+                direction = field_direction
+            order_url = order_uri_tmpl % (field_name, direction)
         %>
-        <td><%= field_type.indexTitle %></td><%
+        <td<%
+        if field_direction:
+            %> class="orderControl"<%
+        %>><%
+        if field_direction:
+            %><a href="<%=order_url%>"><%
+        %><div><%= field_type.indexTitle %></div><%
+        if current:
+            %><div class="orderDirection"><%= direction_symbols[current_order_direction] %></div><%
+        %><%
+        if field_direction:
+            %></a></td><%
     if template.isStreamDeletable(brick) or template.isStreamUnbindable(brick):
         %>
         <td id="selectFieldName">[x]</td><%
@@ -116,6 +167,6 @@ else:
 </div><%
 %>
 
-<%= template('inc_browse', brick=brick, uri=browse_uri) %>
+<%= template('inc_browse', brick=brick, uri=page_uri_tmpl) %>
 
 <%= template('inc_bottom', brick=brick) %>
