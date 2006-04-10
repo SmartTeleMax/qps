@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.9 2006/02/23 23:04:54 corva Exp $
+# $Id: qSQL.py,v 1.10 2006/04/10 13:19:10 ods Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -283,7 +283,7 @@ class Connection(object):
         field_values = Query(',').join(
                                     [Param(fv) for fv in field_dict.values()])
         query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
-                                    Query(*field_values) + ')'
+                                    field_values + ')'
         return self.execute(query)
 
     def insertMany(self, table, fields, values):
@@ -296,7 +296,7 @@ class Connection(object):
         field_names = ','.join(fields)
         field_values = Query(',').join([Param(fv) for fv in values[0]])
         query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
-                Query(*field_values) + ')'
+                                    field_values + ')'
         sql = query.sql(self._db_module.paramstyle)[0]
         cursor = self._dbh.cursor()
         logger.debug(sql)
