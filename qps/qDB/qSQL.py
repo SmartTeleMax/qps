@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.8 2005/12/21 13:33:21 corva Exp $
+# $Id: qSQL.py,v 1.9 2006/02/23 23:04:54 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -279,16 +279,11 @@ class Connection(object):
 
     def insert(self, table, field_dict):
         '''Construct and execute SQL INSERT command and return cursor.'''
-        field_names = []
-        field_values = []
-        for field_name, field_value in field_dict.items():
-            if field_names:
-                field_names.append(',')
-                field_values.append(',')
-            field_names.append(field_name)
-            field_values.append(Param(field_value))
-        query = 'INSERT INTO %s (' % table + Query(*field_names) + \
-                ') VALUES (' + Query(*field_values) + ')'
+        field_names = ','.join(field_dict.keys())
+        field_values = Query(',').join(
+                                    [Param(fv) for fv in field_dict.values()])
+        query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
+                                    Query(*field_values) + ')'
         return self.execute(query)
 
     def insertMany(self, table, fields, values):
@@ -299,32 +294,22 @@ class Connection(object):
         if not self._current_transaction:
             raise self.ExecuteOutsideOfTransaction()
         field_names = ','.join(fields)
-        field_values = []
-
-        for value in values[0]:
-            if field_values:
-                field_values.append(',')
-            field_values.append(Param(value))
+        field_values = Query(',').join([Param(fv) for fv in values[0]])
         query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
                 Query(*field_values) + ')'
-        query = query.sql(self._db_module.paramstyle)[0]
-
+        sql = query.sql(self._db_module.paramstyle)[0]
         cursor = self._dbh.cursor()
-        logger.debug(query)
-        cursor.executemany(query, values)
+        logger.debug(sql)
+        cursor.executemany(sql, values)
         return cursor
 
     def update(self, table, field_dict, condition=''):
         '''Construct and execute SQL UPDATE command and return cursor.'''
         if not self._current_transaction:
             raise self.ExecuteOutsideOfTransaction()
-        query = Query()
-        for name, value in field_dict.items():
-            if query:
-                query += ','
-            query += Query('%s=' % name, Param(value))
+        query = Query(',').join([Query('%s=' % name, Param(value))
+                                 for name, value in field_dict.items()])
         query = 'UPDATE %s SET ' % table + query
-
         if condition:
             query += ' WHERE '+condition
         return self.execute(query)
@@ -348,7 +333,7 @@ class Connection(object):
 
     def selectRows(self, *args, **kwargs):
         '''Alias for selectRowsAsList().'''
-        # It's define as separate method so that only selectRowsAsList should
+        # It's defined as separate method so that only selectRowsAsList should
         # be overwritten when needed.
         return self.selectRowsAsList(*args, **kwargs)
 
