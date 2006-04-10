@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.16 2006/02/23 22:49:17 corva Exp $
+# $Id: qSQL.py,v 1.17 2006/04/10 11:56:01 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -7,6 +7,16 @@ logger = logging.getLogger(__name__)
 import qBase
 from qps import qUtils
 from qps.qDB.qSQL import Query, Param
+
+
+class OrderAttribute(qBase.OrderAttribute):
+    """Allows to define order in sql-stype (as string)"""
+    
+    def _normalize(self, order):
+        if type(order) == str:
+            # user tries to pass sql-like order description
+            order = [i.split() for i in order.split(',')]
+        return super(OrderAttribute, self)._normalize(order)
 
 
 class SQLItem(qBase.Item):
@@ -148,6 +158,7 @@ class SQLItem(qBase.Item):
 
 class SQLStream(qBase.Stream):
     itemClass = SQLItem
+    order = OrderAttribute()
     
     def calculateLimits(self):
         '''Return limits for items retrieval (offset and number)'''
