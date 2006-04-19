@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.4 2005/01/20 00:05:32 corva Exp $
+# $Id: qUtils.py,v 1.5 2006/04/06 13:10:58 corva Exp $
 
 '''Miscellaneous utilities'''
 
@@ -213,6 +213,9 @@ class Descriptions(object):
     def keys(self):
         return [fn for fn, ft in self]
 
+    def values(self):
+        return [ft for fn, ft in self]
+    
     def _config_dict(self):
         return dict(self._config)
     _config_dict = CachedAttribute(_config_dict)
