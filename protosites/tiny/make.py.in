@@ -1,5 +1,5 @@
 #!%(python_executable)s
-# $Id: make.py.in,v 1.1 2004/03/22 14:45:55 ods Exp $
+# $Id: make.py.in,v 1.2 2004/03/22 15:58:21 ods Exp $
 
 import os, logging, sys
 from getopt import getopt
@@ -15,7 +15,7 @@ for opt, arg in opts:
     if opt=='-p':
         try:
             name, value = arg.split('=', 1)
-            value = eval(value, {'__builtinds__': {}})
+            value = eval(value, {'__builtins__': {}})
         except ValueError:
             sys.exit('Incorrect value for option -p: %%r' %% arg)
         else:
