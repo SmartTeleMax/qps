@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.17 2006/04/10 11:56:01 corva Exp $
+# $Id: qSQL.py,v 1.18 2006/04/10 13:08:44 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -15,7 +15,9 @@ class OrderAttribute(qBase.OrderAttribute):
     def _normalize(self, order):
         if type(order) == str:
             # user tries to pass sql-like order description
-            order = [i.split() for i in order.split(',')]
+            order = [len(i) == 1 and (i+['ASC']) or i for i in \
+                     [i.split() for i in order.split(',')]
+                     ]
         return super(OrderAttribute, self)._normalize(order)
 
 
