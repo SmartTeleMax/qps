@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.18 2006/04/06 13:10:57 corva Exp $
+# $Id: qBase.py,v 1.19 2006/04/10 11:56:01 corva Exp $
 
 '''Base brick classes'''
 
@@ -237,7 +237,7 @@ class Stream(Brick):
         import qps.qFieldTypes
         default = qps.qFieldTypes.FieldDescriptions([])
         if hasattr(self, 'joinTable'):
-            return self.site.fields.get(self.joinTable, default)
+            return self.site.fields.get(self.joinTable, default).main
         else:
             return default
     joinFields = qUtils.CachedAttribute(joinFields)
