@@ -25,6 +25,6 @@ if 'w' in selfperms and 'r' in selfperms:
     %>
 <div class="menuCommand"><a href="<%= template.edit.prefix+template.user.path() %>">Мои настройки</a></div><%
 %>
-<div class="menuCommand"><a href="?qps-action:reAuth=1&user=<%= template.user %>">Сменить пользователя</a></div>
+<div class="menuCommand"><a href="?qps-action:logout=1&user=<%= template.user %>">Сменить пользователя</a></div>
 </div>
 <!-- inc_navigation ends -->

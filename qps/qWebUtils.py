@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.9 2005/11/05 22:44:57 corva Exp $
+# $Id: qWebUtils.py,v 1.10 2006/02/24 18:00:38 corva Exp $
 
 '''Template support'''
 
@@ -34,15 +34,14 @@ class TemplateGetter(object):
 
     _getters = {}
     
-    def __new__(cls, search_dirs, charset=None, cacheClass=MemoryCache):
+    def __new__(cls, search_dirs, cacheClass=MemoryCache):
         search_dirs = tuple(search_dirs)  # Insure sequence is immutable
-        getter_key = (search_dirs, charset)
+        getter_key = (search_dirs,)
         if not cls._getters.has_key(getter_key):
             self = object.__new__(cls)
             self.source = search_dirs
             self.controller = TemplateController(
-                    FileSourceFinder(search_dirs,
-                                     file=qUtils.ReadUnicodeFile(charset)),
+                    FileSourceFinder(search_dirs),
                     template_wrapper_class=_PPATemplateWrapper,
                     template_cache=cacheClass())
             cls._getters[getter_key] = self
@@ -104,7 +103,7 @@ class Publisher(object):
         if self.templateDirs is None:
             return self.site.getTemplateGetter()
         else:
-            return TemplateGetter(self.templateDirs, self.site.templateCharset)
+            return TemplateGetter(self.templateDirs)
     getTemplate = qUtils.CachedAttribute(getTemplate)
 
 

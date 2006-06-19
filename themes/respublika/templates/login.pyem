@@ -2,9 +2,10 @@
 <html>
   <head>
     <title><%= template.publisher.title %></title><%
-if brick.site.clientCharset:
+charset = template.publisher.getClientCharset(None)
+if charset:
     %>
-    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= charset %>"><%
 %>
     <link href="<%= template.publisher.staticPrefix %>/style.css" rel="stylesheet" type="text/css">
   </head>
@@ -14,7 +15,7 @@ if brick.site.clientCharset:
 <table cellpadding=12 cellspacing=0 height="100%" width=100%> 
 <tr><td align="center">
 <table cellpadding=0 cellspacing=0><tr><td>
-<form action="<%= template.edit.prefix+brick.path() %>" method="POST">
+<form action="<%= path %>" method="POST">
 <span class=t18b id=lb><%= template.publisher.title %></span><br>
 <span class=s12>&nbsp;</span><br>
 <span class=t11 id=lb>имя</span><br>
@@ -28,7 +29,7 @@ if brick.site.clientCharset:
 <span class=s6>&nbsp;</span><br>
 <div class=t11 id=lb>запомнить <input type=checkbox name="perm_login" value="y" checked="checked" style="vertical-align: middle;"></div>
 <span class=s12>&nbsp;</span><br>
-<input type="submit" value="Войти">
+<input type="submit" name="qps-action:login" value="Войти">
 </form>
 </td></tr></table>
 </td></tr>

@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.45 2005/12/20 20:56:20 corva Exp $
+# $Id: qEdit.py,v 1.46 2006/04/06 12:53:58 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -182,7 +182,44 @@ class RenderHelper(qWebUtils.RenderHelper):
                           self.edit.getFieldTemplate, ns)
 
 
-class EditBase(qCommands.DispatchedPublisher):
+def requireUser(func):
+    def wrapper(self, request, response, form, objs, user):
+        if not user:
+            raise self.cmd_notAuthorized(request, response, form, objs, user)
+        else:
+            return func(self, request, response, form, objs, user)
+    return wrapper
+
+class requireType:
+    def __init__(self, type):
+        self.type = type
+
+    def __call__(deco, func):
+        def wrapper(self, request, response, form, objs, user):
+            obj = objs[-1]
+            if obj and obj.type == deco.type:
+                return func(self, request, response, form, objs, user)
+            else:
+                raise self.cmd_invalidCommand(request, response, form, objs,
+                                              user)
+        return wrapper
+
+class requirePermission:
+    def __init__(self, perm, message):
+        self.perm = perm
+        self.message = message
+
+    def __call__(deco, func):
+        def wrapper(self, request, response, form, objs, user):
+            obj = objs[-1]
+            if obj and user.checkPermission(deco.perm, obj.permissions):
+                return func(self, request, response, form, objs, user)
+            else:
+                raise self.ClientError(403, deco.message)
+        return wrapper
+    
+    
+class Edit(qCommands.DispatchedPublisher):
     '''Base class for editor interface'''
     streamLoaderClass = qPath.PagedStreamLoader
     renderHelperClass = RenderHelper
@@ -218,17 +255,20 @@ class EditBase(qCommands.DispatchedPublisher):
     fieldTemplateDirs = qUtils.CachedAttribute(fieldTemplateDirs)
 
     def getFieldTemplate(self):
-        return qWebUtils.TemplateGetter(self.fieldTemplateDirs,
-                                        self.site.templateCharset)
+        return qWebUtils.TemplateGetter(self.fieldTemplateDirs)
     getFieldTemplate = qUtils.CachedAttribute(getFieldTemplate)
 
     def __init__(self, site, **kwargs):
         self.parsePath = qPath.PathParser(site,
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
+        self.auth = qSecurity.CookieAuthentication()
         self.title = 'Editor interface of %s' % site.title
         qCommands.DispatchedPublisher.__init__(self, site, **kwargs)
 
+    def getPath(self, obj):
+        return "%s%s" % (self.prefix, obj.path())
+        
     def showObject(self, request, response, user, template_name,
                    content_type='text/html', **kwargs):
         template = self.renderHelperClass(self, user)
@@ -297,16 +337,15 @@ class EditBase(qCommands.DispatchedPublisher):
 
     def handle(self, request, response):
         form = qHTTP.Form(request, self.getClientCharset(request))
-        user = self.getUser(request, response)
         objs = self.parsePath(request.pathInfo,
                               self.streamLoaderClass(self.site, form,
                                                      tag='edit'))
-        if not user:
-            self.cmd_notAuthorized(request, response, form, objs, user)
+        user = self.auth.getUser(self, request, response)
         if objs[-1] is None:
             raise self.NotFound()
         self.dispatcher(self, request, response, form, objs=objs, user=user)
-    
+
+    @ requireUser
     def cmd_defaultCommand(self, request, response, form, objs, user):
         '''Default action: show brick.'''
         obj = objs[-1]
@@ -325,25 +364,50 @@ class EditBase(qCommands.DispatchedPublisher):
     def cmd_invalidCommand(self, request, response, form, objs, user):
         raise self.ClientError(403, self.invalid_command_message)
 
+    def cmd_notAuthorized(self, request, response, form, objs, user):
+        self.log(user, 'requestLogin')
+        self.auth.requestLogin(self, request, response, form,
+                               self.getPath(objs[-1]))
+
+    def do_login(self, request, response, form, objs, user):
+        self.log(user, 'login')
+        user = self.auth.login(self, request, response, form)
+        if user:
+            # XXX ClientError should have template with navigation
+            obj = objs[-1]
+            required_permission, error = \
+                                 self.required_object_permission[obj.type]
+            if required_permission and not user.checkPermission(
+                required_permission, obj.permissions):
+                raise self.SeeOther(self.getPath(self.site))
+            else:
+                raise self.SeeOther(self.getPath(obj))
+        else:
+            self.cmd_notAuthorized(request, response, form, objs, user)
+
+    @ requireUser
+    def do_logout(self, request, response, form, objs, user):
+        self.log(user, 'logout')
+        self.auth.logout(self, request, response, form)
+        raise self.SeeOther(self.getPath(objs[-1]))
+
+    @ requireUser
+    @ requireType('stream')
+    @ requirePermission('c', create_denied_error)
     def do_newItem(self, request, response, form, objs, user):
         '''Show form for new item.  The path corresponds to stream in which
         item is intended to be created.'''
         stream = objs[-1]
-        if stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
-        if not user.checkPermission('c', stream.permissions):
-            raise self.ClientError(403, self.create_denied_error)
         item = stream.createNewItem(stream.fields.id.getDefault())
         self.showBrick(request, response, item, user, isNew=1)
 
+    @ requireUser
+    @ requireType('stream')
+    @ requirePermission('c', create_denied_error)
     def do_createItem(self, request, response, form, objs, user):
         '''Create new item from form data.  The path corresponds to stream in
         which item is created.'''
         stream = objs[-1]
-        if stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
-        if not user.checkPermission('c', stream.permissions):
-            raise self.ClientError(403, self.create_denied_error)
         errors = {}
         id_field_type = stream.fields.id
         id_field_name = stream.fields.idFieldName
@@ -374,16 +438,15 @@ class EditBase(qCommands.DispatchedPublisher):
             else:
                 raise self.SeeOther(self.prefix+item.stream.path())
 
+    @ requireUser
+    @ requireType('item')
+    @ requirePermission('w', edit_denied_error)
     def do_updateItem(self, request, response, form, objs, user):
         '''Update existing item with form data.  The path corresponds to item
         being updated.'''
         import copy
         item = objs[-1]
         origitem = copy.copy(item)
-        if item.type!='item':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
-        if not user.checkPermission('w', item.permissions):
-            raise self.ClientError(403, self.edit_denied_error)
         errors = item.initFieldsFromForm(
                     form, names=self.storableFields(item, user))
         if errors:
@@ -413,8 +476,6 @@ class EditBase(qCommands.DispatchedPublisher):
     def deleteItems(self, stream, form, user):
         '''Method to delete items from stream.  List of item IDs is taken from
         "qps-select" form field.'''
-        if not user.checkPermission('d', stream.permissions):
-            raise self.ClientError(403, self.delete_denied_error)
         item_ids = [stream.fields.id.convertFromString(id, stream) \
                     for id in form.getlist('qps-select')]
         if item_ids:
@@ -424,13 +485,14 @@ class EditBase(qCommands.DispatchedPublisher):
                                                'items': item_ids})
             except stream.dbConn.IntegrityError:
                 raise self.ClientError(403, self.delete_integrity_error)
-    
+
+    @ requireUser
+    @ requireType('stream')
+    @ requirePermission('d', delete_denied_error)
     def do_deleteItems(self, request, response, form, objs, user):
         '''Delete item from stream.  The path corresponds to stream, from which
         items are deleted.'''
         stream = objs[-1]
-        if stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
         self.deleteItems(stream, form, user)
         raise self.SeeOther(self.prefix+stream.path())
 
@@ -439,8 +501,6 @@ class EditBase(qCommands.DispatchedPublisher):
         fields are updated.  Names for fields are rewriten (in sense of
         field_type.convertFromForm()) from "name" to "qps-old:%s:%s" %
         (item.id, name) and "qps-new:%s:%s" % (item.id, name).'''
-        if not user.checkPermission('w', stream.permissions):
-            raise self.ClientError(403, self.edit_denied_error)
         updatable_fields = self.storableIndexFields(stream, user)
         item_fields = stream.indexFields
         if updatable_fields:
@@ -479,21 +539,22 @@ class EditBase(qCommands.DispatchedPublisher):
                     self.log(user, 'updateItems', {'item': item.path(),
                                                    'fields': changed_fields})
 
+    @ requireUser
+    @ requireType('stream')
+    @ requirePermission('w', edit_denied_error)
     def do_updateItems(self, request, response, form, objs, user):
         '''Update several items of stream.  The path corresponds to stream, of
         which items are updated.'''
         stream = objs[-1]
-        if stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
         self.updateItems(stream, form, user)
         raise self.SeeOther(self.prefix+stream.path())
-    
+
+    @ requireUser
+    @ requireType('stream')
     def do_unbindItems(self, request, response, form, objs, user):
         '''Unbind several items from virtual (many-to-many) stream.  The path
         corresponds to stream, from which items are unbound.'''
         stream = objs[-1]
-        if stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
         field_name = getattr(stream, 'joinField', None)
         if field_name is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
@@ -515,6 +576,8 @@ class EditBase(qCommands.DispatchedPublisher):
                                            'field': field_name})
         raise self.SeeOther(self.prefix+stream.path())
 
+    @ requireUser
+    @ requireType('stream')
     def do_showBinding(self, request, response, form, objs, user):
         '''List items that can be bound to some virtual stream.  The path
         corresponds to template stream (stream of items suitable to bind).  The
@@ -522,8 +585,6 @@ class EditBase(qCommands.DispatchedPublisher):
         path for item and name of its field of type EXT_FOREIGN_MULTISELECT in
         form field "field".'''
         template_stream = objs[-1]
-        if template_stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
         bound_path = form.getfirst('bound')
         if bound_path is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
@@ -570,14 +631,14 @@ class EditBase(qCommands.DispatchedPublisher):
                                 boundElementType=bound_element_type,
                                 updated=form.getfirst('updated')))
 
+    @ requireUser
+    @ requireType('stream')
     def do_updateBinding(self, request, response, form, objs, user):
         '''Store new binding.  The path corresponds to template stream (stream
         of items suitable to bind).  The form field "bound" must contain path
         for virtual stream to bind to or path for item and name of its field of
         type EXT_FOREIGN_MULTISELECT in form field "field".'''
         template_stream = objs[-1]
-        if template_stream.type!='stream':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
         bound_path = form.getfirst('bound')
         if bound_path is None:
             return self.cmd_invalidCommand(request, response, form, objs, user)
@@ -657,12 +718,12 @@ class EditBase(qCommands.DispatchedPublisher):
             '&updated=1' % (self.prefix, template_stream.path(), bound.path(),
                             field_name, template_stream.page))
 
+    @ requireUser
+    @ requireType('item')
     def do_showField(self, request, response, form, objs, user):
         "Shows field like publisher.showField does"
         
         item = objs[-1]
-        if item.type != 'item':
-            return self.cmd_invalidCommand(request, response, form, objs, user)
         template = self.renderHelperClass(self, user, isNew=False)
         fieldName = form.getfirst('field', '')
 
@@ -681,6 +742,8 @@ class EditBase(qCommands.DispatchedPublisher):
         if templateCat:
             return "%s.%s" % (templateCat, brick.type)
 
+    @ requireUser
+    @ requireType('item')
     def do_showItemPreview(self, request, response, form, objs, user):
         """Inits item fields from form and shows preview page"""
         
@@ -701,8 +764,5 @@ class EditBase(qCommands.DispatchedPublisher):
             response.write(template(self.previewTemplateName(item),
                                     brick=item))
 
-
-class Edit(EditBase, qSecurity.BasicAuthHandler):
-    pass
 
 # vim: ts=8 sts=4 sw=4 ai et

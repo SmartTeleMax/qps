@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.13 2005/11/30 22:44:36 corva Exp $
+# $Id: qSecurity.py,v 1.14 2006/04/10 11:56:01 corva Exp $
 
 '''Function to check permissions'''
 
@@ -134,42 +134,59 @@ class UsersStream(SQLStream):
 # do_reAuth(...)
 #               - logs current user out
 
-class BasicAuthHandler:
+
+class Authentication:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def getUser(self, publisher, request, response):
+        "Returns user instance"
+        raise NotImplementedError()
+
+    def requestLogin(self, publisher, request, response, form):
+        "Requests login from user"
+        raise NotImplementedError()
+
+    def login(self, publisher, request, response, form):
+        "Sets response to log user in"
+        raise NotImplementedError()
+
+    def logout(self, publisher, request, respnse, form):
+        "Sets response to log user out"
+        raise NotImplementedError()
+
+
+class HTTPAuthentication(Authentication):
     securityGroupTable = {}
     authenticationHeader = 'Basic realm="QPS"'
     
-    def getUser(self, request, response):
+    def getUser(self, publisher, request, response):
         return PyUser(request.user(), self.securityGroupTable)
 
-    def cmd_notAuthorized(self, request, response, form, objs, user):
-        raise self.ClientError(403, self.view_denied_error)
+    def requestLogin(self, publisher, request, response, form):
+        response.headers['WWW-Authenticate'] = self.authenticationHeader
+        raise publisher.ClientError(401, 'Authorization Required')
 
-    def do_reAuth(self, request, response, form, objs, user):
-        prev_user = form.getfirst('user')
-        if prev_user==user.login:
-            response.headers['WWW-Authenticate'] = self.authenticationHeader
-            self.log(user, 'reAuth')
-            raise self.ClientError(401, 'Authorization Required')
-        else:
-            raise self.SeeOther(self.prefix+objs[-1].path())
-        
-class CookieAuthHandler:
+
+class CookieAuthentication(Authentication):
     usersStream = None # name of users stream
     authCookieName = "qpsuser" # name for auth cookie
     expireTimeout = 31536000 # year in seconds
+    authCookieTmpl = "%(publisher.prefix)s"
     
-    def authCookiePath(self):
-        return self.prefix
-    authCookiePath = qUtils.CachedAttribute(authCookiePath)
 
-    def getUser(self, request, response):
+    def _authCookiePath(self, publisher):
+        return qUtils.interpolateString(self.authCookieTmpl,
+                                        {'publisher': publisher})
+
+    def getUser(self, publisher, request, response):
         cookie = qHTTP.getCookie(request, self.authCookieName)
         try:
             login, passwd = cookie.split(':')
         except (ValueError, TypeError, AttributeError):
             login = None
 
-        stream = self.site.retrieveStream(self.usersStream)
+        stream = publisher.site.retrieveStream(self.usersStream)
 
         if login is not None:
             user = stream.getUser(login)
@@ -177,7 +194,15 @@ class CookieAuthHandler:
                 return user
         return stream.getUser(None)
 
-    def cmd_notAuthorized(self, request, response, form, objs, user):
+    def requestLogin(self, publisher, request, response, form, path):
+        template = publisher.renderHelperClass(
+            publisher, self.getUser(publisher, request, response))
+        response.setContentType(
+            'text/html', charset=publisher.getClientCharset(request))
+        response.write(template('login', path=path))
+        raise publisher.EndOfRequest()
+
+    def login(self, publisher, request, response, form):
         login, passwd, perm_login = [form.getfirst(name) for name in \
                                      ('login', 'passwd', 'perm_login')]
         # crypt method used below only supports string types
@@ -186,42 +211,20 @@ class CookieAuthHandler:
         except UnicodeEncodeError:
             passwd = None        
 
-        obj = objs[-1] or self.site
-        if not (login and passwd):
-            template = self.renderHelperClass(self, user)
-            response.setContentType('text/html',
-                                    charset=self.getClientCharset(request))
-            response.write(template('login', brick=obj))
-            raise self.EndOfRequest()
-        else:
-            stream = self.site.retrieveStream(self.usersStream)
-            user = stream.getUser(login)
-            if user and user.fields[stream.passwdField].crypt(passwd) == \
+        stream = publisher.site.retrieveStream(self.usersStream)
+        user = stream.getUser(login)
+        if user and user.fields[stream.passwdField].crypt(passwd) == \
                getattr(user, stream.passwdField):
-                expires = perm_login and self.expireTimeout or None
-                qHTTP.setCookie(response, self.authCookieName,
-                                "%s:%s" % (getattr(user, stream.loginField),
-                                           getattr(user, stream.passwdField)),
-                                expires, path=self.authCookiePath)
-            # lets check if new user has perms to access path it requested
-            try:
-                required_permission, error = \
-                                     self.required_object_permission[obj.type]
-            except KeyError:
-                raise RuntimeError('Object of unexpected type %r' % obj.type)
-            else:
-                if required_permission and \
-                    not user.checkPermission(required_permission,
-                                             obj.permissions):
-                    obj = self.site
-            self.log(user, "login", {'perm_login': perm_login})
-            raise self.SeeOther(self.prefix+obj.path())
+            expires = perm_login and self.expireTimeout or None
+            qHTTP.setCookie(response, self.authCookieName,
+                            "%s:%s" % (getattr(user, stream.loginField),
+                                       getattr(user, stream.passwdField)),
+                            expires, path=self._authCookiePath(publisher))
+        return user
 
-    def do_reAuth(self, request, response, form, objs, user):
+    def logout(self, publisher, request, response, form):
         qHTTP.expireCookie(response, self.authCookieName,
-                           path=self.authCookiePath)
-        self.log(user, 'reAuth')
-        raise self.SeeOther(self.prefix+objs[-1].path())
+                           path=self._authCookiePath(publisher))
 
 
 # vim: ts=8 sts=4 sw=4 ai et

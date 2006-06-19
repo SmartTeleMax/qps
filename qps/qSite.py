@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.14 2005/07/06 23:29:53 corva Exp $
+# $Id: qSite.py,v 1.15 2005/08/24 09:58:42 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -46,7 +46,7 @@ class Site(object):
     makeRoot = ''
     siteMakers = ['qps.qMake.StreamsMaker']
     # define charsets if you use runtime unicode strings
-    templateCharset = clientCharset = dbCharset = None
+    clientCharset = dbCharset = None
 
     def __new__(selfclass):
         try:
@@ -267,7 +267,7 @@ class Site(object):
     def getTemplateGetter(self, name=None):
         assert name is None  # No support for other getters in base class yet
         from qWebUtils import TemplateGetter
-        return TemplateGetter(self.templateDirs, self.templateCharset)
+        return TemplateGetter(self.templateDirs)
 
     def makeAction(self):
         return 'make'
