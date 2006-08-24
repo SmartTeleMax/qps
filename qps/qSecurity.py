@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.14 2006/04/10 11:56:01 corva Exp $
+# $Id: qSecurity.py,v 1.15 2006/06/19 09:09:19 corva Exp $
 
 '''Function to check permissions'''
 
@@ -135,7 +135,7 @@ class UsersStream(SQLStream):
 #               - logs current user out
 
 
-class Authentication:
+class Authentication(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
@@ -220,7 +220,9 @@ class CookieAuthentication(Authentication):
                             "%s:%s" % (getattr(user, stream.loginField),
                                        getattr(user, stream.passwdField)),
                             expires, path=self._authCookiePath(publisher))
-        return user
+            return user
+        else:
+            return stream.getUser(None)
 
     def logout(self, publisher, request, response, form):
         qHTTP.expireCookie(response, self.authCookieName,
