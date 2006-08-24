@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.4 2004/11/18 10:09:42 corva Exp $
+# $Id: qMail.py,v 1.5 2005/06/01 20:46:14 corva Exp $
 
 '''Mail utilities'''
 
@@ -103,7 +103,12 @@ class Composer:
 
         message['To'] = formataddr(To, self.charset)
         message['From'] = formataddr(From, self.charset)
+        self._setHeaders(message, **headers)
+        return message
 
+    def _setHeaders(self, message, **headers):
+        """Sets headers to message, using i18n headers only if needed"""
+        
         h = self.defaultHeaders.copy()
         h.update(headers)
         for name, value in h.items():
@@ -116,6 +121,33 @@ class Composer:
                 message[name] = email.Header.Header(value, self.charset)
             else:
                 message[name] = str(value)
+
+
+class MultipartComposer(Composer):
+    def compose(self, From, To, body, attaches, **headers):
+        from email.MIMEMultipart import MIMEMultipart
+        from email.MIMEText import MIMEText
+        from email.MIMEBase import MIMEBase
+        from email.Encoders import encode_base64
+        
+        message = MIMEMultipart()
+        message['To'] = formataddr(To, self.charset)
+        message['From'] = formataddr(From, self.charset)
+        self._setHeaders(message, **headers)
+        message.preamble = "Multipart message"
+        message.epilogue = ""
+
+        body = isinstance(body, unicode) and body.encode(self.charset) or body
+        text = MIMEText(body, _charset=self.charset)
+        message.attach(text)
+
+        for ctype, filename, fileobj in attaches:
+            maintype, subtype = ctype.split('/', 1)
+            attach = MIMEBase(maintype, subtype)
+            attach.set_payload(fileobj.read())
+            encode_base64(attach)
+            attach.add_header("Content-Disposition", "attachment", filename=filename)
+            message.attach(attach)
 
         return message
 
