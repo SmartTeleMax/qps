@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.46 2006/04/06 12:53:58 corva Exp $
+# $Id: qEdit.py,v 1.47 2006/06/19 09:09:19 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -197,7 +197,7 @@ class requireType:
     def __call__(deco, func):
         def wrapper(self, request, response, form, objs, user):
             obj = objs[-1]
-            if obj and obj.type == deco.type:
+            if obj is not None and obj.type == deco.type:
                 return func(self, request, response, form, objs, user)
             else:
                 raise self.cmd_invalidCommand(request, response, form, objs,
@@ -212,7 +212,8 @@ class requirePermission:
     def __call__(deco, func):
         def wrapper(self, request, response, form, objs, user):
             obj = objs[-1]
-            if obj and user.checkPermission(deco.perm, obj.permissions):
+            if obj is not None \
+                   and user.checkPermission(deco.perm, obj.permissions):
                 return func(self, request, response, form, objs, user)
             else:
                 raise self.ClientError(403, deco.message)
