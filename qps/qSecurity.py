@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.15 2006/06/19 09:09:19 corva Exp $
+# $Id: qSecurity.py,v 1.16 2006/08/24 19:20:38 corva Exp $
 
 '''Function to check permissions'''
 
@@ -202,9 +202,10 @@ class CookieAuthentication(Authentication):
         response.write(template('login', path=path))
         raise publisher.EndOfRequest()
 
-    def login(self, publisher, request, response, form):
+    def login(self, publisher, request, response, form, permanent=False):
         login, passwd, perm_login = [form.getfirst(name) for name in \
                                      ('login', 'passwd', 'perm_login')]
+        perm_login = permanent or perm_login
         # crypt method used below only supports string types
         try:
             passwd = str(passwd)
