@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.5 2005/10/20 19:27:24 corva Exp $
+# $Id: qFilters.py,v 1.6 2005/12/08 15:42:32 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -128,7 +128,8 @@ class SQL_FOREIGN_DROP(SQLEquals, FilterFieldType, FT.FOREIGN_DROP):
     extraOption = " "
 
     def create(self, field):
-        return self(title=field.title, stream=field.stream)
+        return self(title=field.title,
+                    stream=self.stream or field.stream)
 
 
 class SQL_EXT_FOREIGN_MULTISELECT(FilterFieldType, FT.FOREIGN_DROP):
