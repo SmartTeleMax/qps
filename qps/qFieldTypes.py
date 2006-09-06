@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.86 2006/09/06 14:58:48 ods Exp $
+# $Id: qFieldTypes.py,v 1.87 2006/09/06 15:05:51 ods Exp $
 
 '''Classes for common field types'''
 
@@ -722,6 +722,13 @@ class FOREIGN_MULTISELECT(FieldType):
 
     def setValue(self, item, name, value):
         setattr(item, name, getattr(item, name)+ [value])
+
+    def show(self, item, name, template_type, template_getter,
+             global_namespace={}):
+        namespace = global_namespace.copy()
+        namespace.update({'stream': self.itemField._retrieve_stream(item)})
+        return FieldType.show(self, item, name, template_type, template_getter,
+                              namespace)
 
         
 class BOOLEAN(FieldType):
