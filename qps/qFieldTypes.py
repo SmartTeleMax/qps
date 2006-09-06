@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.87 2006/09/06 15:05:51 ods Exp $
+# $Id: qFieldTypes.py,v 1.88 2006/09/06 15:11:39 ods Exp $
 
 '''Classes for common field types'''
 
@@ -719,6 +719,9 @@ class FOREIGN_MULTISELECT(FieldType):
     def getIndexLabel(self, value):
         views = [self.itemField.getLabel(i) for i in value]
         return ', '.join(views)
+
+    def getLabel(self, value_item):
+        return self.itemField.getLabel(value_item)
 
     def setValue(self, item, name, value):
         setattr(item, name, getattr(item, name)+ [value])
