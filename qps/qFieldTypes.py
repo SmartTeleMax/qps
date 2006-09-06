@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.85 2006/09/06 14:32:53 ods Exp $
+# $Id: qFieldTypes.py,v 1.86 2006/09/06 14:58:48 ods Exp $
 
 '''Classes for common field types'''
 
@@ -684,7 +684,7 @@ class FOREIGN_MULTISELECT(FieldType):
         _items = qUtils.CachedAttribute(_items)
         
     def __init__(self, **kwargs):
-        FOREIGN_DROP.__init__(self, **kwargs)
+        FieldType.__init__(self, **kwargs)
         self.itemField = self.itemFieldClass(**kwargs)
     
     def inList(self, id, items):
@@ -712,8 +712,7 @@ class FOREIGN_MULTISELECT(FieldType):
                      for id in  value], item)
 
     def convertToString(self, value, item=None):
-        item_ids = [FOREIGN_DROP.convertToString(self, item, item)
-                    for item in value]
+        item_ids = [self.itemField.convertToString(i, item) for i in value]
         return self.fieldSeparator.join(item_ids)
     convertToDB = convertToString
 
