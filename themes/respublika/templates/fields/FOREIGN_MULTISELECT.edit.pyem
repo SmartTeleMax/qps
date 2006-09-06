@@ -4,7 +4,7 @@
 count=0
 full=brick.columns-1
 %>
-<table border=0 cellspacing=1 cellpadding=0 <%= brick.layout %>><%
+<table border=0 cellspacing=1 cellpadding=0 class="FOREIGNMULTISELECT" <%= brick.layout %>><%
 for repeat in Cook.Repeat(not stream.indexNum and stream or value):
     valueitem = repeat.value
     id = valueitem.fields['id'].convertToString(valueitem.id, valueitem)

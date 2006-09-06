@@ -1,2 +1,2 @@
 <div class="fieldName"><%= brick.title %>:</div>
-<div class="fieldValue"><input type="text" name="<%= name %>" value="<%= quoteHTML(value) %>" <%= brick.layout %>></div>
+<div class="fieldValue"><input type="text" name="<%= name %>" value="<%= quoteHTML(value) %>" class="STRING" <%= brick.layout %>></div>

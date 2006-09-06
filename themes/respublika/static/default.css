@@ -322,7 +322,7 @@ body {
     width: 100%;
 }
 
-.EXTFOREIGNMULTISELECT, .FOREIGNMULTISELECT {
+.FOREIGNMULTISELECT {
     font: 12px/15px arial;
     letter-spacing: 0;
     border: 1px solid #A0AAB1;

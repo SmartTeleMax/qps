@@ -14,6 +14,6 @@ oFCKeditor.BasePath = '<%= template.publisher.fckEditorPrefix %>/';
 oFCKeditor.Create();
 </script><%
 else:
-    %><textarea name="<%= name %>" <%= brick.layout %>><%= quoteHTML(value) %></textarea><%
+    %><textarea name="<%= name %>" class="TEXT" <%= brick.layout %>><%= quoteHTML(value) %></textarea><%
 %>
 </div>
