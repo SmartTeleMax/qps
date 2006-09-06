@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.84 2006/04/10 11:56:01 corva Exp $
+# $Id: qFieldTypes.py,v 1.85 2006/09/06 14:32:53 ods Exp $
 
 '''Classes for common field types'''
 
@@ -662,10 +662,11 @@ class LazyItemList:
         return self._items.remove(value)
 
 
-class FOREIGN_MULTISELECT(FOREIGN_DROP):
+class FOREIGN_MULTISELECT(FieldType):
     fieldSeparator = ','
     default = []
     columns = 3 # number of columns to display in field template
+    itemFieldClass = FOREIGN_DROP
 
     class ItemList(LazyItemList):
         def __init__(self, field_type, item, values):
@@ -684,7 +685,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
         
     def __init__(self, **kwargs):
         FOREIGN_DROP.__init__(self, **kwargs)
-        self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
+        self.itemField = self.itemFieldClass(**kwargs)
     
     def inList(self, id, items):
         return id in [item.id for item in items]
@@ -695,7 +696,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
     def convertFromString(self, value, item):
         if value:
             item_ids = value.split(self.fieldSeparator)
-            stream = self._retrieve_stream(item)
+            stream = self.itemField._retrieve_stream(item)
             return self.convertFromCode(
                 [stream.fields.id.convertFromString(id, item) \
                  for id in item_ids], item)
@@ -717,8 +718,7 @@ class FOREIGN_MULTISELECT(FOREIGN_DROP):
     convertToDB = convertToString
 
     def getIndexLabel(self, value):
-        views = [FOREIGN_DROP.getLabel(self, i)
-                 for i in value]
+        views = [self.itemField.getLabel(i) for i in value]
         return ', '.join(views)
 
     def setValue(self, item, name, value):
