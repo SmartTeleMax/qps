@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.88 2006/09/06 15:11:39 ods Exp $
+# $Id: qFieldTypes.py,v 1.89 2006/09/06 15:23:12 ods Exp $
 
 '''Classes for common field types'''
 
@@ -706,7 +706,7 @@ class FOREIGN_MULTISELECT(FieldType):
 
     def convertFromForm(self, form, name, item):
         value = form.getlist(name)
-        stream = self._retrieve_stream(item)
+        stream = self.itemField._retrieve_stream(item)
         return self.convertFromCode(
                     [stream.fields.id.convertFromString(id, item) \
                      for id in  value], item)
