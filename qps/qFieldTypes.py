@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.83 2006/04/06 13:10:58 corva Exp $
+# $Id: qFieldTypes.py,v 1.84 2006/04/10 11:56:01 corva Exp $
 
 '''Classes for common field types'''
 
@@ -54,9 +54,6 @@ class FieldType(object):
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
-        # quote class name to conform css rules
-        className = self.__class__.__name__.replace('_', '')
-        self.layout = _LayoutDict(self.layout, {'class': className})
 
     def __call__(self, **kwargs):
         """For compatibility: return a copy with some parameters changed.
