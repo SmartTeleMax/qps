@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.89 2006/09/06 15:23:12 ods Exp $
+# $Id: qFieldTypes.py,v 1.90 2006/09/06 15:45:30 ods Exp $
 
 '''Classes for common field types'''
 
@@ -792,10 +792,6 @@ class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExternalTableStoredField):
                                                        item=self.item))
             return filter(None, items)
         _items = qUtils.CachedAttribute(_items)
-
-    def __init__(self, **kwargs):
-        FOREIGN_MULTISELECT.__init__(self, **kwargs)
-        self.itemField = FOREIGN_DROP(stream=kwargs['stream'])
 
     def retrieve(self, item):
         return self.DBItemList(self, item)
