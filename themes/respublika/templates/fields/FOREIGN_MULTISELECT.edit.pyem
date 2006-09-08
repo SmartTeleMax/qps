@@ -3,6 +3,7 @@
 <%
 count=0
 full=brick.columns-1
+value_ids = [i.id for i in value]
 %>
 <table border=0 cellspacing=1 cellpadding=0 class="FOREIGNMULTISELECT" <%= brick.layout %>><%
 for repeat in Cook.Repeat(not stream.indexNum and stream or value):
@@ -12,7 +13,7 @@ for repeat in Cook.Repeat(not stream.indexNum and stream or value):
         %><tr><%
     %>
 <td><input type="checkbox" name="<%= name %>" id="<%= name %>-<%= id %>" value="<%= id %>"<%
-    if valueitem in value:
+    if valueitem.id in value_ids:
         %> checked<%
     %>></td>
 <td><label for="<%= name %>-<%= id %>"><%= brick.getLabel(valueitem) %></label></td><%
