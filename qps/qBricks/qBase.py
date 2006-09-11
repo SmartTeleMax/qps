@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.19 2006/04/10 11:56:01 corva Exp $
+# $Id: qBase.py,v 1.20 2006/06/19 08:28:03 corva Exp $
 
 '''Base brick classes'''
 
@@ -287,21 +287,21 @@ class Stream(Brick):
                 len(self.itemDict)==len(self.itemList)):
             self.itemDict = itemDict = {}
             for item in self.itemList:
-                itemDict[str(item.id)] = item
-        return self.itemDict.get(str(item_id), None)
+                itemDict[item.id] = item
+        return self.itemDict.get(item_id, None)
 
     def retrieveItem(self, item_id):
         item = self.getItem(item_id)
         if item is None:
             if not hasattr(self, 'retrieveItemCache'):
                 self.retrieveItemCache = {}
-            if not self.retrieveItemCache.has_key(str(item_id)):
+            if not self.retrieveItemCache.has_key(item_id):
                 item = self.itemClass(self.site, self, item_id,
                                       self.itemModifiers)
                 if item.retrieve()!=1:
                     item = None
-                self.retrieveItemCache[str(item_id)] = item
-            return self.retrieveItemCache.get(str(item_id), None)
+                self.retrieveItemCache[item_id] = item
+            return self.retrieveItemCache.get(item_id, None)
         return item
 
     def path(self):
