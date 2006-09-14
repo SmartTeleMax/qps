@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.20 2006/06/19 08:28:03 corva Exp $
+# $Id: qBase.py,v 1.21 2006/09/11 08:59:06 ods Exp $
 
 '''Base brick classes'''
 
@@ -209,6 +209,7 @@ class Stream(Brick):
     itemClass = Item
     storeHandler = qEvents.StoreHandler()
     order = OrderAttribute()
+    fieldsContainerName = None # name of fields container in site.fields
 
     def __init__(self, site, id, page=0, modifiers=[], **kwargs):
         Brick.__init__(self, site, id)
@@ -230,7 +231,7 @@ class Stream(Brick):
             self.features.append(modifier.__class__.__name__)
 
     def fields(self):
-        return self.site.fields[self.tableName]
+        return self.site.fields[self.fieldsContainerName]
     fields = qUtils.CachedAttribute(fields)
 
     def joinFields(self):
