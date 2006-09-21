@@ -1,8 +1,12 @@
-# $Id: qHTTP.py,v 1.4 2005/08/02 22:06:14 corva Exp $
+# $Id: qHTTP.py,v 1.5 2006/02/24 18:06:57 corva Exp $
 
 '''HTTP-related functions'''
 
 from weakref import WeakKeyDictionary
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def getCookie(request, name):
     import Cookie
@@ -104,12 +108,13 @@ class FieldStorage(cgi.FieldStorage):
         return (item, errors)
     
 
-class Form(object):
+class BaseForm(object):
     '''Hacked cgi.FieldStorage for use with PPA HTTP adapters'''
     __cache = WeakKeyDictionary()
     _formClass = FieldStorage
+    _errors = 'strict'
 
-    def __new__(cls, request, charset=None):
+    def __new__(cls, request, charset=None, errors=None):
         try:
             return cls.__cache[request]
         except KeyError:
@@ -120,10 +125,14 @@ class Form(object):
                 env['CONTENT_TYPE'] = hs['content-type']
             if hs.has_key('content-length'):
                 env['CONTENT_LENGTH'] = hs['content-length']
-            cls.__cache[request] = form = cls._formClass(fp=request,
-                                                         environ=env,
-                                                         charset=charset)
+            cls.__cache[request] = form = cls._formClass(
+                fp=request, environ=env, charset=charset,
+                errors=errors or cls._errors)
             return form
+
+
+class Form(BaseForm):
+    _errors = 'ignore' # UnicodeDecodeError is basically unwanted in qps tasks
 
 
 # vim: ts=8 sts=4 sw=4 ai et
