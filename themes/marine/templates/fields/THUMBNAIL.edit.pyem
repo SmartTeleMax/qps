@@ -1,7 +1,7 @@
 <td class="name"><%= getattr(brick, 'title', name) %>:</td>
 <td width="100%"><%
 if value:
-    %><img src="<%= quoteHTML(edPrefix+value.path) %>"><br><%
+    %><img src="<%= quoteHTML(template.edit.prefix+value.path) %>"><br><%
     if not brick.fieldToThumb:
         %>Delete:<br><input type="checkbox" name="<%= name %>-delete" value="y"><br><%
 if not brick.fieldToThumb:
