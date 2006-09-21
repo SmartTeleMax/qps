@@ -1,5 +1,5 @@
 <%
-field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id, item), name)
 if value:
     %><input type="hidden" name="qps-old:<%= field_suffix %>" value="<%= quoteHTML(value) %>"><%
 %>

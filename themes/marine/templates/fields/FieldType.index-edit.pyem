@@ -1,5 +1,5 @@
 <%
-field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id), name)
+field_suffix = '%s:%s' % (item.fields['id'].convertToString(item.id, item), name)
 additional_attrs = ''
 if hasattr(brick, 'maxlength'):
     additional_attrs += ' maxlength="%s"' % brick.maxlength
