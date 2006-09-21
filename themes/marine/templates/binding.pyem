@@ -27,7 +27,7 @@ for it in Cook.Repeat(brick):
     for field_name in template.bindingIndexFields(brick):
         %>
 <td><%= template.showFieldInIndex(item, field_name, allow_edit=0) %></td><%
-    id_str = item.fields['id'].convertToString(item.id)
+    id_str = item.fields['id'].convertToString(item.id, item)
     %>
 <td><%
     if isBound(item):
