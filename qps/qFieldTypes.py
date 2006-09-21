@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.90 2006/09/06 15:45:30 ods Exp $
+# $Id: qFieldTypes.py,v 1.91 2006/09/06 16:02:17 ods Exp $
 
 '''Classes for common field types'''
 
@@ -137,6 +137,7 @@ class FieldType(object):
     def convertToString(self, value, item=None): return str(value)
     convertFromString = _identity
     convertFromCode = _identity
+    convertToCode = convertToString
 
     def convertToForm(self, value, item):
         if value is None:
@@ -510,7 +511,7 @@ class LazyItem:
         pass
 
     def __nonzero__(self):
-        return self._item is not None
+        return self._item is not None and bool(self._item)
 
     def __getattr__(self, name):
         if name in ('_item', '__del__'):
