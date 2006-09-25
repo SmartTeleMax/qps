@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.9 2005/12/20 20:55:19 corva Exp $
+# $Id: qCommands.py,v 1.10 2006/09/25 12:50:31 ods Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -32,7 +32,7 @@ class BaseCommandDispatcher:
             method = publisher.cmd_defaultCommand
         return method(request, response, form, **kwargs)
 
-    def parseRequest(publisher, request, response, form, **kwargs):
+    def parseRequest(self, publisher, request, response, form, **kwargs):
         '''Parses request and returns command (Empty string or None means
         default command)'''
         raise NotImplementedError
