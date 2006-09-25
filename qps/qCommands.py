@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.8 2005/11/15 10:52:45 corva Exp $
+# $Id: qCommands.py,v 1.9 2005/12/20 20:55:19 corva Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -17,7 +17,24 @@ class BaseCommandDispatcher:
 
     def __call__(self, publisher, request, response, form, **kwargs):
         """Is called by publisher, dispatches request to method"""
-        
+        command = self.parseRequest(publisher, request, response, form,
+                                    **kwargs)
+        if command:
+            try:
+                method = getattr(publisher, 'do_'+command)
+            except AttributeError:
+                logger.warn('Invalid command %r', action)
+                method = publisher.cmd_invalidCommand
+            else:
+                logger.debug('Dispatching for command %r', command)
+        else:
+            logger.debug('Assuming default command')
+            method = publisher.cmd_defaultCommand
+        return method(request, response, form, **kwargs)
+
+    def parseRequest(publisher, request, response, form, **kwargs):
+        '''Parses request and returns command (Empty string or None means
+        default command)'''
         raise NotImplementedError
 
     def addCommand(self, url, cmd):
@@ -36,23 +53,10 @@ class FieldNameCommandDispatcher(BaseCommandDispatcher):
     def __init__(self, field_name_prefix):
         self.field_name_prefix = field_name_prefix
 
-    def __call__(self, publisher, request, response, form, **kwargs):
+    def parseRequest(self, publisher, request, response, form, **kwargs):
         for field_name in form.keys():
             if field_name.startswith(self.field_name_prefix):
-                action = field_name[len(self.field_name_prefix):]
-                try:
-                    method = getattr(publisher, 'do_'+action)
-                except AttributeError:
-                    logger.warn('Invalid command %r', action)
-                    return publisher.cmd_invalidCommand(
-                        request, response, form, **kwargs)
-                else:
-                    logger.debug('Dispatching for command %r', action)
-                    return method(request, response, form, **kwargs)
-        else:
-            logger.debug('Assuming default command')
-            return publisher.cmd_defaultCommand(
-                request, response, form, **kwargs)
+                return field_name[len(self.field_name_prefix):]
 
     def addCommand(self, url, cmd):
          sep = '?' in url and '&' or '?'
@@ -66,22 +70,8 @@ class FieldCommandDispatcher(BaseCommandDispatcher):
     def __init__(self, field_name):
         self.field_name = field_name
     
-    def __call__(self, publisher, request, response, form, **kwargs):
-        action = form.getfirst(self.field_name)
-        if action:
-            try:
-                method = getattr(publisher, 'do_'+action)
-            except AttributeError:
-                logger.warn('Invalid command %r', action)
-                return publisher.cmd_invalidCommand(request, response, form,
-                                                    **kwargs)
-            else:
-                logger.debug('Dispatching for command %r', action)
-                return method(request, response, form, **kwargs)
-        else:
-            logger.debug('Assuming default command')
-            return publisher.cmd_defaultCommand(request, response, form,
-                                                **kwargs)
+    def parseRequest(self, publisher, request, response, form, **kwargs):
+        return form.getfirst(self.field_name)
 
     def addCommand(self, url, cmd):
         sep = '?' in url and '&' or '?'
@@ -92,16 +82,8 @@ class PathInfoCommandDispatcher(BaseCommandDispatcher):
     '''Class for commands based web-scripts where action is determined from
     request.pathInfo.'''
 
-    def __call__(self, publisher, request, response, form, **kwargs):
-        action = request.pathInfo[1:]
-        if action:
-            try:
-                method = getattr(publisher, 'do_'+action)
-            except AttributeError:
-                method = publisher.cmd_invalidCommand
-        else:
-            method = publisher.cmd_defaultCommand
-        return method(request, response, form, **kwargs)
+    def parseRequest(self, publisher, request, response, form, **kwargs):
+        return request.pathInfo[1:]
 
     def addCommand(self, url, cmd):
         sep = not url.endswith('/') and '/' or ''
@@ -138,10 +120,7 @@ class Publisher(qWebUtils.Publisher):
 class DispatchedPublisher(Publisher):
     """Dispatches requests to methods using self.dispatcher"""
     
-    def __init__(self, site, **kwargs):
-        self.dispatcher = FieldNameCommandDispatcher(
-            field_name_prefix='qps-action:')
-        Publisher.__init__(self, site, **kwargs)
+    dispatcher = FieldNameCommandDispatcher(field_name_prefix='qps-action:')
 
     def cmd_invalidCommand(self, request, response, *args, **kwargs):
         """Is called when dispatcher was unable to find method to call"""
