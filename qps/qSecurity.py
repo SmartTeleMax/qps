@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.16 2006/08/24 19:20:38 corva Exp $
+# $Id: qSecurity.py,v 1.17 2006/08/26 17:47:08 corva Exp $
 
 '''Function to check permissions'''
 
@@ -67,6 +67,8 @@ class UserBase:
 
 class PyUser(UserBase):
     '''Simple user class with hard-coded groups_table'''
+
+    permissions = []
 
     def __init__(self, login, groups_table={}):
         self.login = login
