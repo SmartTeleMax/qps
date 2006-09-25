@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.10 2006/09/25 12:50:31 ods Exp $
+# $Id: qCommands.py,v 1.11 2006/09/25 12:53:21 ods Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -17,8 +17,8 @@ class BaseCommandDispatcher:
 
     def __call__(self, publisher, request, response, form, **kwargs):
         """Is called by publisher, dispatches request to method"""
-        command = self.parseRequest(publisher, request, response, form,
-                                    **kwargs)
+        command, params = self.parseRequest(publisher, request, response, form,
+                                            **kwargs)
         if command:
             try:
                 method = getattr(publisher, 'do_'+command)
@@ -30,11 +30,12 @@ class BaseCommandDispatcher:
         else:
             logger.debug('Assuming default command')
             method = publisher.cmd_defaultCommand
+        kwargs.update(params)
         return method(request, response, form, **kwargs)
 
     def parseRequest(self, publisher, request, response, form, **kwargs):
-        '''Parses request and returns command (Empty string or None means
-        default command)'''
+        '''Parses request and returns (command, params) pair (empty string or
+        None means default command)'''
         raise NotImplementedError
 
     def addCommand(self, url, cmd):
@@ -56,7 +57,9 @@ class FieldNameCommandDispatcher(BaseCommandDispatcher):
     def parseRequest(self, publisher, request, response, form, **kwargs):
         for field_name in form.keys():
             if field_name.startswith(self.field_name_prefix):
-                return field_name[len(self.field_name_prefix):]
+                return field_name[len(self.field_name_prefix):], {}
+        else:
+            return None, {}
 
     def addCommand(self, url, cmd):
          sep = '?' in url and '&' or '?'
@@ -71,7 +74,7 @@ class FieldCommandDispatcher(BaseCommandDispatcher):
         self.field_name = field_name
     
     def parseRequest(self, publisher, request, response, form, **kwargs):
-        return form.getfirst(self.field_name)
+        return form.getfirst(self.field_name), {}
 
     def addCommand(self, url, cmd):
         sep = '?' in url and '&' or '?'
@@ -83,7 +86,7 @@ class PathInfoCommandDispatcher(BaseCommandDispatcher):
     request.pathInfo.'''
 
     def parseRequest(self, publisher, request, response, form, **kwargs):
-        return request.pathInfo[1:]
+        return request.pathInfo[1:], {}
 
     def addCommand(self, url, cmd):
         sep = not url.endswith('/') and '/' or ''
