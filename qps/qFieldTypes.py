@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.91 2006/09/06 16:02:17 ods Exp $
+# $Id: qFieldTypes.py,v 1.92 2006/09/21 19:11:30 corva Exp $
 
 '''Classes for common field types'''
 
@@ -300,12 +300,6 @@ class NUMBER(FieldType):
     error_message = '%(brick.type.__name__.title())s from ' \
                     '%(brick.minValue)s to %(brick.maxValue)s required'
 
-    def __init__(self, **kwargs):
-        FieldType.__init__(self, **kwargs)
-        self.maxlength = max(len(str(self.maxValue)),
-                             len(str(self.minValue))) + 1
-        self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
-
     def convertFromString(self, value, item=None):
         if self.allowNull and not value:
             return
@@ -344,6 +338,12 @@ class NUMBER(FieldType):
 
 class INTEGER(NUMBER):
     type = int
+
+    def __init__(self, **kwargs):
+        FieldType.__init__(self, **kwargs)
+        self.maxlength = max(len(str(self.maxValue)),
+                             len(str(self.minValue))) + 1
+        self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
 
 
 class INTEGER_AUTO_ID(INTEGER):
