@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.11 2006/09/25 12:53:21 ods Exp $
+# $Id: qCommands.py,v 1.12 2006/09/25 13:00:47 ods Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -23,7 +23,7 @@ class BaseCommandDispatcher:
             try:
                 method = getattr(publisher, 'do_'+command)
             except AttributeError:
-                logger.warn('Invalid command %r', action)
+                logger.warn('Invalid command %r', command)
                 method = publisher.cmd_invalidCommand
             else:
                 logger.debug('Dispatching for command %r', command)
