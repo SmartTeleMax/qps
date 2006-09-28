@@ -8,12 +8,13 @@ QUICK INSTALLATION.
 
 To install this theme you should:
 
-1. Copy content of "static" dir somethere into web root.
-2. Add two attributes to Edit class (derived from qps.qEdit.EditBase):
+1. Link "static" dir somethere into web root
+2. Configure your Edit class:
 
-class Edit(qps.qEdit.EditBase):
+class Edit(qps.qEdit.Edit):
     staticPrefix = "/location/of/static/dir" 
-    staticLogo = None
+    styleSheetURL = '%s/modern.css' % staticPrefix # or default.css
+    staticLogo = '/path/to/your/logo/file' # optional
 
 staticLogo defines path to logo image file. It can be None, by
 default there is not any logo included.
@@ -29,7 +30,7 @@ To enable rich text editor you should:
    in web root.
 2. Add fckEditorPrefix attribute to Edit class:
 
-class Edit(qps.qEdit.EditBase):
+class Edit(qps.qEdit.Edit):
     fckEditorPrefix = '/FCKeditor'
 
 3. Supply a richText param to TEXT field in fieldDescriptions:
@@ -45,7 +46,7 @@ To enable toolbar:
    installation.
 2. Define fckEditorToolbarSet attribute in Edit class:
 
-class Edit(qps.qEdit.EditBase):
+class Edit(qps.qEdit.Edit):
     fckEditorPrefix = 'respublika'
 
 To enable respublika theme skin for FCKeditor:

@@ -3,11 +3,12 @@
   <head>
     <title><%= template.publisher.title %></title><%
 charset = template.publisher.getClientCharset(None)
+styleSheetURL = getattr(template.publisher, 'styleSheetURL', None)
 if charset:
-    %>
-    <meta http-equiv="Content-Type" content="text/html; charset=<%= charset %>"><%
+    %><meta http-equiv="Content-Type" content="text/html; charset=<%= charset %>"><%
+if styleSheetURL:
+    %><link rel="stylesheet" type="text/css" href="<%= quoteHTML(styleSheetURL) %>"><%
 %>
-    <link href="<%= template.publisher.staticPrefix %>/style.css" rel="stylesheet" type="text/css">
   </head>
 
 <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0>

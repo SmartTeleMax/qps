@@ -1,6 +1,7 @@
 <!-- inc_navigation starts -->
 <div class="logo"><%
-if template.edit.staticLogo:
+logo = getattr(template.publisher, 'staticLogo', None)
+if logo:
     %>
 <a href="<%= template.edit.prefix %>/"><img src="<%= template.edit.staticLogo %>" border="0" width="218" height="85"></a><%
 else:

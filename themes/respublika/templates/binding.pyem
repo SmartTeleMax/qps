@@ -2,11 +2,13 @@
 <html>
 <head>
 <title><%= template.publisher.title + ': ' + getattr(item, 'title', str(item.id)) + ': ' + brick.title %></title><%
-if brick.site.clientCharset:
-    %>
-    <meta http-equiv="Content-Type" content="text/html; charset=<%= brick.site.clientCharset %>"><%
+charset = template.publisher.getClientCharset(None)
+styleSheetURL = getattr(template.publisher, 'styleSheetURL', None)
+if charset:
+    %><meta http-equiv="Content-Type" content="text/html; charset=<%= charset %>"><%
+if styleSheetURL:
+    %><link rel="stylesheet" type="text/css" href="<%= quoteHTML(styleSheetURL) %>"><%
 %>
-    <link href="<%= template.publisher.staticPrefix %>/style.css" rel="stylesheet" type="text/css">
 <script src="<%= template.publisher.staticPrefix %>/scripts.js"></script>
 <script>
 url = '<%= template.publisher.prefix+bound.path() %>?qps-action:showField=1&field=<%= fieldName %>';
