@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.21 2006/09/11 08:59:06 ods Exp $
+# $Id: qBase.py,v 1.22 2006/09/14 13:22:09 corva Exp $
 
 '''Base brick classes'''
 
@@ -390,7 +390,7 @@ class Stream(Brick):
     # --- Order functions ---
     def isDefaultOrder(self):
         """Checks if current stream order is default"""        
-        default = self.site.createStream(self.id).order
+        default = self.site.createStream(self.id, tag=self.tag).order
         return (default == self.order)
 
     def getFieldOrder(self, field_name):
