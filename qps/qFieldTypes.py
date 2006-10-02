@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.92 2006/09/21 19:11:30 corva Exp $
+# $Id: qFieldTypes.py,v 1.93 2006/09/26 16:24:02 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1328,8 +1328,8 @@ class FieldDescriptions(qUtils.Descriptions):
     
     Usage:
 
-        fields = FieldDescriptions([field1_name, field1_type_class(...),
-                                    field2_name, field2_type_class(...),
+        fields = FieldDescriptions([(field1_name, field1_type_class(...)),
+                                    (field2_name, field2_type_class(...)),
                                     ...])
 
         id = fields.id
