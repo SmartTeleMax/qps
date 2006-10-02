@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.17 2006/08/26 17:47:08 corva Exp $
+# $Id: qSecurity.py,v 1.18 2006/09/25 13:02:50 ods Exp $
 
 '''Function to check permissions'''
 
@@ -204,6 +204,16 @@ class CookieAuthentication(Authentication):
         response.write(template('login', path=path))
         raise publisher.EndOfRequest()
 
+    def _authCookieValue(self, publisher, user):
+        return "%s:%s" % (getattr(user, user.stream.loginField),
+                          getattr(user, user.stream.passwdField))
+
+    def setCookie(self, publisher, request, response, user, permanent=False):
+        expires = permanent and self.expireTimeout or None
+        qHTTP.setCookie(response, self.authCookieName,
+                        self._authCookieValue(publisher, user), expires,
+                        path=self._authCookiePath(publisher))
+
     def login(self, publisher, request, response, form, permanent=False):
         login, passwd, perm_login = [form.getfirst(name) for name in \
                                      ('login', 'passwd', 'perm_login')]
@@ -218,11 +228,8 @@ class CookieAuthentication(Authentication):
         user = stream.getUser(login)
         if user and user.fields[stream.passwdField].crypt(passwd) == \
                getattr(user, stream.passwdField):
-            expires = perm_login and self.expireTimeout or None
-            qHTTP.setCookie(response, self.authCookieName,
-                            "%s:%s" % (getattr(user, stream.loginField),
-                                       getattr(user, stream.passwdField)),
-                            expires, path=self._authCookiePath(publisher))
+            self.setCookie(publisher, request, response, user,
+                           permanent=perm_login)
             return user
         else:
             return stream.getUser(None)
