@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.10 2005/08/18 02:17:10 corva Exp $
+# $Id: qPath.py,v 1.11 2006/04/10 11:56:01 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -54,35 +54,75 @@ class PathParser:
             return (self.site, stream, stream.retrieveItem(item_id))
 
 
-class PagedStreamLoader:
+class StreamLoaderPlugin:
+    """Plugin interface for fetching stream information from form"""
 
-    def __init__(self, site, form, **params):
-        self.site = site
-        self.form = form
-        self.params = params
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
-    def __call__(self, stream_id, **params):
+    def __call__(self, site, form, stream):
+        """Accepts site object (site), form object (form)
+        and stream object (stream).
+
+        Should extract stream information from form,
+        then modify and return the stream"""
+        
+        raise NotImplementedError()
+
+
+class Page(StreamLoaderPlugin):
+    """Extracts stream.page information from form"""
+    
+    paramName = 'page'
+    
+    def __call__(self, site, form, stream):
         try:
-            page = int(self.form.getfirst('page', 1))
+            page = int(form.getfirst(self.paramName, 1))
         except ValueError:
             page = 1
-        if page<=0:
+        if page <= 0:
             page = 1
-        _params = self.params.copy()
-        _params.update(params)
-        fieldname = self.form.getfirst('order_field', None)
-        if fieldname is not None:
-            direction = self.form.getfirst('order_direction', 'asc').upper()
-        stream = self.site.createStream(stream_id, page=page, **_params)
-        if stream.getFieldOrder(fieldname) is not None \
-                and direction in ('ASC', 'DESC'):
-            stream.order = ((fieldname, direction),)
+        stream.page = page
         return stream
 
 
-class FilteredStreamLoader(PagedStreamLoader):
+class Tag:
+    """Extracts stream.tag information from form"""
 
+    paramName = 'tag'
+
+    def __call__(self, site, form, stream):
+        tag = form.getfirst('tag', None)
+        stream.tag = tag
+        return stream
+        
+
+class Order:
+    """Extracts stream.order information from form"""
+    
+    fieldName = 'order_field'
+    directionName = 'order_direction'
+
+    def __call__(self, site, form, stream):
+        fieldname = form.getfirst(self.fieldName, None)
+        defaultOrder = stream.getFieldOrder(fieldname)
+        if fieldname is not None:
+            direction = form.getfirst('order_direction',
+                                      defaultOrder).upper()
+        if defaultOrder and direction in ('ASC', 'DESC'):
+            stream.order = ((fieldname, direction),)
+        return stream
+
+class Filter:
+    """Extracts filtering information from form using 'prefix' keyword
+    for filter parameters"""
+    
+    prefix = "filter-"
+    
     class PrefixForm:
+        """Emulates qHTTP.FieldStorage interface, proxies access to
+        FieldStorage data using prefixed names"""
+        
         def __init__(self, form, prefix):
             self.form = form
             self.prefix = prefix
@@ -99,15 +139,14 @@ class FilteredStreamLoader(PagedStreamLoader):
         def getlist(self, key):
             return self.form.getlist(self.prefix+key)
     
-    def __call__(self, stream_id, **params):
-        stream = PagedStreamLoader.__call__(self, stream_id, **params)
+    def __call__(self, site, form, stream):
         if hasattr(stream, 'filter'):
             filter = stream.filter.__class__()
             state = filter.createState(stream)
             state.stream = stream
             names = filter.fields(stream)
             method = "AND" # no functionality to define method at the moment
-            form = self.PrefixForm(self.form, 'filter-')
+            form = self.PrefixForm(form, self.prefix)
             for name in names:
                 field = filter.createField(stream.fields[name])
                 value = field.convertFromForm(form, name, state)
@@ -116,8 +155,62 @@ class FilteredStreamLoader(PagedStreamLoader):
                     field.applyToFilter(filter, state, name, value)
             if filter:
                 stream = filter.createStream(
-                    stream, PagedStreamLoader(self.site, self.form), method)
+                    stream, PagedStreamLoader(site, form), method)
                 stream.filterState = state # XXX need to store somethere
         return stream
+
+
+class StreamLoader:
+    """StreamLoader emulates qSite.Site.createStream interface by it's
+    __call__ method. You initialize StreamLoader to gather stream's params
+    from web request, represented by qHTTP.FieldStorage.
+
+    def webmethod(site, form):
+        loader = StreamLoader(site, form, plugins=[Page()])
+        loader('stream_id', indexNum=10)
+
+    loader call in webmethod is equivalent to site.createStream, but page is
+    initialized by Page plugin from 'page' parameter of form."""
     
+    def __init__(self, site, form, plugins=[], **params):
+        self.site = site
+        self.form = form
+        self.params = params
+        self.plugins = plugins
+
+    def __call__(self, stream_id, **params):
+        p = self.params.copy()
+        p.update(params)
+        stream = self.site.createStream(stream_id, **p)
+        for plugin in self.plugins:
+            stream = plugin(self.site, self.form, stream)
+        return stream
+
+
+class StreamLoaderFactory:
+    """Factory for StreamLoader class, accepts plugins as initialization
+    parameters. Use it if you want to configure StreamLoader
+    on static layer of your application.
+
+    class Something:
+        # unable to initialize StreamLoader, no site and form available here
+        streamLoaderClass = StreamLoaderFactory(list_of_plugins)
+
+        def foo(self):
+            # site and form are only availbale here
+            loader = self.streamLoaderClass(site, form)
+
+    """
+    
+    def __init__(self, *args):
+        self.plugins = args
+
+    def __call__(self, site, form, **params):
+        return StreamLoader(site, form, self.plugins, **params)
+
+
+# compatibility object, use StreamLoaderFactory directly
+PagedStreamLoader = StreamLoaderFactory(Page(), Order())
+
+
 # vim: ts=8 sts=4 sw=4 ai et
