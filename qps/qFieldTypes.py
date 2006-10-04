@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.93 2006/09/26 16:24:02 corva Exp $
+# $Id: qFieldTypes.py,v 1.94 2006/10/02 13:04:41 ods Exp $
 
 '''Classes for common field types'''
 
@@ -1034,6 +1034,9 @@ class IMAGE(FieldType, ExternalStoredField):
                 del value.path
             except AttributeError:
                 pass
+            from glob import glob
+            for name in glob('%s%s*' % (value.edit_root, value.pattern)):
+                os.remove(name)
             qUtils.writeFile(value.edit_root+value.path, value.body)
         elif value.body is not None:
             os.remove(value.edit_root+value.path)
