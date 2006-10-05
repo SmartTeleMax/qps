@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.22 2006/09/14 13:22:09 corva Exp $
+# $Id: qBase.py,v 1.23 2006/09/28 19:03:01 corva Exp $
 
 '''Base brick classes'''
 
@@ -381,6 +381,14 @@ class Stream(Brick):
     def countItems(self, ignoreStatus=0):
         # XXX Use len(self) in base class?
         raise NotImplementedError()
+
+    def countPages(self):
+        if not self.indexNum:
+            return 1
+        count = divmod(self.countItems() + self.indexNum - 1, self.indexNum)[0]
+        if not count:
+            return 1
+        return count
 
     # --- External fields ---
     def deleteExtFields(self, item_ids):

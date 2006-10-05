@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.12 2006/09/25 13:00:47 ods Exp $
+# $Id: qCommands.py,v 1.13 2006/09/28 15:37:34 ods Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -101,7 +101,7 @@ class Publisher(qWebUtils.Publisher):
     def handle(self, request, response):
         """Is called by PPA.HTTP.Base.Adapter.__call__"""    
         raise NotImplementedError
-    
+
     def showObject(self, request, response, template_name,
                    content_type='text/html', **kwargs):
         """Renders template and writes it to response,

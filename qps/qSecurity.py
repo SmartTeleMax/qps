@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.18 2006/09/25 13:02:50 ods Exp $
+# $Id: qSecurity.py,v 1.19 2006/10/02 14:46:07 ods Exp $
 
 '''Function to check permissions'''
 
@@ -230,6 +230,18 @@ class CookieAuthentication(Authentication):
                getattr(user, stream.passwdField):
             self.setCookie(publisher, request, response, user,
                            permanent=perm_login)
+            return user
+        else:
+            return stream.getUser(None)
+
+    def checkCreds(self, publisher, login, passwd):
+        """Returns user object, associated with given login and password,
+        if no user is matched - bool(of returned user object) is False"""
+        
+        stream = publisher.site.retrieveStream(self.usersStream)
+        user = stream.getUser(login)
+        if user and user.fields[stream.passwdField].crypt(passwd) == \
+               getattr(user, stream.passwdField):
             return user
         else:
             return stream.getUser(None)
