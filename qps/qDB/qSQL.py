@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.10 2006/04/10 13:19:10 ods Exp $
+# $Id: qSQL.py,v 1.11 2006/04/10 13:36:36 ods Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -204,10 +204,16 @@ class Connection(object):
     _current_transaction = None
     connectHandler = None    
 
-    DuplicateEntryError = Exception # redefine in subclasses to exception
-                                    # dbmodule raises for duplicate entries
-    ExecuteOutsideOfTransaction = RuntimeError
-    ConnectInTransaction = RuntimeError
+    # redefine in subclasses to exception
+    # dbmodule raises for duplicate entries
+    class DuplicateEntryError(RuntimeError):
+        pass
+                                    
+    class ExecuteOutsideOfTransaction(RuntimeError):
+        pass
+    
+    class ConnectInTransaction(RuntimeError):
+        pass
 
     def __init__(self, connection_params, charset, **kwargs):
         self.__connection_params = connection_params
