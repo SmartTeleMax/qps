@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.47 2006/06/19 09:09:19 corva Exp $
+# $Id: qEdit.py,v 1.48 2006/08/24 19:29:57 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -222,7 +222,8 @@ class requirePermission:
     
 class Edit(qCommands.DispatchedPublisher):
     '''Base class for editor interface'''
-    streamLoaderClass = qPath.PagedStreamLoader
+    streamLoaderClass = qPath.StreamLoaderFactory(qPath.Page(),
+                                                  qPath.Order())
     renderHelperClass = RenderHelper
     
     prefix = '/ed'
