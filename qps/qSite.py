@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.15 2005/08/24 09:58:42 ods Exp $
+# $Id: qSite.py,v 1.16 2006/06/19 09:09:19 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -97,48 +97,11 @@ class Site(object):
         page      - page of stream
         tag       - returns tagged stream.'''
         
-        params = {}
-        try:
-            # have we real stream with such id?
-            stream_conf = self.streamDescriptions[stream_id]
-        except KeyError:
-            # no real stream - expand alias (look for virtual streams, if
-            # supported)
-            template_stream_id = stream_id
-            for depth in range(self.maxAliasDepth):
-                new_template_stream_id, new_params = \
-                            self.expandStreamAlias(template_stream_id, tag)
-                params.update(new_params)
-                if new_template_stream_id==template_stream_id:
-                    raise StreamNotFoundError(stream_id)
-                else:
-                    logger.debug('Virtual: %s -> %s', stream_id,
-                                                      new_template_stream_id)
-                try:
-                    stream_conf = \
-                        self.streamDescriptions[new_template_stream_id]
-                except KeyError:
-                    template_stream_id = new_template_stream_id
-                else:
-                    break
-            else:
-                raise RuntimeError('Maximum alias depth exceeded')
-        if tag=='all':
-            default_tag_params = {'condition': ''}
-        else:
-            default_tag_params = {}
-
-        # keep tag in stream for use by fields
-        kwargs['tag'] = tag
-
-        # apply tagParams from all configuration parts
-        result_conf = qUtils.DictRecord()
-        for dict in self.defaultStreamConf, stream_conf, params, kwargs:
-            tag_params = dict.get('tagParams', {}).get(tag, default_tag_params)
-            result_conf = qUtils.DictRecord(result_conf, dict, tag_params)
-
-        streamClass = self.getStreamClass(result_conf.streamClass)
-        return streamClass(self, stream_id, page, **result_conf)
+        stream_conf = qUtils.DictRecord(
+            self.getStreamConf(stream_id, tag),
+            **kwargs)
+        streamClass = self.getStreamClass(stream_conf.streamClass)
+        return streamClass(self, stream_id, page, **stream_conf)
 
     # XXX backward compatibility
     streamFactory = createStream
@@ -160,8 +123,8 @@ class Site(object):
         conf = qUtils.DictRecord(conf, kwargs)
         return self.getStreamClass(conf.streamClass)(
             self, stream_id, **conf)
-    
-    def retrieveStream(self, stream_id, retrieve=False, tag=None):
+
+    def createCachedStream(self, stream_id, retrieve=False, tag=None):
         '''Returns an instance of stream and caches it for future calls.
 
         stream_id - referers the stream in configutation.
@@ -180,6 +143,9 @@ class Site(object):
         if retrieve:
             stream.retrieve()
         return stream
+
+    # XXX backward compatibility
+    retrieveStream = createCachedStream
     
     def retrieve(self, ignoreStatus=0):
         '''Retrieve (initialize) streams table'''
@@ -208,6 +174,50 @@ class Site(object):
         self.taggedStreamCache.clear()
         self.streamList.clear()
 
+    def getStreamConf(self, stream_id, tag=None):
+        '''Returns qUtils.DictRecord of stream configuration for stream
+        identified by stream_id and (optionaly) tag. All stream configuration
+        resolution is done here'''
+        
+        params = {}
+        try:
+            # have we real stream with such id?
+            stream_conf = self.streamDescriptions[stream_id]
+        except KeyError:
+            # no real stream - expand alias (look for virtual streams, if
+            # supported)
+            template_stream_id = stream_id
+            for depth in range(self.maxAliasDepth):
+                new_template_stream_id, new_params = \
+                            self.expandStreamAlias(template_stream_id, tag)
+                params.update(new_params)
+                if new_template_stream_id==template_stream_id:
+                    raise StreamNotFoundError(stream_id)
+                else:
+                    logger.debug('Virtual: %s -> %s', stream_id,
+                                                      new_template_stream_id)
+                try:
+                    stream_conf = \
+                        self.streamDescriptions[new_template_stream_id]
+                except KeyError:
+                    template_stream_id = new_template_stream_id
+                else:
+                    break
+            else:
+                raise RuntimeError('Maximum alias depth exceeded')
+
+        # XXX what a strange defaults?
+        if tag=='all':
+            default_tag_params = {'condition': ''}
+        else:
+            default_tag_params = {}
+
+        result_conf = qUtils.DictRecord()
+        for dict in self.defaultStreamConf, stream_conf, params, {'tag': tag}:
+            tag_params = dict.get('tagParams', {}).get(tag, default_tag_params)
+            result_conf = qUtils.DictRecord(result_conf, dict, tag_params)
+        return result_conf
+            
     def expandStreamAlias(self, stream_path, tag=None):
         '''Convert stream path to stream id (id of template stream) and
         additional parameters for stream initialization.  For real streams
