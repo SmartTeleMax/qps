@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.11 2006/04/10 11:56:01 corva Exp $
+# $Id: qPath.py,v 1.12 2006/10/04 15:56:21 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -60,50 +60,59 @@ class StreamLoaderPlugin:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def __call__(self, site, form, stream):
+    def applyToStream(self, site, form, stream):
+        """Accepts site object (site), form object (form)
+        and stream creation params as dict (params).
+
+        May extract stream information from form, and modify and return
+        params"""
+
+        return stream
+
+    def applyToParams(self, site, form, params):
         """Accepts site object (site), form object (form)
         and stream object (stream).
 
-        Should extract stream information from form,
+        May extract stream information from form,
         then modify and return the stream"""
-        
-        raise NotImplementedError()
 
+        return params
+        
 
 class Page(StreamLoaderPlugin):
     """Extracts stream.page information from form"""
     
     paramName = 'page'
     
-    def __call__(self, site, form, stream):
+    def applyToParams(self, site, form, params):
         try:
             page = int(form.getfirst(self.paramName, 1))
         except ValueError:
             page = 1
         if page <= 0:
             page = 1
-        stream.page = page
-        return stream
+        params['page'] = page
+        return params
 
 
-class Tag:
+class Tag(StreamLoaderPlugin):
     """Extracts stream.tag information from form"""
 
     paramName = 'tag'
 
-    def __call__(self, site, form, stream):
+    def applyToParams(self, site, form, params):
         tag = form.getfirst('tag', None)
-        stream.tag = tag
-        return stream
+        params['tag'] = tag
+        return params
         
 
-class Order:
+class Order(StreamLoaderPlugin):
     """Extracts stream.order information from form"""
     
     fieldName = 'order_field'
     directionName = 'order_direction'
 
-    def __call__(self, site, form, stream):
+    def applyToStream(self, site, form, stream):
         fieldname = form.getfirst(self.fieldName, None)
         defaultOrder = stream.getFieldOrder(fieldname)
         if fieldname is not None:
@@ -113,7 +122,8 @@ class Order:
             stream.order = ((fieldname, direction),)
         return stream
 
-class Filter:
+
+class Filter(StreamLoaderPlugin):
     """Extracts filtering information from form using 'prefix' keyword
     for filter parameters"""
     
@@ -139,7 +149,7 @@ class Filter:
         def getlist(self, key):
             return self.form.getlist(self.prefix+key)
     
-    def __call__(self, site, form, stream):
+    def applyToStream(self, site, form, stream):
         if hasattr(stream, 'filter'):
             filter = stream.filter.__class__()
             state = filter.createState(stream)
@@ -154,8 +164,7 @@ class Filter:
                 if value:
                     field.applyToFilter(filter, state, name, value)
             if filter:
-                stream = filter.createStream(
-                    stream, PagedStreamLoader(site, form), method)
+                stream = filter.applyToStream(stream, method)
                 stream.filterState = state # XXX need to store somethere
         return stream
 
@@ -181,9 +190,14 @@ class StreamLoader:
     def __call__(self, stream_id, **params):
         p = self.params.copy()
         p.update(params)
-        stream = self.site.createStream(stream_id, **p)
+
         for plugin in self.plugins:
-            stream = plugin(self.site, self.form, stream)
+            p = plugin.applyToParams(self.site, self.form, p)
+
+        stream = self.site.createStream(stream_id, **p)
+
+        for plugin in self.plugins:
+            stream = plugin.applyToStream(self.site, self.form, stream)
         return stream
 
 

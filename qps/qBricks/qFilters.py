@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.6 2005/12/08 15:42:32 corva Exp $
+# $Id: qFilters.py,v 1.7 2006/09/05 21:33:44 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -48,8 +48,8 @@ class StreamFilter(object):
                     self.createField(stream.fields[name]).getDefault())
         return state
     
-    def createStream(self, stream, loader, method="AND"):
-        """Returns an instance of stream with applied filter params"""
+    def applyToStream(self, stream):
+        """Applies parameters to stream instance"""
 
 
 class SQLStreamFilter(StreamFilter):
@@ -62,10 +62,9 @@ class SQLStreamFilter(StreamFilter):
     def __nonzero__(self):
         return bool(self.conditions or self.joinTemplates)
 
-    def createStream(self, stream, loader, cond_method="AND"):
-        jt = getattr(stream, "joinTemplate", "%(brick.tableName)s")
-        jt = ' '.join([jt]+self.joinTemplates)
-        stream = loader(stream.id, joinTemplate=jt)
+    def applyToStream(self, stream, cond_method="AND"):
+        joinTemplate = getattr(stream, "joinTemplate", "%(brick.tableName)s")
+        stream.joinTemplate = ' '.join([joinTemplate]+self.joinTemplates)
         stream.addToCondition(stream.dbConn.join(self.conditions, cond_method))
         return stream
 
