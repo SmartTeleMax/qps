@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.94 2006/10/02 13:04:41 ods Exp $
+# $Id: qFieldTypes.py,v 1.95 2006/10/04 15:02:17 corva Exp $
 
 '''Classes for common field types'''
 
@@ -1019,7 +1019,15 @@ class IMAGE(FieldType, ExternalStoredField):
         return self._Image(self, item)
 
     def convertFromCode(self, value, item):
-        return self.retrieve(item)
+        old_path =  getattr(getattr(item, name), 'path', None)
+        image = self._Image(self, item, value, old_path)
+        if value:
+            if image._image is None:
+                raise ValueError('Bad image')
+            elif image._image.format not in self.allowed_formats:
+                raise ValueError('Format %s is not allowed' % \
+                                            image._image.format)
+        return image
 
     def store(self, value, item):
         if value.body:
