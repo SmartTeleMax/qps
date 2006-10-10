@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.16 2006/06/19 09:09:19 corva Exp $
+# $Id: qSite.py,v 1.17 2006/10/09 22:19:58 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -31,6 +31,24 @@ class Site(object):
     fields = qFieldTypes.FieldDescriptions([])
 
     title = host = None
+
+    # The most used tags are:
+    #   None (default)  - what is "maked", or is show to users of the site
+    #   edit            - items which site editors are working with (including
+    #                     unpublished ones)
+    #   delete          - items marked for deletion, i.e. not available for the
+    #                     editor, but kept in the database (in most cases
+    #                     temporally) to allow cleaning up previously "maked"
+    #                     files for them.
+    #   all             - items available for any tag above (and probably
+    #                     others, if some field value is used to switch stream
+    #                     the item belongs to.
+    #
+    # To understand tag trasmission better, just imaging that you have sections
+    # and docs by sections. If you delete (in editor interface) section, you
+    # must wipe out files for _all_ documents maked in this section,
+    # independently whether some of either these files are not already
+    # published, or already marked for deletion.
     transmitTags = {'edit'  : 'edit',
                     'delete': 'all'}
 
@@ -206,7 +224,11 @@ class Site(object):
             else:
                 raise RuntimeError('Maximum alias depth exceeded')
 
-        # XXX what a strange defaults?
+        # Tag 'all' means every item avalable in stream for either None
+        # (default), 'edit', or 'delete' tag.  Just dropping condition by
+        # default works fine in most cases for SQLStream and shouldn't hurt in
+        # others.  Anyway, you always have an option to define params for tag
+        # 'all' explicitly.  See also comments for transmitTags attribute.
         if tag=='all':
             default_tag_params = {'condition': ''}
         else:
