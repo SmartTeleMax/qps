@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.6 2006/08/24 19:19:16 corva Exp $
+# $Id: qMail.py,v 1.7 2006/10/11 13:33:09 olga_sorokina Exp $
 
 '''Mail utilities'''
 
@@ -50,6 +50,10 @@ class SendmailSender(Sender):
         addr = parseaddr(message['to'])[1]
         logger.info('Sending mail to %s', addr)
 
+        # XXX We don't know where is address from, so we can't trust it. Use
+        # quick-n-dirty check till somebody propose safe implementation.
+        if "'" in addr:
+            raise RuntimeError('Dangerous character(s) in address')
         sendmail = os.popen(
             "%s %s '%s'" % (self.path, self.options, addr),
             'w'
