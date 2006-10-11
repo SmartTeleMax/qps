@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.7 2006/10/11 13:33:09 olga_sorokina Exp $
+# $Id: qMail.py,v 1.8 2006/10/11 15:11:24 ods Exp $
 
 '''Mail utilities'''
 
@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 # senders
 
-def parseaddr(addr):
-    ''' decode header to unicode and aprse it '''
+def getaddr(addr):
+    ''' extract address from encoded header '''
     uni_addr = []
     for chunk, charset in email.Header.decode_header(addr):
         if charset:
@@ -25,7 +25,7 @@ def parseaddr(addr):
         else:
             uni_addr += chunk
     uni_addr = u''.join(uni_addr)
-    return email.Utils.parseaddr(uni_addr)
+    return email.Utils.parseaddr(uni_addr)[1].encode('us-ascii')
 
 class Sender:
     '''Base class for email senders'''
@@ -47,7 +47,7 @@ class SendmailSender(Sender):
 
     def send(self, message):
         #addr = email.Utils.parseaddr(message['to'])[1]
-        addr = parseaddr(message['to'])[1]
+        addr = getaddr(message['to'])
         logger.info('Sending mail to %s', addr)
 
         # XXX We don't know where is address from, so we can't trust it. Use
@@ -71,7 +71,7 @@ class SMTPSender(Sender):
 
     def send(self, message):
         #addr = email.Utils.parseaddr(message['to'])[1]
-        addr = parseaddr(message['to'])[1]
+        addr = getaddr(message['to'])
         logger.info('Sending mail to %s', addr)
 
         smtp = self.smtpClass(self.host, self.port)
