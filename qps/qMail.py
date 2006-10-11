@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.5 2005/06/01 20:46:14 corva Exp $
+# $Id: qMail.py,v 1.6 2006/08/24 19:19:16 corva Exp $
 
 '''Mail utilities'''
 
@@ -15,6 +15,17 @@ logger = logging.getLogger(__name__)
 
 
 # senders
+
+def parseaddr(addr):
+    ''' decode header to unicode and aprse it '''
+    uni_addr = []
+    for chunk, charset in email.Header.decode_header(addr):
+        if charset:
+            uni_addr += unicode(chunk, charset)
+        else:
+            uni_addr += chunk
+    uni_addr = u''.join(uni_addr)
+    return email.Utils.parseaddr(uni_addr)
 
 class Sender:
     '''Base class for email senders'''
@@ -35,7 +46,8 @@ class SendmailSender(Sender):
     options = ""
 
     def send(self, message):
-        addr = email.Utils.parseaddr(message['to'])[1]
+        #addr = email.Utils.parseaddr(message['to'])[1]
+        addr = parseaddr(message['to'])[1]
         logger.info('Sending mail to %s', addr)
 
         sendmail = os.popen(
@@ -54,7 +66,8 @@ class SMTPSender(Sender):
     port = 25
 
     def send(self, message):
-        addr = email.Utils.parseaddr(message['to'])[1]
+        #addr = email.Utils.parseaddr(message['to'])[1]
+        addr = parseaddr(message['to'])[1]
         logger.info('Sending mail to %s', addr)
 
         smtp = self.smtpClass(self.host, self.port)
