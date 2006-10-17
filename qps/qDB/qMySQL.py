@@ -1,8 +1,9 @@
-# $Id: qMySQL.py,v 1.3 2005/12/20 20:58:47 corva Exp $
+# $Id: qMySQL.py,v 1.4 2006/10/17 08:01:03 ods Exp $
 
 '''Connection class for MySQL(tm)'''
 
 import qSQL
+from qSQL import Query, Param
 
 
 class Connection(qSQL.Connection):
