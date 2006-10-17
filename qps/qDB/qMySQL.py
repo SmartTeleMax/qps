@@ -1,4 +1,4 @@
-# $Id: qMySQL.py,v 1.2 2004/06/29 08:17:33 corva Exp $
+# $Id: qMySQL.py,v 1.3 2005/12/20 20:58:47 corva Exp $
 
 '''Connection class for MySQL(tm)'''
 
@@ -34,7 +34,7 @@ class Connection(qSQL.Connection):
             if query:
                 query += ','
             query += Query('%s=' % name, Param(value))
-        query = 'UPDATE %s SET ' % table + query
+        query = 'REPLACE %s SET ' % table + query
         return self.execute(query)
     
     class _sql_lock:
