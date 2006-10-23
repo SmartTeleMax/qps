@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.48 2006/08/24 19:29:57 corva Exp $
+# $Id: qEdit.py,v 1.49 2006/10/09 22:22:34 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -260,11 +260,13 @@ class Edit(qCommands.DispatchedPublisher):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs)
     getFieldTemplate = qUtils.CachedAttribute(getFieldTemplate)
 
+    auth = None # Must be set as class attribute or passed as keyword argument
+                # on initialization
+
     def __init__(self, site, **kwargs):
         self.parsePath = qPath.PathParser(site,
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)
-        self.auth = qSecurity.CookieAuthentication()
         self.title = 'Editor interface of %s' % site.title
         qCommands.DispatchedPublisher.__init__(self, site, **kwargs)
 
