@@ -3,6 +3,6 @@
 <%
 for cur_item in stream:
     %><input type="checkbox" name="<%= name %>" value="<%= quoteHTML(cur_item.fields['id'].convertToString(cur_item.id, cur_item)) %>" <%= brick.inList(cur_item.id, value) and ' checked' or '' %>> <%= brick.getLabel(cur_item) %><br><%
-if stream.indexNum and len(stream)>=stream.indexNum and not isNew:
+if stream.indexNum and len(stream)>=stream.indexNum and not template.isNew:
     %><a href="<%= quoteHTML(template.edit.prefix+'/'+brick.stream+'/?qps-action%3AshowBinding=1&bound='+quoteFormField(item.path())+'&field='+quoteFormField(name)) %>">Select</a><%
 %></td>
