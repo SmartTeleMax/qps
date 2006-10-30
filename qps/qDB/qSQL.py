@@ -1,8 +1,8 @@
-# $Id: qSQL.py,v 1.11 2006/04/10 13:36:36 ods Exp $
+# $Id: qSQL.py,v 1.12 2006/10/06 16:42:09 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
-import logging, weakref
+import logging, weakref, time
 logger = logging.getLogger(__name__)
 
 
@@ -204,6 +204,9 @@ class Connection(object):
     _current_transaction = None
     connectHandler = None    
 
+    # timeouts in seconds to reconnect to database if connection was lost
+    _reconnect_timeouts = (0, 0.5, 3)
+
     # redefine in subclasses to exception
     # dbmodule raises for duplicate entries
     class DuplicateEntryError(RuntimeError):
@@ -246,10 +249,15 @@ class Connection(object):
 
     # Don't use methods directly, use getTransaction instead
     def begin(self):
-        pass
+        raise NotImplementedError()
     commit = rollback = begin
-    
-    def execute(self, query):
+
+    def _is_connect_error(self, exc):
+        """Accepts exception (exc) occured in execute(). Returns True if
+        exception indicates disconnection error"""
+        raise NotImplementedError
+
+    def executeOnce(self, query):
         '''Execute SQL command and return cursor.'''
 
         self.connect() # only connects if connection is closed
@@ -260,6 +268,26 @@ class Connection(object):
         else:
             cursor.execute(query)
         return cursor
+
+    def execute(self, query):
+        """Executes SQL command and returns curor. Tries to restore closed
+        connection if self._reconnect_timeouts is not empty."""
+        
+        if self._reconnect_timeouts:
+            for timeout in self._reconnect_timeouts:
+                try:
+                    return self.executeOnce(query)
+                except Exception, exc:
+                    if self._is_connect_error(exc):
+                        logger.exception('Connect error in execute')
+                        if self._current_transaction:
+                            raise
+                        self._dbh = None
+                        time.sleep(timeout)
+                    else:
+                        raise
+        else:
+            return self.executeOnce(query)
 
     def queryLimits(self, limitOffset=0, limitSize=0):
         '''Return SQL representation of limits.  Used by other methods.'''

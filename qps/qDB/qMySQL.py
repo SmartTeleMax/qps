@@ -1,4 +1,4 @@
-# $Id: qMySQL.py,v 1.4 2006/10/17 08:01:03 ods Exp $
+# $Id: qMySQL.py,v 1.5 2006/10/17 10:41:25 ods Exp $
 
 '''Connection class for MySQL(tm)'''
 
@@ -14,6 +14,15 @@ class Connection(qSQL.Connection):
     escape = staticmethod(_db_module.escape_string)
 
     DuplicateEntryError = IntegrityError
+
+    def _is_connect_error(self, exc):
+        if isinstance(exc, self.OperationalError):
+            return True
+
+    def _connect(self, *args, **kwargs):
+        dbh = qSQL.Connection._connect(self, *args, **kwargs)
+        dbh.autocommit(1)
+        return dbh
 
     def queryLimits(self, limitOffset=0, limitSize=0):
         '''Return SQL representation of limits.  Used by other methods.'''
