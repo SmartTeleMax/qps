@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.95 2006/10/04 15:02:17 corva Exp $
+# $Id: qFieldTypes.py,v 1.96 2006/10/09 16:15:25 ods Exp $
 
 '''Classes for common field types'''
 
@@ -324,7 +324,7 @@ class NUMBER(FieldType):
             value = self.type(value)
         except ValueError:
             raise self.InvalidFieldContent(message)
-        if self.min_value<=value<=self.max_value:
+        if self.minValue<=value<=self.maxValue:
             return value
         else:
             raise self.InvalidFieldContent(message)
