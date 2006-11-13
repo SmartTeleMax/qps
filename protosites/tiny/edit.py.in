@@ -1,5 +1,5 @@
 #!%(python_cgi_executable)s
-# $Id: edit.py.in,v 1.3 2004/03/25 12:24:07 ods Exp $
+# $Id: edit.py.in,v 1.4 2006/11/13 15:45:26 ods Exp $
 
 import qps, os, logging
 qps.configLogger(level=logging.INFO)
@@ -20,15 +20,6 @@ class Edit(qEdit.Edit):
                         authenticationHeader='Private Zone')
 
 
-class Main(Adapter):
-
-    def __init__(self):
-        self.__edit = Edit(Site())
-
-    def handle(self, request, response):
-        self.__edit.handle(request, response)
-
-
-handle = Main()
+handle = Adapter(Edit(Site()).handle)
 if __name__=='__main__':
     handle()
