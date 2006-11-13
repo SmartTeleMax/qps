@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.15 2005/04/13 12:51:03 ods Exp $
+# $Id: Site.py.in,v 1.16 2005/04/13 13:22:17 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -25,7 +25,7 @@ class Site(qSite.Site):
                                       indexPermissions=[('all', 'r')])),
                 ('docs',    FT.EXT_VIRTUAL_REFERENCE(
                                       title='Documents',
-                                      templateStream='docs',
+                                      rule='docs_by_rubrics',
                                       indexPermissions=[('all', 'r')])),
             ]),
             itemListSpec=[
@@ -39,7 +39,7 @@ class Site(qSite.Site):
             title='Documents',
             tableName='docs',
             condition='',  # raw SQL condition to place into WHERE clause
-            order='id',
+            order=[('id', 'ASC')],
             indexNum=10,   # number of items on page
             fields=FT.FieldDescriptions([
                 ('id',      FT.INTEGER_AUTO_ID()),
@@ -54,7 +54,7 @@ class Site(qSite.Site):
             permissions=[('editors', 'rwxcd'), ('all', 'rx')]),
     }
     virtualStreamRules = [
-        VirtualRule('docs', 'rubrics', 'rubric',
+        VirtualRule('docs_by_rubrics', 'docs', 'rubrics', 'rubric',
                     streamParams=DictRecord(
                         streamMakers=['qps.qMake.ItemsMaker',
                                       'qps.qMake.Maker'],
