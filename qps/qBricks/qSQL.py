@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.19 2006/06/01 13:34:04 corva Exp $
+# $Id: qSQL.py,v 1.20 2006/09/14 13:22:09 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -159,11 +159,10 @@ class SQLItem(qBase.Item):
 
 
 class SQLStream(qBase.Stream):
+
     itemClass = SQLItem
     order = OrderAttribute()
-    def fieldsContainerName(self):
-        return self.tableName
-    fieldsContainerName = qUtils.CachedAttribute(fieldsContainerName)
+    fieldsContainerName = qUtils.ReadAliasAttribute('tableName')
     
     def calculateLimits(self):
         '''Return limits for items retrieval (offset and number)'''
