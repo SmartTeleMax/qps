@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.16 2005/04/13 13:22:17 ods Exp $
+# $Id: Site.py.in,v 1.17 2006/11/13 15:45:26 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite
@@ -29,7 +29,7 @@ class Site(qSite.Site):
                                       indexPermissions=[('all', 'r')])),
             ]),
             itemListSpec=[
-                {'id': 'id1', 'title': 'First rybric title'},
+                {'id': 'id1', 'title': 'First rubric title'},
                 {'id': 'id2', 'title': 'Second rubric title'},
             ],
             streamMakers=['qps.qMake.ItemsMaker'],
