@@ -1,4 +1,4 @@
-# $Id: streamDescriptions.py,v 1.6 2004/06/18 07:45:19 corva Exp $
+# $Id: streamDescriptions.py,v 1.7 2004/07/26 08:56:17 ods Exp $
 from qps.qUtils import DictRecord
 from qps.qVirtual import VirtualRule
 
@@ -7,10 +7,10 @@ streamDescriptions = {
 
     'rubrics': DictRecord(
         title='Rubrics',
-        tableName='*rubrics*',
+        fieldsContainerName='rubrics',
         streamClass='qps.qBricks.qStatic.StaticStream',
         itemListSpec=[
-            {'id': 'id1', 'title': 'First rybric title'},
+            {'id': 'id1', 'title': 'First rubric title'},
             {'id': 'id2', 'title': 'Second rubric title'},
         ],
         streamMakers=['qps.qMake.ItemsMaker'],
@@ -21,7 +21,7 @@ streamDescriptions = {
         title='Documents',
         tableName='docs',
         condition='',  # raw SQL condition to place into WHERE clause
-        order='id',
+        order=[('id', 'ASC')],
         indexNum=10,   # number of items on page
         templateCat='docs',
         streamClass='qps.qBricks.qSQL.SQLStream',
@@ -31,7 +31,7 @@ streamDescriptions = {
 
 virtualStreamRules = [
 
-    VirtualRule('docs', 'rubrics', 'rubric',
+    VirtualRule('docs_by_rubrics', 'docs', 'rubrics', 'rubric',
                 streamParams=DictRecord(
                     streamMakers=['qps.qMake.ItemsMaker',
                                   'qps.qMake.Maker'],
