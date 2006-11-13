@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.12 2006/10/06 16:42:09 corva Exp $
+# $Id: qSQL.py,v 1.13 2006/10/30 13:22:56 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -286,6 +286,8 @@ class Connection(object):
                         time.sleep(timeout)
                     else:
                         raise
+            else:
+                raise
         else:
             return self.executeOnce(query)
 
