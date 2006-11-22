@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.49 2006/10/09 22:22:34 corva Exp $
+# $Id: qEdit.py,v 1.50 2006/10/23 16:02:20 ods Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -221,7 +221,16 @@ class requirePermission:
     
     
 class Edit(qCommands.DispatchedPublisher):
-    '''Base class for editor interface'''
+    '''Implements editing web interface.
+
+    Example usage:
+
+    edit = Edit(site, auth)
+
+    site - qSite.Site object
+    auth - some of qSecurity.Authentication children.
+    '''
+    
     streamLoaderClass = qPath.StreamLoaderFactory(qPath.Page(),
                                                   qPath.Order())
     renderHelperClass = RenderHelper
@@ -260,10 +269,8 @@ class Edit(qCommands.DispatchedPublisher):
         return qWebUtils.TemplateGetter(self.fieldTemplateDirs)
     getFieldTemplate = qUtils.CachedAttribute(getFieldTemplate)
 
-    auth = None # Must be set as class attribute or passed as keyword argument
-                # on initialization
-
-    def __init__(self, site, **kwargs):
+    def __init__(self, site, auth, **kwargs):
+        self.auth = auth
         self.parsePath = qPath.PathParser(site,
                                           item_extensions=self.item_extensions,
                                           index_file=self.index_file)

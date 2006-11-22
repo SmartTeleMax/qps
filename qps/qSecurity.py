@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.19 2006/10/02 14:46:07 ods Exp $
+# $Id: qSecurity.py,v 1.20 2006/10/05 14:42:30 olga_sorokina Exp $
 
 '''Function to check permissions'''
 
@@ -122,6 +122,22 @@ class UsersStream(SQLStream):
         # return default "False" user
         return self.createNewItem()
 
+    def getLogin(self, user):
+        return getattr(user, self.loginField)
+
+    def getPassword(self, user):
+        return getattr(user, self.passwdField)
+
+    def checkPassword(self, user, passwd):
+        # crypt method used below only supports string types
+        try:
+            passwd = str(passwd)
+        except UnicodeEncodeError:
+            return False
+        else:
+            return bool(user.fields[self.passwdField].crypt(passwd) == \
+                        self.getPassword(user))
+
 # auth handler is a class mixed to Edit.Edit
 # it have to define following methods:
 #
@@ -170,32 +186,60 @@ class HTTPAuthentication(Authentication):
         raise publisher.ClientError(401, 'Authorization Required')
 
 
-class CookieAuthentication(Authentication):
-    usersStream = None # name of users stream
-    authCookieName = "qpsuser" # name for auth cookie
-    expireTimeout = 31536000 # year in seconds
-    authCookieTmpl = "%(publisher.prefix)s"
+class AbstractCookieAuthentication(Authentication):
+    """Implements HTTP Cookie authentication.
+
+    cookieName - name of HTTP cookie header to be used for storing auth info
+    cookiePathTmpl - qUtils.interpolateString template for cookie path. Context
+                     is {'publisher': publisher} where publisher is Publisher's
+                     instance, from where auth is used
+    expireTimeout - expire timeout in seconds, is used if user choose to
+                    login permanently
+
+    NOTE: This class is not complete. It should be subclassed and methods
+
+    authBySecret
+    authByLogin
+    checkSecret
+    makeSecret    
+
+    Must be implemented in subclass. See docinfo for methods for more details.
+    """
     
+    cookieName = "qpsuser" # name for auth cookie header
+    cookiePathTmpl = "%(publisher.prefix)s" # path for auth cookie header
+    expireTimeout = 31536000 # year in seconds
 
-    def _authCookiePath(self, publisher):
-        return qUtils.interpolateString(self.authCookieTmpl,
+    def _cookiePath(self, publisher):
+        return qUtils.interpolateString(self.cookiePathTmpl,
                                         {'publisher': publisher})
-
+    
     def getUser(self, publisher, request, response):
-        cookie = qHTTP.getCookie(request, self.authCookieName)
+        """Authenticates user by HTTP-request"""
+        
+        cookie = qHTTP.getCookie(request, self.cookieName)
         try:
-            login, passwd = cookie.split(':')
+            login, secret = cookie.split(':')
         except (ValueError, TypeError, AttributeError):
-            login = None
+            login = secret = None
 
-        stream = publisher.site.retrieveStream(self.usersStream)
+        return self.authBySecret(publisher, request, login, secret)
+    
+    def login(self, publisher, request, response, form, permanent=False):
+        login, passwd, perm_login = [form.getfirst(name) for name in \
+                                     ('login', 'passwd', 'perm_login')]
+        perm_login = permanent or perm_login
 
-        if login is not None:
-            user = stream.getUser(login)
-            if user and getattr(user, user.stream.passwdField) == passwd:
-                return user
-        return stream.getUser(None)
-
+        user = self.authByLogin(publisher, login, passwd)
+        if user:
+            expires = perm_login and self.expireTimeout or None
+            cookie = '%s:%s' % (user.stream.getLogin(user),
+                                self.makeSecret(request, user))
+            qHTTP.setCookie(response, self.cookieName,
+                            cookie, expires,
+                            path=self._cookiePath(publisher))
+        return user
+        
     def requestLogin(self, publisher, request, response, form, path):
         template = publisher.renderHelperClass(
             publisher, self.getUser(publisher, request, response))
@@ -204,51 +248,73 @@ class CookieAuthentication(Authentication):
         response.write(template('login', path=path))
         raise publisher.EndOfRequest()
 
-    def _authCookieValue(self, publisher, user):
-        return "%s:%s" % (getattr(user, user.stream.loginField),
-                          getattr(user, user.stream.passwdField))
-
-    def setCookie(self, publisher, request, response, user, permanent=False):
-        expires = permanent and self.expireTimeout or None
-        qHTTP.setCookie(response, self.authCookieName,
-                        self._authCookieValue(publisher, user), expires,
-                        path=self._authCookiePath(publisher))
-
-    def login(self, publisher, request, response, form, permanent=False):
-        login, passwd, perm_login = [form.getfirst(name) for name in \
-                                     ('login', 'passwd', 'perm_login')]
-        perm_login = permanent or perm_login
-        # crypt method used below only supports string types
-        try:
-            passwd = str(passwd)
-        except UnicodeEncodeError:
-            passwd = None        
-
-        stream = publisher.site.retrieveStream(self.usersStream)
-        user = stream.getUser(login)
-        if user and user.fields[stream.passwdField].crypt(passwd) == \
-               getattr(user, stream.passwdField):
-            self.setCookie(publisher, request, response, user,
-                           permanent=perm_login)
-            return user
-        else:
-            return stream.getUser(None)
-
-    def checkCreds(self, publisher, login, passwd):
-        """Returns user object, associated with given login and password,
-        if no user is matched - bool(of returned user object) is False"""
-        
-        stream = publisher.site.retrieveStream(self.usersStream)
-        user = stream.getUser(login)
-        if user and user.fields[stream.passwdField].crypt(passwd) == \
-               getattr(user, stream.passwdField):
-            return user
-        else:
-            return stream.getUser(None)
-
     def logout(self, publisher, request, response, form):
-        qHTTP.expireCookie(response, self.authCookieName,
-                           path=self._authCookiePath(publisher))
+        qHTTP.expireCookie(response, self.cookieName,
+                           path=self._cookiePath(publisher))
+        
+    def authBySecret(self, publisher, request, login, secret):
+        """Checks login and secret against user database.
+
+        Returns user object, if user is not authenticated bool(user)
+        must be False"""
+        raise NotImplementedError()
+
+    def authByLogin(self, publisher, login, passwd):
+        """Checks login and password against user database.
+
+        Returns user object, if user is not authenticated bool(user)
+        must be False"""   
+        raise NotImplementedError()
+
+    def checkSecret(self, request, user, secret):
+        """Return True if secret corresponds to request and user, and False
+        if it doesnt"""
+        raise NotImplementedError()
+
+    def makeSecret(self, request, user):
+        """Return secret string to be used for authentication"""
+        raise NotImplementedError()
 
 
-# vim: ts=8 sts=4 sw=4 ai et
+class CookieAuthentication(AbstractCookieAuthentication):
+    """Implements AbstractCookieAuthentication, uses UsersStream as
+    users database.
+
+    Attribute 'usersStream' must contain name of stream, which streamClass
+    is inherited from UsersStream.
+
+    Example usage:
+
+    auth = CookieAuthentication(usersStream='customers')
+    """
+    
+    def __init__(self, usersStream, **kwargs):
+        self.usersStream = usersStream
+        super(CookieAuthentication, self).__init__(**kwargs)
+    
+    def authBySecret(self, publisher, request, login, secret):
+        stream = publisher.site.retrieveStream(self.usersStream)
+        if login is not None:
+            user = stream.getUser(login)
+            if user and self.checkSecret(request, user, secret):
+                return user
+        return stream.getUser(None)
+
+    def authByLogin(self, publisher, login, passwd):
+        stream = publisher.site.retrieveStream(self.usersStream)
+        user = stream.getUser(login)
+        if user and stream.checkPassword(user, passwd):
+            return user
+        else:
+            return stream.getUser(None)
+
+    # for compatibility with previous changeset only
+    # please drop if it's unused
+    checkCreds = authByLogin
+
+    def checkSecret(self, request, user, secret):
+        return user.stream.getPassword(user) == secret
+
+    def makeSecret(self, request, user):
+        return user.stream.getPassword(user)
+                            
