@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.20 2006/10/05 14:42:30 olga_sorokina Exp $
+# $Id: qSecurity.py,v 1.21 2006/11/22 23:28:00 corva Exp $
 
 '''Function to check permissions'''
 
@@ -288,7 +288,7 @@ class CookieAuthentication(AbstractCookieAuthentication):
     auth = CookieAuthentication(usersStream='customers')
     """
     
-    def __init__(self, usersStream, **kwargs):
+    def __init__(self, usersStream="users", **kwargs):
         self.usersStream = usersStream
         super(CookieAuthentication, self).__init__(**kwargs)
     
@@ -318,3 +318,4 @@ class CookieAuthentication(AbstractCookieAuthentication):
     def makeSecret(self, request, user):
         return user.stream.getPassword(user)
                             
+# vim: ts=8 sts=4 sw=4 ai et
