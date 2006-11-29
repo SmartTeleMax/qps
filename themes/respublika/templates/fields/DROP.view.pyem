@@ -1,0 +1,11 @@
+<div class="fieldName"><%= brick.title %>:</div>
+<div class="fieldValue">
+<%
+for item in stream:
+    if item.id == value:
+        %><%= brick.getLabel(item) %><%
+        break
+else:
+    %><%= brick.extraOption %><%
+%>
+</div>

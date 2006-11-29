@@ -1,0 +1,8 @@
+<%
+for item in stream:
+    if item.id == value:
+        %><%= brick.getLabel(item) %><%
+        break
+else:
+    %><%= brick.extraOption %><%
+%>
