@@ -1,4 +1,4 @@
-# $Id: qHTTP.py,v 1.5 2006/02/24 18:06:57 corva Exp $
+# $Id: qHTTP.py,v 1.6 2006/09/21 19:07:12 corva Exp $
 
 '''HTTP-related functions'''
 
@@ -43,18 +43,6 @@ def setCookie(response, name, value, expires=None, path=None, domain=None,
 def expireCookie(response, name, expires=None, path=None, domain=None,
                  max_age=0):
    setCookie(response, name, "", expires, path, domain, max_age)
-
-def getAdapter():
-    '''Automagically determine adapter to be used.  Supports pure CGI and
-    mod_python only.'''
-    try:
-        import _apache
-    except ImportError:
-        from PPA.HTTP.CGI import Adapter
-    else:
-        from PPA.HTTP.ModPython import Adapter
-    return Adapter
-
 
 import cgi
 class FieldStorage(cgi.FieldStorage):

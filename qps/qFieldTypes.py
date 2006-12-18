@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.96 2006/10/09 16:15:25 ods Exp $
+# $Id: qFieldTypes.py,v 1.97 2006/10/31 14:37:25 ods Exp $
 
 '''Classes for common field types'''
 
@@ -77,7 +77,7 @@ class FieldType(object):
                           'item': item, 'brick': self})
         namespace.setdefault('name', name)
         template = self.getTemplate(template_type, template_getter)
-        return template(namespace)
+        return template.toString(namespace)
 
     def getTemplate(self, template_type, template_getter):
         """Returns template instance for field.
@@ -1019,8 +1019,7 @@ class IMAGE(FieldType, ExternalStoredField):
         return self._Image(self, item)
 
     def convertFromCode(self, value, item):
-        old_path =  getattr(getattr(item, name), 'path', None)
-        image = self._Image(self, item, value, old_path)
+        image = self._Image(self, item, value)
         if value:
             if image._image is None:
                 raise ValueError('Bad image')

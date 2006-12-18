@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.17 2006/10/09 22:19:58 corva Exp $
+# $Id: qSite.py,v 1.18 2006/10/10 08:43:41 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -298,8 +298,8 @@ class Site(object):
 
     def getTemplateGetter(self, name=None):
         assert name is None  # No support for other getters in base class yet
-        from qWebUtils import TemplateGetter
-        return TemplateGetter(self.templateDirs)
+        from qWebUtils import buildTemplateController
+        return buildTemplateController(self.templateDirs).getTemplate
 
     def makeAction(self):
         return 'make'

@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.50 2006/10/23 16:02:20 ods Exp $
+# $Id: qEdit.py,v 1.51 2006/11/22 23:28:00 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -266,7 +266,8 @@ class Edit(qCommands.DispatchedPublisher):
     fieldTemplateDirs = qUtils.CachedAttribute(fieldTemplateDirs)
 
     def getFieldTemplate(self):
-        return qWebUtils.TemplateGetter(self.fieldTemplateDirs)
+        return qWebUtils.buildTemplateController(
+            self.fieldTemplateDirs).getTemplate
     getFieldTemplate = qUtils.CachedAttribute(getFieldTemplate)
 
     def __init__(self, site, auth, **kwargs):

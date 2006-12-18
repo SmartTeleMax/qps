@@ -1,58 +1,21 @@
-# $Id: qWebUtils.py,v 1.10 2006/02/24 18:00:38 corva Exp $
+# $Id: qWebUtils.py,v 1.11 2006/06/19 09:09:19 corva Exp $
 
 '''Template support'''
 
 import re, types, os, logging, qUtils
 logger = logging.getLogger(__name__)
 
-from PPA.Template.Controller import TemplateController, TemplateWrapper
-from PPA.Template.Caches import MemoryCache, DummyCache
-from PPA.Template.SourceFinders import FileSourceFinder, TemplateNotFoundError
+from PPA.Template import FileSourceFinder, TemplateController, \
+     TemplateNotFoundError
 
 
-class Writer:
-    """Fast, but incompatible StringIO.StringIO implementation. Only supports
-    write and getvalue methods"""
+def buildTemplateController(search_dirs):
+    """Returns PPA.Template.Controller.TemplateController instance, initialized
+    to find templates in search_dirs"""
     
-    def __init__(self):
-	self.parts = []
-	self.write = self.parts.append
-    
-    def getvalue(self):
-	return ''.join(self.parts)
-	
-
-class _PPATemplateWrapper(TemplateWrapper):
-    
-    def __call__(self, namespace={}, **kwargs):
-	fp = Writer()
-        self.interpret(fp, namespace, kwargs)
-        return fp.getvalue()
-        
-
-class TemplateGetter(object):
-
-    _getters = {}
-    
-    def __new__(cls, search_dirs, cacheClass=MemoryCache):
-        search_dirs = tuple(search_dirs)  # Insure sequence is immutable
-        getter_key = (search_dirs,)
-        if not cls._getters.has_key(getter_key):
-            self = object.__new__(cls)
-            self.source = search_dirs
-            self.controller = TemplateController(
-                    FileSourceFinder(search_dirs),
-                    template_wrapper_class=_PPATemplateWrapper,
-                    template_cache=cacheClass())
-            cls._getters[getter_key] = self
-        return cls._getters[getter_key]
-
-    def __call__(self, template_name, template_type=None):
-        logger.debug('Getting template %s from %s',
-                     template_name, self.source)
-        template = self.controller.getTemplate(template_name, template_type)
-        logger.debug('Template has type %s', template.type)
-        return template
+    source_finder = FileSourceFinder(search_dirs)
+    controller = TemplateController(source_finder)
+    return controller
 
 
 class RenderHelper(object):
@@ -77,7 +40,7 @@ class RenderHelper(object):
         ns.update(kwargs)
         ns['template'] = self
         logger.debug('Rendering template %s', template_name)
-        result = self.publisher.getTemplate(template_name)(ns)
+        result = self.publisher.getTemplate(template_name).toString(ns)
         logger.debug('Finished rendering template %s', template_name)
         return result
 
@@ -103,7 +66,7 @@ class Publisher(object):
         if self.templateDirs is None:
             return self.site.getTemplateGetter()
         else:
-            return TemplateGetter(self.templateDirs)
+            return buildTemplateController(self.templateDirs).getTemplate
     getTemplate = qUtils.CachedAttribute(getTemplate)
 
 
