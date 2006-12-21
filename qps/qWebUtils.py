@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.11 2006/06/19 09:09:19 corva Exp $
+# $Id: qWebUtils.py,v 1.12 2006/12/18 15:32:41 corva Exp $
 
 '''Template support'''
 
@@ -6,7 +6,7 @@ import re, types, os, logging, qUtils
 logger = logging.getLogger(__name__)
 
 from PPA.Template import FileSourceFinder, TemplateController, \
-     TemplateNotFoundError
+     TemplateNotFoundError, Caches
 
 
 def buildTemplateController(search_dirs):
@@ -14,7 +14,8 @@ def buildTemplateController(search_dirs):
     to find templates in search_dirs"""
     
     source_finder = FileSourceFinder(search_dirs)
-    controller = TemplateController(source_finder)
+    controller = TemplateController(source_finder,
+                                    template_cache=Caches.MemoryCache())
     return controller
 
 
