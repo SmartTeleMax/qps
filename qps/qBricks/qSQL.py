@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.20 2006/09/14 13:22:09 corva Exp $
+# $Id: qSQL.py,v 1.21 2006/11/13 16:06:57 ods Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -199,7 +199,7 @@ class SQLStream(qBase.Stream):
         '''Return parts of query to retrieve stream items. Can be overriden in
         child class.'''
         table = self.tableName
-        fields = ["%s.%s" % (table, f) for f in self.fields.main.keys()]
+        fields = [ft.selectExpr(table, fn) for fn, ft in self.fields.main]
         condition = self.condition
         group = self.group
         if hasattr(self, 'joinTemplate'):

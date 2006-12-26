@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.97 2006/10/31 14:37:25 ods Exp $
+# $Id: qFieldTypes.py,v 1.98 2006/12/18 15:32:41 corva Exp $
 
 '''Classes for common field types'''
 
@@ -61,6 +61,10 @@ class FieldType(object):
         copy = self.__class__(**self.__dict__)
         copy.__dict__.update(kwargs)
         return copy
+
+    def selectExpr(self, table, name):
+        '''Return SQL SELECT expression for the field.'''
+        return '%s.%s' % (table, name)
     
     def getDefault(self, item=None):
         return self.convertFromCode(self.default, item)
@@ -161,6 +165,20 @@ class FieldType(object):
 
         def __init__(self, message):
             self.message = message
+
+
+def SelectExprField(field_class, exprTemplate, **kwargs):
+    '''Field type constructor for values calculated by SQL SELECT expression.
+    
+    Examples:
+        SelectExprField(INTEGER, 'COUNT(*)', title='Count')
+        SelectExprField(NUMBER, 'SUM(%(table)s.sallary)', type=Decimal,
+                        title='Sallary sum')'''
+    kwargs.setdefault('selectExpr',
+                      lambda t, n: '%s AS %s' % \
+                                (exprTemplate % {'table': t, 'name': n}, n))
+    kwargs.setdefault('storeControl', 'never')
+    return field_class(**kwargs)
 
 
 class ExternalStoredField:
