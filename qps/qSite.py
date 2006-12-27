@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.18 2006/10/10 08:43:41 ods Exp $
+# $Id: qSite.py,v 1.19 2006/12/18 15:32:41 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -14,6 +14,15 @@ class StreamNotFoundError(Exception):
 
     def __str__(self):
         return self.name
+
+
+def _update_stream_params(params, added_params):
+    # XXX It's destructive towards added_params
+    if added_params.has_key('modifiers'):
+        modifiers = params.setdefault('modifiers', [])
+        modifiers.extend(added_params.pop('modifiers'))
+    params.update(added_params)
+
 
 class Site(object):
     '''Base class for site'''
@@ -208,7 +217,7 @@ class Site(object):
             for depth in range(self.maxAliasDepth):
                 new_template_stream_id, new_params = \
                             self.expandStreamAlias(template_stream_id, tag)
-                params.update(new_params)
+                _update_stream_params(params, new_params)
                 if new_template_stream_id==template_stream_id:
                     raise StreamNotFoundError(stream_id)
                 else:
@@ -234,11 +243,12 @@ class Site(object):
         else:
             default_tag_params = {}
 
-        result_conf = qUtils.DictRecord()
-        for dict in self.defaultStreamConf, stream_conf, params, {'tag': tag}:
+        result_conf = {}
+        for dict in self.defaultStreamConf, stream_conf, params:
+            _update_stream_params(result_conf, dict)
             tag_params = dict.get('tagParams', {}).get(tag, default_tag_params)
-            result_conf = qUtils.DictRecord(result_conf, dict, tag_params)
-        return result_conf
+            _update_stream_params(result_conf, tag_params)
+        return qUtils.DictRecord(result_conf, tag=tag)
             
     def expandStreamAlias(self, stream_path, tag=None):
         '''Convert stream path to stream id (id of template stream) and
