@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.5 2006/04/06 13:10:58 corva Exp $
+# $Id: qUtils.py,v 1.6 2006/04/19 14:55:02 corva Exp $
 
 '''Miscellaneous utilities'''
 
@@ -240,7 +240,7 @@ class ObjectDict:
 from PPA.Template.Engines.PySI import EvalDict
 
 def interpolateString(template, namespace):
-    return template % EvalDict(namespace, namespace)
+    return template % EvalDict({}, namespace)
 
 
 def createWeakProxy(obj):
