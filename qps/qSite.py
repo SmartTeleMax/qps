@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.19 2006/12/18 15:32:41 corva Exp $
+# $Id: qSite.py,v 1.20 2006/12/27 16:33:34 ods Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -17,8 +17,8 @@ class StreamNotFoundError(Exception):
 
 
 def _update_stream_params(params, added_params):
-    # XXX It's destructive towards added_params
     if added_params.has_key('modifiers'):
+        added_params = added_params.copy()
         modifiers = params.setdefault('modifiers', [])
         modifiers.extend(added_params.pop('modifiers'))
     params.update(added_params)
