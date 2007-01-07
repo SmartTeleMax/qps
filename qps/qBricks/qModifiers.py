@@ -1,4 +1,4 @@
-# $Id: qModifiers.py,v 1.3 2005/08/18 02:17:11 corva Exp $
+# $Id: qModifiers.py,v 1.4 2006/02/23 23:05:49 corva Exp $
 
 '''Brick modifiers classes'''
 
@@ -164,7 +164,7 @@ class Permissions:
 
     def __init__(self, item, defaultPermissions, **kwargs):
         self.item = weakref.proxy(item)
-        self.defaultPermissions = defaultPermissions[:]
+        self.defaultPermissions = defaultPermissions
         self.params = kwargs
 
     def permissions(self):
