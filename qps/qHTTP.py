@@ -1,4 +1,4 @@
-# $Id: qHTTP.py,v 1.6 2006/09/21 19:07:12 corva Exp $
+# $Id: qHTTP.py,v 1.7 2006/12/18 15:32:41 corva Exp $
 
 '''HTTP-related functions'''
 
@@ -68,7 +68,7 @@ class FieldStorage(cgi.FieldStorage):
 
     def getStringList(self, key):
         '''Like getlist, returning unicode objects if charset is set'''
-        value = self.getlist(self, key)
+        value = self.getlist(key)
         if self._charset:
             return [item.decode(self._charset, self._errors) for item in value]
         return value
