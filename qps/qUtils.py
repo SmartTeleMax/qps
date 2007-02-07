@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.7 2006/12/27 15:10:14 ods Exp $
+# $Id: qUtils.py,v 1.8 2007/02/07 13:13:29 corva Exp $
 
 '''Miscellaneous utilities'''
 
@@ -212,15 +212,15 @@ class Descriptions(object):
     
     def _make_config_dict(self):
         return dict(self._config)
-    _config_dict = CachedAttribute(_make_config_dict)
+    _config_dict = CachedAttribute(_make_config_dict, '_config_dict')
 
     def has_key(self, field_name):
         return self._config_dict.has_key(field_name)
 
-    def __setitem__(self, name, value):
-        for pos, (fn, fv) in enumerate(self._config):
-            if fn == name:
-                self._config[pos] = (fn, value)
+    def __setitem__(self, name_for_update, value_for_update):
+        for pos, (field_name, field_value) in enumerate(self._config):
+            if field_name == name_for_update:
+                self._config[pos] = (field_name, value_for_update)
                 break
         # update _config_dict
         self._config_dict = self._make_config_dict()
