@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.9 2007/02/07 13:23:21 corva Exp $
+# $Id: qUtils.py,v 1.10 2007/02/07 14:23:57 ods Exp $
 
 '''Miscellaneous utilities'''
 
@@ -222,6 +222,8 @@ class Descriptions(object):
             if field_name == name_for_update:
                 self._config[pos] = (field_name, value_for_update)
                 break
+        else:
+            raise KeyError(name_for_update)
         # clear cache
         try:
             del self._config_dict
