@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.51 2006/11/22 23:28:00 corva Exp $
+# $Id: qEdit.py,v 1.52 2006/12/18 15:32:41 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -183,11 +183,13 @@ class RenderHelper(qWebUtils.RenderHelper):
 
 
 def requireUser(func):
-    def wrapper(self, request, response, form, objs, user):
+    def wrapper(self, request, response, form, objs, user, *args, **kwargs):
         if not user:
-            raise self.cmd_notAuthorized(request, response, form, objs, user)
+            raise self.cmd_notAuthorized(request, response, form, objs, user,
+                                         *args, **kwargs)
         else:
-            return func(self, request, response, form, objs, user)
+            return func(self, request, response, form, objs, user,
+                        *args, **kwargs)
     return wrapper
 
 class requireType:
@@ -195,13 +197,15 @@ class requireType:
         self.type = type
 
     def __call__(deco, func):
-        def wrapper(self, request, response, form, objs, user):
+        def wrapper(self, request, response, form, objs, user,
+                    *args, **kwargs):
             obj = objs[-1]
             if obj is not None and obj.type == deco.type:
-                return func(self, request, response, form, objs, user)
+                return func(self, request, response, form, objs, user, *args,
+                            **kwargs)
             else:
                 raise self.cmd_invalidCommand(request, response, form, objs,
-                                              user)
+                                              user, *args, **kwargs)
         return wrapper
 
 class requirePermission:
@@ -210,11 +214,13 @@ class requirePermission:
         self.message = message
 
     def __call__(deco, func):
-        def wrapper(self, request, response, form, objs, user):
+        def wrapper(self, request, response, form, objs, user, *args,
+                    **kwargs):
             obj = objs[-1]
             if obj is not None \
                    and user.checkPermission(deco.perm, obj.permissions):
-                return func(self, request, response, form, objs, user)
+                return func(self, request, response, form, objs, user,
+                            *args, **kwargs)
             else:
                 raise self.ClientError(403, deco.message)
         return wrapper
