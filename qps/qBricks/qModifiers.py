@@ -164,7 +164,7 @@ class Permissions:
 
     def __init__(self, item, defaultPermissions, **kwargs):
         self.item = weakref.proxy(item)
-        self.defaultPermissions = defaultPermissions
+        self.defaultPermissions = defaultPermissions[:]
         self.params = kwargs
 
     def permissions(self):
