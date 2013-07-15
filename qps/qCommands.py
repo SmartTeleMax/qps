@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.13 2006/09/28 15:37:34 ods Exp $
+# $Id: qCommands.py,v 1.14 2006/10/05 14:42:30 olga_sorokina Exp $
 
 '''Framework for scripts with several commands (actions)'''
 
@@ -72,7 +72,7 @@ class FieldCommandDispatcher(BaseCommandDispatcher):
 
     def __init__(self, field_name):
         self.field_name = field_name
-    
+
     def parseRequest(self, publisher, request, response, form, **kwargs):
         return form.getfirst(self.field_name), {}
 
@@ -80,7 +80,7 @@ class FieldCommandDispatcher(BaseCommandDispatcher):
         sep = '?' in url and '&' or '?'
         return "%s%s%s=%s" % (url, sep, self.field_name, cmd)
 
-        
+
 class PathInfoCommandDispatcher(BaseCommandDispatcher):
     '''Class for commands based web-scripts where action is determined from
     request.pathInfo.'''
@@ -91,15 +91,15 @@ class PathInfoCommandDispatcher(BaseCommandDispatcher):
     def addCommand(self, url, cmd):
         sep = not url.endswith('/') and '/' or ''
         return "%s%s%s" % (url, sep, cmd)
-        
+
 
 class Publisher(qWebUtils.Publisher):
     "Basic web publisher. Handle method must be implemented by user."
-    
+
     from PPA.HTTP.Errors import SeeOther, NotFound, EndOfRequest, ClientError
 
     def handle(self, request, response):
-        """Is called by PPA.HTTP.Base.Adapter.__call__"""    
+        """Is called by PPA.HTTP.Base.Adapter.__call__"""
         raise NotImplementedError
 
     def showObject(self, request, response, template_name,
@@ -109,7 +109,7 @@ class Publisher(qWebUtils.Publisher):
         template_name is a name of template
         content_type is passed to respose.setContentType
         keyword arguments are passed to template"""
-        
+
         template = self.renderHelperClass(self)
         response.setContentType(content_type,
                                 charset=self.getClientCharset(request))
@@ -122,13 +122,13 @@ class Publisher(qWebUtils.Publisher):
 
 class DispatchedPublisher(Publisher):
     """Dispatches requests to methods using self.dispatcher"""
-    
+
     dispatcher = FieldNameCommandDispatcher(field_name_prefix='qps-action:')
 
     def cmd_invalidCommand(self, request, response, *args, **kwargs):
         """Is called when dispatcher was unable to find method to call"""
         raise self.NotFound()
-    
+
     def cmd_defaultCommand(self, request, response, *args, **kwargs):
         """Is called when no action was given to dispatcher"""
         self.cmd_invalidCommand(request, response, *args, **kwargs)

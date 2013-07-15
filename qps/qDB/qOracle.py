@@ -18,7 +18,7 @@ class Connection(qSQL.Connection):
         environ['ORACLE_HOME']=kwargs['orahome']
         conn=self._db_module.connect(kwargs['user'],kwargs['passwd'],self._db_module.makedsn(kwargs['host'],1521,kwargs['db']))
         return conn
-    
+
     def selectRowAsList(self,table,fields,condition=''):
         cursor=self.select(table,fields,condition)
         return cursor.fetchone()
@@ -40,13 +40,13 @@ class Connection(qSQL.Connection):
             query += ' ORDER BY ' + order
 #        logger.info(query)
         return self.execute(query)
-    
+
     def queryLimits(self,limitOffset=0,limitSize=0):
         if limitOffset or limitSize:
             return 'ROWNUM BETWEEN %d and %d' % (limitOffset+1,limitOffset+limitSize)
         else:
             return ''
-            
+
     def selectRowsAsDict(self, table, fields, condition='', order='', group='',
                              limitOffset=0, limitSize=0):
         cursor = self.select(table, fields, condition, order, group,
@@ -57,20 +57,20 @@ class Connection(qSQL.Connection):
             return [dict(zip(names, row)) for row in result]
         else:
             return []
-                                                                                                                                              
+
     def selectRowAsDict(self, table, fields, condition=''):
         cursor = self.select(table, fields, condition)
         names = [fd for fd in fields]
         return dict(zip(names, cursor.fetchone()))
 
-        
+
     def setTransType(self,trans_type):
         self._db_module.execute('SET TRANSACTION %s' % trans_type)
 
     def lastInsertID(self, table, column='id'):
         '''Return (autoincremented) ID for last INSERT command'''
         return self.execute('SELECT max('+column+') FROM '+table).fetchone()[0]
-                   
+
     def insert(self, table, field_dict):
         '''Construct and execute SQL INSERT command and return cursor.'''
         field_names = []
@@ -86,7 +86,7 @@ class Connection(qSQL.Connection):
         query = 'INSERT INTO %s (' % table + qSQL.Query(*field_names) + \
                                     ') VALUES (' + qSQL.Query(*field_values) + ')'
         return self.execute(query)
-    
+
     def insertMany(self, table, fields, values):
         '''Construct and execute SQL INSERT command with executemany.
         fields is a list of field names
@@ -95,7 +95,7 @@ class Connection(qSQL.Connection):
             raise self.ExecuteOutsideOfTransaction()
         field_names = ','.join(fields)
         field_values = []
-        
+
         for value in values[0]:
             if field_values:
                 field_values.append(',')
@@ -105,19 +105,19 @@ class Connection(qSQL.Connection):
         query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
                 Query(*field_values) + ')'
         query = query.sql(self._db_module.paramstyle)[0]
-                                                                                                                                                
+
         cursor = self._dbh.cursor()
         cursor.executemany(query, values)
         return cursor
-                                                                                                                                                                                        
+
     def begin(self):
         self._dbh.begin()
 
     def commit(self):
         self._dbh.commit()
-        
+
     def rollback(self):
         self._dbh.rollback()
 
-                                                                                                                                                                                                                                                                                                                            
+
 # vim: ts=8 sts=4 sw=4 ai et

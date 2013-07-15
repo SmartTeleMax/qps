@@ -1,4 +1,4 @@
-# $Id: qFilters.py,v 1.7 2006/09/05 21:33:44 corva Exp $
+# $Id: qFilters.py,v 1.8 2006/10/09 22:15:55 corva Exp $
 
 """Support for filtering QPS streams.
 
@@ -26,11 +26,11 @@ DictRecord(title='Some stream', filter=SQLStreamFilter())
 class StreamFilter(object):
     """Filter object knows filter fields names for stream and can create
     new instance of stream with applied filter params"""
-    
+
     def __nonzero__(self):
         """Returns True if filter changes the stream or False if it doesn't"""
         return False
-    
+
     def fields(self, stream):
         """Returns a list of field names used in filter"""
         return [name for name, type in stream.fields.iteritems() if \
@@ -47,14 +47,14 @@ class StreamFilter(object):
             setattr(state, name,
                     self.createField(stream.fields[name]).getDefault())
         return state
-    
+
     def applyToStream(self, stream):
         """Applies parameters to stream instance"""
 
 
 class SQLStreamFilter(StreamFilter):
     """Filter for SQL streams, operates with conditions and joinTemplates"""
-    
+
     def __init__(self):
         self.conditions = []
         self.joinTemplates = []
@@ -80,7 +80,7 @@ class FilterFieldType:
         """Returns a new instance of filter field initialized with required
         params from field"""
         return self(title=field.title)
-    
+
     def applyToFilter(self, filter, item, name, value):
         """Changes filter state"""
 
@@ -93,17 +93,17 @@ from qps.qDB.qSQL import Query, Param
 
 class SQLEquals:
     "Generates equal conditions on value"
-    
+
     def applyToFilter(self, filter, item, name, value):
         filter.conditions.append(
             Query("%s.%s=" % (item.stream.tableName, name),
                   Param(self.convertToDB(value, item)))
             )
-        
+
 
 class SQLLikes:
     "Generates LIKE conditions on value"
-    
+
     def applyToFilter(self, filter, item, name, value):
         filter.conditions.append(
             Query("%s.%s LIKE " % (item.stream.tableName, name),
@@ -136,7 +136,7 @@ class SQL_EXT_FOREIGN_MULTISELECT(FilterFieldType, FT.FOREIGN_DROP):
 
     def create(self, field):
         return self(title=field.title, stream=field.stream, orig=field)
-        
+
     def applyToFilter(self, filter, item, name, value):
         filter.conditions.append(
             Query("%s.%s=" % (self.orig.tableName,
@@ -167,7 +167,7 @@ class SQL_FOREIGN_CONTAINER(FilterFieldType, FT.CONTAINER):
 
     In example above firstname and address are names of fields in streamid.
     """
-    
+
     def create(self, field):
         """Returns a new instance of filter field initialized with
         field.title, field.stream an field.filterFields"""

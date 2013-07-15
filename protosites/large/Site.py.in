@@ -22,10 +22,10 @@ else:
 
 class Site(qps.qSite.Site):
     # fields configuration
-    
+
     from Cfg.fields import fields
     from Cfg.streams import streamDescriptions, virtualStreamRules
-    
+
     # site configuration
 
     title = u"%(title)s"
@@ -55,7 +55,7 @@ class Site(qps.qSite.Site):
     def getMakerClass(self, makerClassName):
         '''Import makerClass from Make module if short name (without dots)
         is gived'''
-        
+
         if '.' not in makerClassName:
             makerClassName = "Make.%%s" %% makerClassName
         makerClass = qps.qSite.Site.getMakerClass(self, makerClassName)

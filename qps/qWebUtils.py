@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.12 2006/12/18 15:32:41 corva Exp $
+# $Id: qWebUtils.py,v 1.13 2006/12/21 20:47:53 corva Exp $
 
 '''Template support'''
 
@@ -12,7 +12,7 @@ from PPA.Template import FileSourceFinder, TemplateController, \
 def buildTemplateController(search_dirs):
     """Returns PPA.Template.Controller.TemplateController instance, initialized
     to find templates in search_dirs"""
-    
+
     source_finder = FileSourceFinder(search_dirs)
     controller = TemplateController(source_finder,
                                     template_cache=Caches.MemoryCache())

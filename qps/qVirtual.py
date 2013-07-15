@@ -1,4 +1,4 @@
-# $Id: qVirtual.py,v 1.17 2005/08/24 09:58:42 ods Exp $
+# $Id: qVirtual.py,v 1.18 2005/09/04 21:24:42 corva Exp $
 
 '''Class for the most common virtual streams description rules'''
 
@@ -20,7 +20,7 @@ from qDB.qSQL import Query, Param
 
 class VirtualRule:
     '''Class for rules of virtual streams with single parameter.  Stream ID is
-    formed as prefix+item_id_from_paramStream+suffix, where 
+    formed as prefix+item_id_from_paramStream+suffix, where
     (prefix, suffix)=format.  If format is not set, then (paramStream+'/', '')
     assumed.'''
 
@@ -90,7 +90,7 @@ class VirtualRule:
         condition = self.condition(stream)
         if condition:
             stream.addToCondition(condition)
-    
+
     def condition(self, stream):
         conn = stream.dbConn
         item = stream.createNewItem()

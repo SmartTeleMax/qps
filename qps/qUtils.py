@@ -1,4 +1,4 @@
-# $Id: qUtils.py,v 1.10 2007/02/07 14:23:57 ods Exp $
+# $Id: qUtils.py,v 1.11 2007/02/12 14:39:29 ods Exp $
 
 '''Miscellaneous utilities'''
 
@@ -40,7 +40,7 @@ def importModule(name, globals=None):
         module = getattr(module, part)
     return module
 
-    
+
 def importObject(name, default_module=None, globals=None):
     '''Import object with name in form package.module.obj_name'''
     if '.' in name:
@@ -177,8 +177,8 @@ class Descriptions(object):
                                name2, config,
                                ...])"""
 
-        
-    
+
+
     def __init__(self, config):
         self._config = config
 
@@ -209,7 +209,7 @@ class Descriptions(object):
 
     def values(self):
         return [ft for fn, ft in self]
-    
+
     def _config_dict(self):
         return dict(self._config)
     _config_dict = CachedAttribute(_config_dict, '_config_dict')
@@ -232,7 +232,7 @@ class Descriptions(object):
 
     def __getitem__(self, name):
         return self._config_dict[name]
-    
+
     def get(self, field_name, default=None):
         return self._config_dict.get(field_name, default)
 
@@ -255,7 +255,7 @@ def interpolateString(template, namespace):
 
 def createWeakProxy(obj):
     "Returns weakref.proxy of obj"
-    
+
     try:
         return weakref.proxy(obj)
     except TypeError: # obj already is a proxy

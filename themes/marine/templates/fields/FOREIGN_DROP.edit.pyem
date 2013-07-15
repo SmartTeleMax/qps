@@ -20,4 +20,4 @@ if value and value not in stream:
 if not template.isNew and stream.indexNum!=0 and len(stream)>=stream.indexNum:
     %><a href="<%= quoteHTML('%s%s?qps-action%%3AshowBinding=1&bound=%s&field=%s' % (template.edit.prefix, stream.path(), quoteFormField(item.path()), quoteFormField(name))) %>">more &gt;&gt;</a>
 <%
-%></td>    
+%></td>

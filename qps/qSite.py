@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.20 2006/12/27 16:33:34 ods Exp $
+# $Id: qSite.py,v 1.21 2007/01/07 01:26:02 corva Exp $
 
 '''Classes for site as collection of streams'''
 
@@ -68,7 +68,7 @@ class Site(object):
                 'quoteURLPath'  : Cook.quoteURLPath,
                 'Cook'          : Cook}
     globalNamespace = qUtils.CachedClassAttribute(globalNamespace)
-    
+
     templateDirs = []
     makeRoot = ''
     siteMakers = ['qps.qMake.StreamsMaker']
@@ -82,10 +82,10 @@ class Site(object):
             selfclass.__inst__ = inst = object.__new__(selfclass)
             inst.init()
         return inst
-    
+
     def init(self):
         logger.debug('Creating Site...')
-        
+
         # status parameter
         self._retrieved = 0
         # caches
@@ -101,7 +101,7 @@ class Site(object):
     def site(self):
         return self
     site = property(site)
-    
+
     def createDBConnection(self):
         '''Default implementation creates connection to MySQL based on dbParams
         attribute of site.  Override this method to use another RDMS.'''
@@ -123,7 +123,7 @@ class Site(object):
         stream_id - referers the stream in configutation.
         page      - page of stream
         tag       - returns tagged stream.'''
-        
+
         stream_conf = qUtils.DictRecord(
             self.getStreamConf(stream_id, tag),
             **kwargs)
@@ -157,7 +157,7 @@ class Site(object):
         stream_id - referers the stream in configutation.
         retrieve  - if True, stream is also retrieved.
         tag       - returns tagged stream.'''
-        
+
         if tag is None:
             cache = self.streamCache
         else:
@@ -173,7 +173,7 @@ class Site(object):
 
     # XXX backward compatibility
     retrieveStream = createCachedStream
-    
+
     def retrieve(self, ignoreStatus=0):
         '''Retrieve (initialize) streams table'''
         if not self._retrieved or ignoreStatus:
@@ -205,7 +205,7 @@ class Site(object):
         '''Returns qUtils.DictRecord of stream configuration for stream
         identified by stream_id and (optionaly) tag. All stream configuration
         resolution is done here'''
-        
+
         params = {}
         try:
             # have we real stream with such id?
@@ -249,7 +249,7 @@ class Site(object):
             tag_params = dict.get('tagParams', {}).get(tag, default_tag_params)
             _update_stream_params(result_conf, tag_params)
         return qUtils.DictRecord(result_conf, tag=tag)
-            
+
     def expandStreamAlias(self, stream_path, tag=None):
         '''Convert stream path to stream id (id of template stream) and
         additional parameters for stream initialization.  For real streams
@@ -324,7 +324,7 @@ class Site(object):
             makers = [maker]
         for maker in makers:
             maker.process(self)
-        
+
     def path(self):
         return '/'
 

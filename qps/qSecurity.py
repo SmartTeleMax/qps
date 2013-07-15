@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.21 2006/11/22 23:28:00 corva Exp $
+# $Id: qSecurity.py,v 1.22 2006/11/22 23:38:21 corva Exp $
 
 '''Function to check permissions'''
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 #
 # access rights for stream should be defined like following:
 #   [('wheel', perm_all), ('editor', perm_edit)]
-# 
+#
 # Permissions:
 # r - read (former 'view' for streams and 'read' for fields)
 # w - write (former 'edit')
@@ -96,7 +96,7 @@ class UserItem(UserBase, SQLItem):
     def groups(self):
         return [x.id for x in self.qps_groups]
     groups = qUtils.CachedAttribute(groups)"""
-    
+
     groups = defaultGroups # should be overloaded
 
     def __str__(self):
@@ -104,7 +104,7 @@ class UserItem(UserBase, SQLItem):
 
     def __nonzero__(self):
         return self.id is not None
-        
+
 
 class UsersStream(SQLStream):
     itemClass = UserItem
@@ -177,7 +177,7 @@ class Authentication(object):
 class HTTPAuthentication(Authentication):
     securityGroupTable = {}
     authenticationHeader = 'Basic realm="QPS"'
-    
+
     def getUser(self, publisher, request, response):
         return PyUser(request.user(), self.securityGroupTable)
 
@@ -201,11 +201,11 @@ class AbstractCookieAuthentication(Authentication):
     authBySecret
     authByLogin
     checkSecret
-    makeSecret    
+    makeSecret
 
     Must be implemented in subclass. See docinfo for methods for more details.
     """
-    
+
     cookieName = "qpsuser" # name for auth cookie header
     cookiePathTmpl = "%(publisher.prefix)s" # path for auth cookie header
     expireTimeout = 31536000 # year in seconds
@@ -213,10 +213,10 @@ class AbstractCookieAuthentication(Authentication):
     def _cookiePath(self, publisher):
         return qUtils.interpolateString(self.cookiePathTmpl,
                                         {'publisher': publisher})
-    
+
     def getUser(self, publisher, request, response):
         """Authenticates user by HTTP-request"""
-        
+
         cookie = qHTTP.getCookie(request, self.cookieName)
         try:
             login, secret = cookie.split(':')
@@ -224,7 +224,7 @@ class AbstractCookieAuthentication(Authentication):
             login = secret = None
 
         return self.authBySecret(publisher, request, login, secret)
-    
+
     def login(self, publisher, request, response, form, permanent=False):
         login, passwd, perm_login = [form.getfirst(name) for name in \
                                      ('login', 'passwd', 'perm_login')]
@@ -239,7 +239,7 @@ class AbstractCookieAuthentication(Authentication):
                             cookie, expires,
                             path=self._cookiePath(publisher))
         return user
-        
+
     def requestLogin(self, publisher, request, response, form, path):
         template = publisher.renderHelperClass(
             publisher, self.getUser(publisher, request, response))
@@ -251,7 +251,7 @@ class AbstractCookieAuthentication(Authentication):
     def logout(self, publisher, request, response, form):
         qHTTP.expireCookie(response, self.cookieName,
                            path=self._cookiePath(publisher))
-        
+
     def authBySecret(self, publisher, request, login, secret):
         """Checks login and secret against user database.
 
@@ -263,7 +263,7 @@ class AbstractCookieAuthentication(Authentication):
         """Checks login and password against user database.
 
         Returns user object, if user is not authenticated bool(user)
-        must be False"""   
+        must be False"""
         raise NotImplementedError()
 
     def checkSecret(self, request, user, secret):
@@ -287,11 +287,11 @@ class CookieAuthentication(AbstractCookieAuthentication):
 
     auth = CookieAuthentication(usersStream='customers')
     """
-    
+
     def __init__(self, usersStream="users", **kwargs):
         self.usersStream = usersStream
         super(CookieAuthentication, self).__init__(**kwargs)
-    
+
     def authBySecret(self, publisher, request, login, secret):
         stream = publisher.site.retrieveStream(self.usersStream)
         if login is not None:
@@ -317,5 +317,5 @@ class CookieAuthentication(AbstractCookieAuthentication):
 
     def makeSecret(self, request, user):
         return user.stream.getPassword(user)
-                            
+
 # vim: ts=8 sts=4 sw=4 ai et

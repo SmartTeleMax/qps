@@ -1,4 +1,4 @@
-# $Id: qMail.py,v 1.8 2006/10/11 15:11:24 ods Exp $
+# $Id: qMail.py,v 1.9 2006/10/11 15:50:38 olga_sorokina Exp $
 
 '''Mail utilities'''
 
@@ -92,7 +92,7 @@ def formataddr(addr, charset):
         realname = email.Header.Header(realname, charset).encode()
     return email.Utils.formataddr((realname, addr))
 
-                
+
 class Composer:
     charset = 'ascii' # message charset
     contentType = 'text/plain'
@@ -113,7 +113,7 @@ class Composer:
 
         # message body have to be string
         body = isinstance(body, unicode) and body.encode(self.charset) or body
-        
+
         message = self.messageClass()
         message.set_payload(body, self.charset)
         message.set_type(self.contentType)
@@ -125,7 +125,7 @@ class Composer:
 
     def _setHeaders(self, message, **headers):
         """Sets headers to message, using i18n headers only if needed"""
-        
+
         h = self.defaultHeaders.copy()
         h.update(headers)
         for name, value in h.items():
@@ -146,7 +146,7 @@ class MultipartComposer(Composer):
         from email.MIMEText import MIMEText
         from email.MIMEBase import MIMEBase
         from email.Encoders import encode_base64
-        
+
         message = MIMEMultipart()
         message['To'] = formataddr(To, self.charset)
         message['From'] = formataddr(From, self.charset)
@@ -175,7 +175,7 @@ def send(From, To, subject, body, composer=Composer(),
          sender=SendmailSender()):
     message = composer.compose(From, To, body, Subject=subject)
     return sender.send(message)
- 
+
 def send_huge_mail(From, To, subject, body, composer = Composer(),
                    sender=SendmailSender(options="-odq")):
     message = composer.compose(From, To, body, Subject=subject,

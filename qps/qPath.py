@@ -1,4 +1,4 @@
-# $Id: qPath.py,v 1.12 2006/10/04 15:56:21 corva Exp $
+# $Id: qPath.py,v 1.13 2006/10/09 22:15:55 corva Exp $
 
 '''Standard QPS path parser'''
 
@@ -77,13 +77,13 @@ class StreamLoaderPlugin:
         then modify and return the stream"""
 
         return params
-        
+
 
 class Page(StreamLoaderPlugin):
     """Extracts stream.page information from form"""
-    
+
     paramName = 'page'
-    
+
     def applyToParams(self, site, form, params):
         try:
             page = int(form.getfirst(self.paramName, 1))
@@ -104,11 +104,11 @@ class Tag(StreamLoaderPlugin):
         tag = form.getfirst('tag', None)
         params['tag'] = tag
         return params
-        
+
 
 class Order(StreamLoaderPlugin):
     """Extracts stream.order information from form"""
-    
+
     fieldName = 'order_field'
     directionName = 'order_direction'
 
@@ -126,29 +126,29 @@ class Order(StreamLoaderPlugin):
 class Filter(StreamLoaderPlugin):
     """Extracts filtering information from form using 'prefix' keyword
     for filter parameters"""
-    
+
     prefix = "filter-"
-    
+
     class PrefixForm:
         """Emulates qHTTP.FieldStorage interface, proxies access to
         FieldStorage data using prefixed names"""
-        
+
         def __init__(self, form, prefix):
             self.form = form
             self.prefix = prefix
-            
+
         def getString(self, key, default=None):
             return self.form.getString(self.prefix+key, default)
-        
+
         def getStringList(self, key):
             return self.form.getStringList(self.prefix+key)
-        
+
         def getfirst(self, key, default=None):
             return self.form.getfirst(self.prefix+key, default)
-        
+
         def getlist(self, key):
             return self.form.getlist(self.prefix+key)
-    
+
     def applyToStream(self, site, form, stream):
         if hasattr(stream, 'filter'):
             filter = stream.filter.__class__()
@@ -180,7 +180,7 @@ class StreamLoader:
 
     loader call in webmethod is equivalent to site.createStream, but page is
     initialized by Page plugin from 'page' parameter of form."""
-    
+
     def __init__(self, site, form, plugins=[], **params):
         self.site = site
         self.form = form
@@ -215,7 +215,7 @@ class StreamLoaderFactory:
             loader = self.streamLoaderClass(site, form)
 
     """
-    
+
     def __init__(self, *args):
         self.plugins = args
 

@@ -39,13 +39,13 @@ class GroupsFeature(StreamModifier):
     three group named are generated:
 
     ['section-politics', 'section-sports', 'section-society']"""
-    
-    
+
+
     class Groups:
         """Instance of this class becomes an Item.groups, at now groups
         are used only in two operations: __add__ and __iter__, both of them
         are declared, and in moment of call groups are actually calculated"""
-        
+
         def __init__(self, item, defaultGroups, **kwargs):
             self.item = weakref.proxy(item)
             self.defaultGroups = defaultGroups[:]
@@ -89,7 +89,7 @@ class GroupsFeature(StreamModifier):
 
     def modifyItem(self, item):
         item.groups = self.Groups(item, item.groups, **self.params)
-        
+
 
 class Permissions:
     """Instance of this class becomes an Item.groups, at now groups
@@ -125,7 +125,7 @@ class Permissions:
     def __iter__(self):
             return iter(self.permissions)
 
-    
+
 class ItemPermissionsFeature(StreamModifier):
     def __init__(self, **kwargs):
         self.params = kwargs

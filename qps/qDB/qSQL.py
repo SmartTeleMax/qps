@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.13 2006/10/30 13:22:56 corva Exp $
+# $Id: qSQL.py,v 1.14 2006/11/13 16:08:40 ods Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class Raw:
     "Raw query parameter"
-    
+
     def __init__(self, value):
         self.value = value
     def __repr__(self):
@@ -38,7 +38,7 @@ class Query(object):
         query = Query('id=', Param(10))
         query += ' AND ' + Query('date>', Param(datetimeobject)) + \
         ' AND published=' + Param('y')
-        
+
 
         Query(' AND ').join(query_parts)
 
@@ -202,7 +202,7 @@ class Connection(object):
     _db_module = None  # Overwrite it in descending class
     _dbh = None
     _current_transaction = None
-    connectHandler = None    
+    connectHandler = None
 
     # timeouts in seconds to reconnect to database if connection was lost
     _reconnect_timeouts = (0, 0.5, 3)
@@ -211,10 +211,10 @@ class Connection(object):
     # dbmodule raises for duplicate entries
     class DuplicateEntryError(RuntimeError):
         pass
-                                    
+
     class ExecuteOutsideOfTransaction(RuntimeError):
         pass
-    
+
     class ConnectInTransaction(RuntimeError):
         pass
 
@@ -272,7 +272,7 @@ class Connection(object):
     def execute(self, query):
         """Executes SQL command and returns curor. Tries to restore closed
         connection if self._reconnect_timeouts is not empty."""
-        
+
         if self._reconnect_timeouts:
             for timeout in self._reconnect_timeouts:
                 try:

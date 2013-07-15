@@ -1,4 +1,4 @@
-# $Id: qEdit.py,v 1.52 2006/12/18 15:32:41 corva Exp $
+# $Id: qEdit.py,v 1.53 2007/06/14 16:11:32 corva Exp $
 
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
@@ -111,7 +111,7 @@ class RenderHelper(qWebUtils.RenderHelper):
                 permissions = field_type.createPermissions
             else:
                 permissions = field_type.permissions
-            
+
             field_perms = self.user.getPermissions(permissions)
             item_perms = self.user.getPermissions(item.permissions)
             if 'w' in item_perms and 'w' in field_perms:
@@ -224,8 +224,8 @@ class requirePermission:
             else:
                 raise self.ClientError(403, deco.message)
         return wrapper
-    
-    
+
+
 class Edit(qCommands.DispatchedPublisher):
     '''Implements editing web interface.
 
@@ -236,11 +236,11 @@ class Edit(qCommands.DispatchedPublisher):
     site - qSite.Site object
     auth - some of qSecurity.Authentication children.
     '''
-    
+
     streamLoaderClass = qPath.StreamLoaderFactory(qPath.Page(),
                                                   qPath.Order())
     renderHelperClass = RenderHelper
-    
+
     prefix = '/ed'
     securityGroupTable = {}
 
@@ -253,7 +253,7 @@ class Edit(qCommands.DispatchedPublisher):
     list_denied_error = 'You have no permission to list these objects'
     delete_denied_error = 'You have no permission to delete this object'
     invalid_command_message = 'Invalid action'
-    
+
     item_extensions = ('html',)
     index_file = 'index'
     required_object_permission = {
@@ -286,14 +286,14 @@ class Edit(qCommands.DispatchedPublisher):
 
     def getPath(self, obj):
         return "%s%s" % (self.prefix, obj.path())
-        
+
     def showObject(self, request, response, user, template_name,
                    content_type='text/html', **kwargs):
         template = self.renderHelperClass(self, user)
         response.setContentType(content_type,
                                 charset=self.getClientCharset(request))
         response.write(template(template_name, **kwargs))
-        
+
     def storableFields(self, item, user, isNew=0):
         itemFieldsOrder = []
         id_field_name = item.fields.idFieldName
@@ -324,11 +324,11 @@ class Edit(qCommands.DispatchedPublisher):
             item.command = command
             item.params = params
             item.store()
-    
+
     def showBrick(self, request, response, obj, user, type=None, isNew=0,
                   **kwargs):
         """Finds suitable template for obj and renders it to response"""
-        
+
         template = self.renderHelperClass(self, user, isNew)
 
         template_names = []
@@ -740,7 +740,7 @@ class Edit(qCommands.DispatchedPublisher):
     @ requireType('item')
     def do_showField(self, request, response, form, objs, user):
         "Shows field like publisher.showField does"
-        
+
         item = objs[-1]
         template = self.renderHelperClass(self, user, isNew=False)
         fieldName = form.getfirst('field', '')
@@ -752,7 +752,7 @@ class Edit(qCommands.DispatchedPublisher):
     def previewTemplateName(self, brick):
         """Returns preview template name for brick or None if
         templateName is not available"""
-        
+
         templateCat = hasattr(brick, 'templateCat') and brick.templateCat or \
                       (hasattr(brick, 'stream') and \
                        hasattr(brick.stream, 'templateCat')) and \
@@ -764,7 +764,7 @@ class Edit(qCommands.DispatchedPublisher):
     @ requireType('item')
     def do_showItemPreview(self, request, response, form, objs, user):
         """Inits item fields from form and shows preview page"""
-        
+
         item = objs[-1]
         errors = item.initFieldsFromForm(
                     form, names=self.storableFields(item, user))

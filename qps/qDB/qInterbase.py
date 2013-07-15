@@ -1,4 +1,4 @@
-# $Id: qInterbase.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qInterbase.py,v 1.1 2004/06/29 08:12:37 corva Exp $
 
 '''Connection class for Interbase/Firebird
 
@@ -66,7 +66,7 @@ class Connection(qSQL.Connection):
                limitOffset=0, limitSize=0):
         """Constructs and executes Interabase SELECT query in form
         SELECT FIRST m SKIP n FROM table WHERE condition..."""
-        
+
         query = qSQL.Query('SELECT ')
         limits = self.queryLimits(limitOffset, limitSize)
         if limits:

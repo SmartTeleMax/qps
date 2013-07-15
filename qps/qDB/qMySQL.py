@@ -1,4 +1,4 @@
-# $Id: qMySQL.py,v 1.5 2006/10/17 10:41:25 ods Exp $
+# $Id: qMySQL.py,v 1.6 2006/10/30 13:22:56 corva Exp $
 
 '''Connection class for MySQL(tm)'''
 
@@ -46,7 +46,7 @@ class Connection(qSQL.Connection):
             query += Query('%s=' % name, Param(value))
         query = 'REPLACE %s SET ' % table + query
         return self.execute(query)
-    
+
     class _sql_lock:
         def __init__(self, connection, lock_string):
             self.connection = connection

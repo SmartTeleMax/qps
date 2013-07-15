@@ -23,20 +23,20 @@ def getException():
 
 class Handler(qps.qHTTP.getAdapter()):
     noCache = False
-    
+
     from PPA.HTTP.Errors import EndOfRequest, InternalServerError, \
          ClientError
 
     def __init__(self, commands, **kwargs):
         self.commands = commands
         self.__dict__.update(kwargs)
-    
+
     def handle(self, request, response):
         if self.noCache:
             response.headers['Cache-Control'] = 'no-cache'
             response.headers['Expires'] = 'Thu, 01 Jan 1970 00:00:00 GMT'
-            
-        self.commands.site.clear()    
+
+        self.commands.site.clear()
         try:
             self.commands.handle(request, response)
         except self.ClientError, why:

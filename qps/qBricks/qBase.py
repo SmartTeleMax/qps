@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.23 2006/09/28 19:03:01 corva Exp $
+# $Id: qBase.py,v 1.24 2006/10/05 14:42:31 olga_sorokina Exp $
 
 '''Base brick classes'''
 
@@ -8,16 +8,16 @@ from qps import qUtils, qEvents
 
 class OrderAttribute(object):
     """Proxy for access to stream 'order' attribute. Normalizes order on set"""
-    
+
     def __set__(self, inst, value):
         if not value:
             inst._order = ()
         else:
             inst._order = tuple(self._normalize(value))
-            
+
     def __get__(self, inst, cls):
         return inst._order
-    
+
     def _normalize(self, order):
         for name, direction in order:
             try:
@@ -28,7 +28,7 @@ class OrderAttribute(object):
                 raise TypeError(
                     "Order direction should be a string 'asc' or 'desc'")
             yield name, direction
-    
+
 class Brick(object):
     '''Base class for all bricks (streams and items) with data stored in DB'''
 
@@ -43,7 +43,7 @@ class Brick(object):
         self.id = id
         self.site = qUtils.createWeakProxy(site)
         self.dbConn = site.dbConn
-            
+
     def path(self):
         '''Return common path of object'''
         raise NotImplementedError()
@@ -103,7 +103,7 @@ class Item(Brick):
                      sources
         field_name - name of field
         value      - field value in form of source"""
-        
+
         field_type = self.indexFields[field_name]
         method = getattr(field_type, 'convertFrom%s' % source)
         setattr(self, field_name, method(value, self))
@@ -139,7 +139,7 @@ class Item(Brick):
 
     def makeAction(self):
         return self.stream.itemMakeAction(self)
-    
+
     def virtualStreams(self):
         result = []
         for rule in self.stream.virtualRules:
@@ -221,7 +221,7 @@ class Stream(Brick):
         if page<1:
             page = 1
         self.page = page
-            
+
         # the list of items
         self.itemList = []
         self.itemModifiers = []
@@ -397,7 +397,7 @@ class Stream(Brick):
 
     # --- Order functions ---
     def isDefaultOrder(self):
-        """Checks if current stream order is default"""        
+        """Checks if current stream order is default"""
         default = self.site.createStream(self.id, tag=self.tag).order
         return (default == self.order)
 

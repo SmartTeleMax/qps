@@ -1,4 +1,4 @@
-# $Id: qModifiers.py,v 1.4 2006/02/23 23:05:49 corva Exp $
+# $Id: qModifiers.py,v 1.6 2013/04/24 14:54:35 phd Exp $
 
 '''Brick modifiers classes'''
 
@@ -17,7 +17,7 @@ class StreamModifier(object):
 
     If you need only to modify a stream  - redefine modifyStream method,
     if you need to modify an item - redefine modifyItem"""
-    
+
     def __call__(self, stream):
         stream.itemModifiers.append(self.modifyItem)
         self.modifyStream(stream)
@@ -31,15 +31,15 @@ class StreamModifier(object):
 
 class ItemPathModifier(StreamModifier):
     """Modifies an item's path method.
-    
+
     WARNING!  This modifier breaks consistency of path() and PathParser,
     so almost any site with it will be broken.  Use ItemPathModifier
     only if you know what you are doing.
-    
+
     Usage:
 
     ItemPathModifier(pathTemplate)
-    
+
     pathTemplate is string passed to qps.qUtils.interpolateString
     with namespace {'brick': item},
 
@@ -51,13 +51,13 @@ class ItemPathModifier(StreamModifier):
     this modifier instance generates the same path as
     qps.qBrick.qBase.Item.path()
     """
-    
+
     def __init__(self, template):
         self.template = template
-    
+
     def modifyItem(self, item):
         import new
-        
+
         def path(self):
             import qps.qUtils
             path = qps.qUtils.interpolateString(self._path_template,
@@ -65,7 +65,7 @@ class ItemPathModifier(StreamModifier):
             self.path = new.instancemethod(lambda self: path, item,
                                            item.__class__)
             return path
-        
+
         item._path_template = self.template
         item.path = new.instancemethod(path, item, item.__class__)
 
@@ -105,13 +105,13 @@ class GroupsFeature(StreamModifier):
     three group named are generated:
 
     ['section-politics', 'section-sports', 'section-society']"""
-    
-    
+
+
     class Groups:
         """Instance of this class becomes an Item.groups, at now groups
         are used only in two operations: __add__ and __iter__, both of them
         are declared, and in moment of call groups are actually calculated"""
-        
+
         def __init__(self, item, defaultGroups, **kwargs):
             self.item = weakref.proxy(item)
             self.defaultGroups = defaultGroups[:]
@@ -156,7 +156,7 @@ class GroupsFeature(StreamModifier):
     def modifyItem(self, item):
         item.groups = self.Groups(item, item.groups, **self.params)
 
-        
+
 class Permissions:
     """Instance of this class becomes an Item.groups, at now groups
     are used only in two operations: __add__ and __iter__, both of them
@@ -191,7 +191,7 @@ class Permissions:
     def __iter__(self):
             return iter(self.permissions)
 
-    
+
 class ItemPermissionsFeature(StreamModifier):
     def __init__(self, **kwargs):
         self.params = kwargs
