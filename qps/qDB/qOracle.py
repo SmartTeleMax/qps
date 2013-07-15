@@ -14,75 +14,75 @@ class Connection(qSQL.Connection):
     DuplicateEntryError = IntegrityError
 
     def _connect(self, *args, **kwargs):
-	from os import environ
-	environ['ORACLE_HOME']=kwargs['orahome']
-	conn=self._db_module.connect(kwargs['user'],kwargs['passwd'],self._db_module.makedsn(kwargs['host'],1521,kwargs['db']))
-	return conn
+        from os import environ
+        environ['ORACLE_HOME']=kwargs['orahome']
+        conn=self._db_module.connect(kwargs['user'],kwargs['passwd'],self._db_module.makedsn(kwargs['host'],1521,kwargs['db']))
+        return conn
     
     def selectRowAsList(self,table,fields,condition=''):
-	cursor=self.select(table,fields,condition)
-	return cursor.fetchone()
+        cursor=self.select(table,fields,condition)
+        return cursor.fetchone()
 
     def select(self, table, fields, condition='', order='', group='',
                    limitOffset=0, limitSize=0):
-	'''Construct and execute SQL query and return cursor.'''
+        '''Construct and execute SQL query and return cursor.'''
         assert type(fields) is not str   # Catch common error
-	query = qSQL.Query('SELECT %s FROM %s' % (','.join(fields), table))
+        query = qSQL.Query('SELECT %s FROM %s' % (','.join(fields), table))
         if limitOffset or limitSize:
-    	    if condition:
-    		condition += ' AND '
-    	    condition += self.queryLimits(limitOffset, limitSize)
+            if condition:
+                condition += ' AND '
+            condition += self.queryLimits(limitOffset, limitSize)
         if condition:
-    	    query += ' WHERE ' + condition
+            query += ' WHERE ' + condition
         if group:
-    	    query += ' GROUP BY ' + group
-	if order:
-    	    query += ' ORDER BY ' + order
+            query += ' GROUP BY ' + group
+        if order:
+            query += ' ORDER BY ' + order
 #        logger.info(query)
         return self.execute(query)
     
     def queryLimits(self,limitOffset=0,limitSize=0):
-	if limitOffset or limitSize:
-	    return 'ROWNUM BETWEEN %d and %d' % (limitOffset+1,limitOffset+limitSize)
-	else:
-	    return ''
-	    
+        if limitOffset or limitSize:
+            return 'ROWNUM BETWEEN %d and %d' % (limitOffset+1,limitOffset+limitSize)
+        else:
+            return ''
+            
     def selectRowsAsDict(self, table, fields, condition='', order='', group='',
                              limitOffset=0, limitSize=0):
         cursor = self.select(table, fields, condition, order, group,
-            			 limitOffset, limitSize)
+                                 limitOffset, limitSize)
         result = cursor.fetchall()
         if result:
-    	    names = [fd[0].lower() for fd in cursor.description]
-    	    return [dict(zip(names, row)) for row in result]
+            names = [fd[0].lower() for fd in cursor.description]
+            return [dict(zip(names, row)) for row in result]
         else:
-    	    return []
+            return []
                                                                                                                                               
     def selectRowAsDict(self, table, fields, condition=''):
-	cursor = self.select(table, fields, condition)
+        cursor = self.select(table, fields, condition)
         names = [fd for fd in fields]
         return dict(zip(names, cursor.fetchone()))
 
         
     def setTransType(self,trans_type):
-	self._db_module.execute('SET TRANSACTION %s' % trans_type)
+        self._db_module.execute('SET TRANSACTION %s' % trans_type)
 
     def lastInsertID(self, table, column='id'):
-	'''Return (autoincremented) ID for last INSERT command'''
-	return self.execute('SELECT max('+column+') FROM '+table).fetchone()[0]
+        '''Return (autoincremented) ID for last INSERT command'''
+        return self.execute('SELECT max('+column+') FROM '+table).fetchone()[0]
                    
     def insert(self, table, field_dict):
-	'''Construct and execute SQL INSERT command and return cursor.'''
-	field_names = []
+        '''Construct and execute SQL INSERT command and return cursor.'''
+        field_names = []
         field_values = []
         for field_name, field_value in field_dict.items():
             if field_names:
                 field_names.append(',')
                 field_values.append(',')
-    	    field_names.append(field_name)
-    	    if not field_value:
-    		field_value=''
-    	    field_values.append(qSQL.Param(field_value))
+            field_names.append(field_name)
+            if not field_value:
+                field_value=''
+            field_values.append(qSQL.Param(field_value))
         query = 'INSERT INTO %s (' % table + qSQL.Query(*field_names) + \
                                     ') VALUES (' + qSQL.Query(*field_values) + ')'
         return self.execute(query)
@@ -100,7 +100,7 @@ class Connection(qSQL.Connection):
             if field_values:
                 field_values.append(',')
             if not value:
-        	value=''
+                value=''
             field_values.append(Param(value))
         query = 'INSERT INTO %s (%s) VALUES (' % (table, field_names) + \
                 Query(*field_values) + ')'
@@ -111,13 +111,13 @@ class Connection(qSQL.Connection):
         return cursor
                                                                                                                                                                                         
     def begin(self):
-	self._dbh.begin()
+        self._dbh.begin()
 
     def commit(self):
-	self._dbh.commit()
-	
+        self._dbh.commit()
+        
     def rollback(self):
-	self._dbh.rollback()
+        self._dbh.rollback()
 
                                                                                                                                                                                                                                                                                                                             
 # vim: ts=8 sts=4 sw=4 ai et
