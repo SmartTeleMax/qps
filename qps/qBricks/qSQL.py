@@ -1,5 +1,3 @@
-# $Id: qSQL.py,v 1.22 2006/12/26 17:04:06 ods Exp $
-
 '''Classes for bricks with data stored in SQL DB'''
 
 import logging

@@ -1,5 +1,3 @@
-# $Id: qFieldTypes.py,v 1.99 2006/12/26 17:04:06 ods Exp $
-
 '''Classes for common field types'''
 
 from __future__ import generators

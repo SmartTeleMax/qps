@@ -1,5 +1,3 @@
-# $Id: qWebUtils.py,v 1.13 2006/12/21 20:47:53 corva Exp $
-
 '''Template support'''
 
 import re, types, os, logging, qUtils

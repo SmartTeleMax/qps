@@ -1,5 +1,3 @@
-# $Id: qFilters.py,v 1.8 2006/10/09 22:15:55 corva Exp $
-
 """Support for filtering QPS streams.
 
 This module defines two types of classes:

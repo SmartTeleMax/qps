@@ -1,5 +1,3 @@
-# $Id: qVirtual.py,v 1.18 2005/09/04 21:24:42 corva Exp $
-
 '''Class for the most common virtual streams description rules'''
 
 from qUtils import CachedAttribute, interpolateString

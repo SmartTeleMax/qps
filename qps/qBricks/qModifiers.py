@@ -1,5 +1,3 @@
-# $Id: qModifiers.py,v 1.6 2013/04/24 14:54:35 phd Exp $
-
 '''Brick modifiers classes'''
 
 import qps.qUtils

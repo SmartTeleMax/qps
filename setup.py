@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# $Id: setup.py,v 1.8 2004/03/23 15:04:53 ods Exp $
 
 from distutils.core import Command, setup
 from distutils.command.build import build

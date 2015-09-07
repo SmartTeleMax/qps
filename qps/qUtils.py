@@ -1,5 +1,3 @@
-# $Id: qUtils.py,v 1.11 2007/02/12 14:39:29 ods Exp $
-
 '''Miscellaneous utilities'''
 
 import os, logging, sys, weakref

@@ -1,5 +1,3 @@
-# $Id: qBase.py,v 1.24 2006/10/05 14:42:31 olga_sorokina Exp $
-
 '''Base brick classes'''
 
 import logging

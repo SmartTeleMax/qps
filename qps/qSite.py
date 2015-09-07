@@ -1,5 +1,3 @@
-# $Id: qSite.py,v 1.21 2007/01/07 01:26:02 corva Exp $
-
 '''Classes for site as collection of streams'''
 
 import types, sys, os, logging, weakref

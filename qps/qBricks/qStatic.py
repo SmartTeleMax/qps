@@ -1,5 +1,3 @@
-# $Id: qStatic.py,v 1.6 2006/02/24 18:08:06 corva Exp $
-
 '''Classes for hardcoded bricks'''
 
 from qps import qFieldTypes

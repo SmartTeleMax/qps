@@ -1,5 +1,3 @@
-# $Id: qEdit.py,v 1.53 2007/06/14 16:11:32 corva Exp $
-
 '''Classes for editor interface.  For security resons usage of this module in
 public scripts is not recommended.'''
 

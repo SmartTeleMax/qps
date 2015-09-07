@@ -1,5 +1,3 @@
-# $Id: qSQL.py,v 1.14 2006/11/13 16:08:40 ods Exp $
-
 '''Base classes for database adapters to generate SQL queries'''
 
 import logging, weakref, time

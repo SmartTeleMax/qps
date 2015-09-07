@@ -1,5 +1,4 @@
 #!%(python_executable)s
-# $Id: make.py.in,v 1.2 2004/03/22 15:58:21 ods Exp $
 
 import os, logging, sys
 from getopt import getopt

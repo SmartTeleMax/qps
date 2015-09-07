@@ -1,5 +1,3 @@
-# $Id: qMySQL.py,v 1.6 2006/10/30 13:22:56 corva Exp $
-
 '''Connection class for MySQL(tm)'''
 
 import qSQL

@@ -1,5 +1,3 @@
-# $Id: qHTTP.py,v 1.8 2007/01/11 17:30:54 olga_sorokina Exp $
-
 '''HTTP-related functions'''
 
 from weakref import WeakKeyDictionary

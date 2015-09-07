@@ -2,7 +2,6 @@
 
 Connection class for PosgreSQL
 
-$Id: qPyGreSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
 '''
 
 import qSQL

@@ -1,5 +1,3 @@
-# $Id: qInterbase.py,v 1.1 2004/06/29 08:12:37 corva Exp $
-
 '''Connection class for Interbase/Firebird
 
 Notes:

@@ -1,5 +1,3 @@
-# $Id: qMake.py,v 1.11 2005/08/02 23:17:50 corva Exp $
-
 '''Defines common maker classes'''
 
 import os, sys, logging, qUtils, qWebUtils

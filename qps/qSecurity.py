@@ -1,5 +1,3 @@
-# $Id: qSecurity.py,v 1.22 2006/11/22 23:38:21 corva Exp $
-
 '''Function to check permissions'''
 
 import os, types, logging, qUtils, qHTTP

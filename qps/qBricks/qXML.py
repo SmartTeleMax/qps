@@ -1,5 +1,3 @@
-# $Id: qXML.py,v 1.2 2005/08/18 02:17:11 corva Exp $
-
 '''Classes for bricks with data stored in XML file'''
 
 import logging

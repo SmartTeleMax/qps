@@ -1,5 +1,3 @@
-# $Id: qEvents.py,v 1.1 2005/02/15 15:24:37 corva Exp $
-
 '''Event handlers'''
 
 class StoreHandler(object):

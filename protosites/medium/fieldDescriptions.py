@@ -1,4 +1,3 @@
-# $Id: fieldDescriptions.py,v 1.4 2004/06/09 10:18:52 ods Exp $
 from qps import qFieldTypes as FT
 
 

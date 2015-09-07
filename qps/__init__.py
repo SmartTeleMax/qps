@@ -1,5 +1,3 @@
-# $Id: __init__.py,v 1.16 2005/08/18 02:12:28 corva Exp $
-
 '''Q Publishing System
 (c) 2000-2004 Sergey Barbarash, Oleg Broytmann, Pavel Barykin, Alexey
 Melchakov, Denis Otkidach'''

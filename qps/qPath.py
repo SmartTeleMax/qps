@@ -1,5 +1,3 @@
-# $Id: qPath.py,v 1.13 2006/10/09 22:15:55 corva Exp $
-
 '''Standard QPS path parser'''
 
 import logging

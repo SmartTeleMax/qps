@@ -1,5 +1,4 @@
 #!%(python_cgi_executable)s
-# $Id: edit.py.in,v 1.4 2006/11/13 15:45:26 ods Exp $
 
 import qps, os, logging
 qps.configLogger(level=logging.INFO)

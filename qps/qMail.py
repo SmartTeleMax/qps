@@ -1,5 +1,3 @@
-# $Id: qMail.py,v 1.9 2006/10/11 15:50:38 olga_sorokina Exp $
-
 '''Mail utilities'''
 
 
