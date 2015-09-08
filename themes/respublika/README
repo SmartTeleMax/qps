@@ -12,7 +12,7 @@ To install this theme you should:
 2. Configure your Edit class:
 
 class Edit(qps.qEdit.Edit):
-    staticPrefix = "/location/of/static/dir" 
+    staticPrefix = "/location/of/static/dir"
     styleSheetURL = '%s/modern.css' % staticPrefix # or default.css
     staticLogo = '/path/to/your/logo/file' # optional
 
