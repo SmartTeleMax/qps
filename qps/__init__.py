@@ -1,8 +1,17 @@
 '''Q Publishing System
-(c) 2000-2004 Sergey Barbarash, Oleg Broytmann, Pavel Barykin, Alexey
-Melchakov, Denis Otkidach'''
 
-__version__ = '2.8'
+Copyright (c) 2000-2004 Sergey Barbarash, Oleg Broytman, Pavel Barykin,
+Alexey Melchakov, Denis Otkidach.
+
+Copyright (c) 2005 Alexey Melchakov, Denis Otkidach.
+
+Copyright (c) 2006, 2007 Olga Sorokina, Alexey Melchakov, Denis Otkidach.
+
+Copyright (c) 2013-2015 Oleg Broytman.
+
+'''
+
+__version__ = '2.9'
 
 import logging
 
