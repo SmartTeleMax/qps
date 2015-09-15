@@ -23,7 +23,7 @@ class XMLHandler(saxutils.DefaultHandler):
             <field1></field1>
         </item>
     </items>"""
-    
+
     def __init__(self, stream):
         self.stream = stream
         self.field_names = stream.fields.main.keys()
@@ -37,13 +37,13 @@ class XMLHandler(saxutils.DefaultHandler):
 
     def characters(self, chunk):
         self.buffer.append(chunk)
-   
+
     def startElement(self, name, attrs):
         if name == 'item':
             self.fieldDict = {}
         elif name in self.field_names:
             self.clearBuffer()
-            
+
     def endElement(self, name):
         if name == 'item':
             id = self.stream.fields.id.convertFromString(
@@ -54,12 +54,12 @@ class XMLHandler(saxutils.DefaultHandler):
                 field_type = self.stream.fields[name]
                 setattr(item, name, field_type.convertFromString(value,
                                                                  self.stream))
-            
+
             self.stream.itemList.append(item)
         elif name in self.field_names:
             self.fieldDict[name] = self.getBuffer()
 
-        
+
 class XMLStream(qBase.Stream):
     itemClass = qStatic.StaticItem
     filename = None # file name of source file
@@ -77,7 +77,7 @@ class XMLStream(qBase.Stream):
             parser.setContentHandler(handler)
             parser.parse(self.getSource())
             self._retrieved = 1
-        
+
     def retrieveItem(self, item_id):
         self.retrieve()
         return self.getItem(item_id)

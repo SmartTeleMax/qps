@@ -23,7 +23,7 @@ form {display: inline; }
 .a12 {font: 12px/15px arial; letter-spacing: 0}
 
 
-.s1 {font: 1px/1px arial } 
+.s1 {font: 1px/1px arial }
 .s2 {font: 2px/2px arial }
 .s3 {font: 3px/3px arial }
 .s4 {font: 4px/4px arial }
@@ -118,7 +118,7 @@ body {
     border-bottom: 1px solid #F0F1F2;
 }
 
-.item { 
+.item {
     width: 100%;
 }
 
@@ -138,7 +138,7 @@ body {
     color: #F2F4F6;
 }
 
-.itemMenu { 
+.itemMenu {
     background-color: #E1E4E6;
     text-align: right;
     color: #C17700;
@@ -148,7 +148,7 @@ body {
     margin: 1px;
 }
 
-.itemMenu a { 
+.itemMenu a {
     color: #C17700;
     font: bold 12px/14px tahoma;
     letter-spacing: 0;
@@ -169,7 +169,7 @@ body {
     margin: 1px;
 }
 
-.itemActions input { 
+.itemActions input {
     margin-left: 10px;
 }
 
@@ -203,14 +203,14 @@ body {
     padding-bottom: 6px;
 }
 
-.streamTitle { 
+.streamTitle {
     background-color: #354750;
     color: #F2F4F6;
     padding: 9px;
     margin: 1px;
 }
 
-.streamMenu { 
+.streamMenu {
     background-color: #E1E4E6;
     text-align: right;
     color: #C17700;
@@ -220,29 +220,29 @@ body {
     margin: 1px;
 }
 
-.streamMenu a { 
+.streamMenu a {
     color: #C17700;
     font: bold 12px/14px tahoma;
     letter-spacing: 0;
 }
 
-.streamContainer { 
+.streamContainer {
     padding: 9px;
     margin: 1px;
     background-color: #E1E4E6;
     _width: 100%;
 }
 
-.streamContainer table { 
+.streamContainer table {
     background-color: #E1E4E6;
     width: 100%;
 }
 
-.streamContainer table td { 
+.streamContainer table td {
     padding: 6px;
 }
 
-.streamFieldNames { 
+.streamFieldNames {
     height: 3em;
     font: 11px/14px tahoma;
     letter-spacing: 0;
@@ -250,11 +250,11 @@ body {
     background-color: #A0AAB1;
 }
 
-.streamFieldNames a { 
+.streamFieldNames a {
     color: #000;
 }
 
-.streamFieldNames #selectFieldName { 
+.streamFieldNames #selectFieldName {
     font: bold 11px/12px tahoma;
     letter-spacing: 0;
     color: #C17700;
@@ -262,7 +262,7 @@ body {
     background-color: #A0AAB1;
 }
 
-.orderControl { 
+.orderControl {
     padding: 0px !important;
 }
 
@@ -270,12 +270,12 @@ body {
     float: left;
 }
 
-.streamFieldNames td div.orderDirection { 
+.streamFieldNames td div.orderDirection {
     float: right;
     color: #fff;
 }
 
-.orderControl a { 
+.orderControl a {
     display: block;
     height: 3em;
     line-height: 3em;
@@ -283,12 +283,12 @@ body {
     padding: 0px 6px 0px 6px;
 }
 
-.orderControl a:hover { 
+.orderControl a:hover {
     background-color: #c1c8cc;
 }
 
 
-.streamItem { 
+.streamItem {
     vertical-align: top;
     background-color: #F0F1F2;
     color: #485962;
@@ -296,13 +296,13 @@ body {
     letter-spacing: 0;
 }
 
-.streamItem a { 
+.streamItem a {
     color: #485962;
     font: 12px/16px tahoma;
     letter-spacing: 0;
 }
 
-.streamItem .selectFieldValue { 
+.streamItem .selectFieldValue {
     text-align: center;
 }
 
@@ -311,25 +311,25 @@ body {
     letter-spacing: 0;
 }
 
-.streamActions { 
+.streamActions {
     background-color: #E1E4E6;
     text-align: right;
     padding: 9px;
     margin: 1px;
 }
 
-.streamActions input { 
+.streamActions input {
     margin-left: 10px;
 }
 
-.streamBrowse { 
+.streamBrowse {
     background-color: #E1E4E6;
     padding: 9px;
     margin: 1px;
     _width: 100%;
 }
 
-.streamBrowse table { 
+.streamBrowse table {
     background-color: #C1C8CC;
     width: 100%;
     font: 11px/14px tahoma;
@@ -337,28 +337,28 @@ body {
     color: #485962;
 }
 
-.streamFilter { 
+.streamFilter {
     background-color: #F0F1F2;
     padding: 9px;
     margin: 1px;
 }
 
-.filterField { 
+.filterField {
     margin-bottom: 3px;
     overflow: auto;
     _width: 100%;
 }
 
-.filterActions { 
+.filterActions {
     text-align: right;
     margin-top: 12px;
 }
 
-.STRING { 
+.STRING {
     width: 100%;
 }
 
-.TEXT { 
+.TEXT {
     width: 100%;
 }
 
@@ -371,7 +371,7 @@ body {
     width: 100%;
 }
 
-.fieldValue div.itemField { 
+.fieldValue div.itemField {
     border: 1px solid #A0AAB1;
     margin-bottom: 3px;
 }

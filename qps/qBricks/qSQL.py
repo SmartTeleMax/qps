@@ -11,7 +11,7 @@ from qps.qDB.qSQL import Query, Param
 
 class OrderAttribute(qBase.OrderAttribute):
     """Allows to define order in sql-stype (as string)"""
-    
+
     def _normalize(self, order):
         if type(order) == str:
             # user tries to pass sql-like order description
@@ -112,12 +112,12 @@ class SQLItem(qBase.Item):
             # INSERT
             id_field_type = self.fields.id
             id_field_name = self.fields.idFieldName
-            
+
             if not fields.has_key(id_field_name) and \
                (not (id_field_type.omitForNew and self.id is None) or \
                 not id_field_type.omitForNew):
                 fields[id_field_name] = id_field_type.convertToDB(self.id,self)
-                
+
             cursor = self.dbConn.insert(self.stream.tableName, fields)
 
             if id_field_type.omitForNew and self.id is None:
@@ -152,7 +152,7 @@ class SQLItem(qBase.Item):
         # XXX should handler be called insude transaction?
         # XXX May be just call inherited store?
         self.stream.storeHandler.handleItemStore(self, names)
-        
+
     def delete(self):
         '''Delete item from DB'''
         self.stream.deleteItems([self.id])
@@ -164,7 +164,7 @@ class SQLStream(qBase.Stream):
     def fieldsContainerName(self):
         return self.tableName
     fieldsContainerName = qUtils.CachedAttribute(fieldsContainerName)
-    
+
     def calculateLimits(self):
         '''Return limits for items retrieval (offset and number)'''
         if self.indexNum>0 and self.page>0:

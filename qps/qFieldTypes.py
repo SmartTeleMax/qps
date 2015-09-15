@@ -48,7 +48,7 @@ class FieldType(object):
     layout      = _LayoutDict()                 # used in field template
     title       = '?'
     indexTitle  = qUtils.ReadAliasAttribute('title')
-   
+
     defaultOrderDirection = 'ASC'
     allowOrder = False
 
@@ -61,10 +61,10 @@ class FieldType(object):
         copy = self.__class__(**self.__dict__)
         copy.__dict__.update(kwargs)
         return copy
-    
+
     def getDefault(self, item=None):
         return self.convertFromCode(self.default, item)
-    
+
     def show(self, item, name, template_type, template_getter,
              global_namespace={}):
         '''Return HTML representation of field in editor interface
@@ -144,7 +144,7 @@ class FieldType(object):
             return ''
         else:
             return value
-        
+
     def convertFromForm(self, form, name, item=None):
         return self.convertFromString(form.getfirst(name, ''), item)
 
@@ -165,7 +165,7 @@ class FieldType(object):
 
 class ExternalStoredField:
     "Interface for external stored fields"
-    
+
     def retrieve(self, item):
         "Returns a field value from external storage"
 
@@ -186,7 +186,7 @@ class ExternalTableStoredField(ExternalStoredField):
     def condition(self, item):
         from qDB.qSQL import Query, Param
         return Query('%s=' % self.idFieldName, Param(item.id))
-    
+
 
 class STRING(FieldType):
     minlength = 0
@@ -202,7 +202,7 @@ class STRING(FieldType):
     def __init__(self, **kwargs):
         FieldType.__init__(self, **kwargs)
         self.layout = _LayoutDict(self.layout, {'maxlength': self.maxlength})
-        
+
     def convertFromForm(self, form, name, item=None):
         value = form.getString(name, '').strip()
         if self.allowNull and not value:
@@ -226,7 +226,7 @@ class STRING(FieldType):
     def convertFromString(self, value, item=None):
         if self.allowNull and not value:
             return None
-        # XXX dbCharset here is used as indicator of unicode mode 
+        # XXX dbCharset here is used as indicator of unicode mode
         if item.site.dbCharset:
             return value.decode(self.stringCharset)
         else:
@@ -265,7 +265,7 @@ class UNIQUE_STRING(STRING):
     described as UNIQUE INDEX"""
 
     unique_error = "%(brick.title)s is already used, try a different one."
-    
+
     def convertFromForm(self, form, name, item=None):
         value = STRING.convertFromForm(self, form, name, item)
         if value is None:
@@ -283,7 +283,7 @@ class UNIQUE_STRING(STRING):
             raise self.InvalidFieldContent(message)
         return value
 
-    
+
 class NUMBER(FieldType):
 
     type = None # should be defined in children
@@ -294,9 +294,9 @@ class NUMBER(FieldType):
     maxValue = qUtils.ReadAliasAttribute('max_value')
     # for compatibility only, always use minValue and maxValue,
     # support for _ names will be removed in the future
-    min_value = 0 
+    min_value = 0
     max_value = sys.maxint
-    
+
     error_message = '%(brick.type.__name__.title())s from ' \
                     '%(brick.minValue)s to %(brick.maxValue)s required'
 
@@ -334,7 +334,7 @@ class NUMBER(FieldType):
             return
         else:
             return self.type(value)
-    
+
 
 class INTEGER(NUMBER):
     type = int
@@ -440,7 +440,7 @@ class AUTO_TS(DATETIME):
     def convertToDB(self, value, item):
         from qDB.qSQL import Raw
         return Raw("NOW()")
-        
+
 
 class TEXT(STRING):
     layout = _LayoutDict({'cols': 60, 'rows': 10, 'wrap': 'virtual'})
@@ -487,15 +487,15 @@ class SELECT(DROP):
                                 tag=item.site.transmitTag(item.stream.tag))
         return map(stream.fields.id.convertFromString,
                    value.split(self.fieldSeparator)[:-1])
-    def convertFromForm(self, form, name, item=None): 
+    def convertFromForm(self, form, name, item=None):
         return form.getlist(name)
-        
+
 
 class LazyItem:
     """Base class for other Lazy Classes, it is supposed to be stored into
     field of item as a references to other item without retrieving it untill
     it is really neccessary"""
-    
+
     def __init__(self, item, field, item_id):
         self._owner = qUtils.createWeakProxy(item)
         self._field = field
@@ -534,7 +534,7 @@ class LazyItem:
 
 class RetrievedLazyItem(LazyItem):
     """This class retrieves item from db w/o retrieving whole stream"""
-    
+
     def _item(self):
         return self._stream().retrieveItem(self._item_id)
     _item = qUtils.CachedAttribute(_item)
@@ -542,7 +542,7 @@ class RetrievedLazyItem(LazyItem):
 
 class GettedLazyItem(LazyItem):
     """This class retrieves item retrieves stream and get item with getItem"""
-    
+
     def _item(self):
         return self._stream().getItem(self._item_id)
     _item = qUtils.CachedAttribute(_item)
@@ -577,7 +577,7 @@ class FOREIGN_DROP(FieldType):
     def convertFromDB(self, value, item):
         if value!=self.missingID:
             return self.proxyClass(item, self, value)
-    
+
     def convertToDB(self, value, item=None):
         if value: # calls LazyItem.__nonzero__ that checks for None
             return value.fields.id.convertToDB(value.id, item)
@@ -683,11 +683,11 @@ class FOREIGN_MULTISELECT(FieldType):
                                                          item=self.item))
             return filter(None, items)
         _items = qUtils.CachedAttribute(_items)
-        
+
     def __init__(self, **kwargs):
         FieldType.__init__(self, **kwargs)
         self.itemField = self.itemFieldClass(**kwargs)
-    
+
     def inList(self, id, items):
         return id in [item.id for item in items]
 
@@ -734,21 +734,21 @@ class FOREIGN_MULTISELECT(FieldType):
         return FieldType.show(self, item, name, template_type, template_getter,
                               namespace)
 
-        
+
 class BOOLEAN(FieldType):
     """Bool field type, handles True/False values.
 
     Attributes:
-    
+
     dbTrue - database value of True (default 1)
     dbFalse - database value of False (default 0)
 
     bool(dbTrue) must be True and bool(dbFalse) must be False"""
-    
+
     dbTrue = 1
     dbFalse = 0
     default = False
-    
+
     def convertFromDB(self, value, item):
         return bool(value)
 
@@ -764,12 +764,12 @@ class BOOLEAN(FieldType):
 
     def convertFromString(self, value, item):
         return bool(value)
-    
+
 
 class CB_YN(BOOLEAN):
     """Obsolete fieldtype, it was represented in database as enum('y', ''),
     use BOOLEAN instead."""
-    
+
     dbTrue = 'y'
     dbFalse = ''
 
@@ -778,7 +778,7 @@ class EXT_FOREIGN_MULTISELECT(FOREIGN_MULTISELECT, ExternalTableStoredField):
     linkThrough = 0
     countTemplate = '%(count or "no")s item(s)'
     itemField = STRING() # field type of values
-    
+
     class DBItemList(LazyItemList):
         def _items(self):
             conn = self.item.dbConn
@@ -859,7 +859,7 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
                 item = new_stream.retrieveItem(item.id)
                 if item is None:
                     return
-            
+
             for stream in item.virtualStreams:
                 if self._rule_id and stream.virtual.id == self._rule_id:
                     return stream
@@ -876,7 +876,7 @@ class EXT_VIRTUAL_REFERENCE(FieldType, ExternalStoredField):
             return self._stream is not None
         def __getattr__(self, name):
             if name in ('_stream', '__del__'): # XXX Avoid unlimited
-                                               # recursion due to bug in 
+                                               # recursion due to bug in
                                                # decriptiors implementation
                                                # in 2.2
                 raise AttributeError(name)
@@ -909,11 +909,11 @@ class IMAGE(FieldType, ExternalStoredField):
     linkThrough = 0
     allowUrl = False
     allowFile = True
-    
+
     class _Image:
         edit_root = None
         path_template = None
-        
+
         def __init__(self, field_type, item, body=None, old_path=None):
             self.item = qUtils.createWeakProxy(item)
             self.edit_root = field_type.editRoot
@@ -945,7 +945,7 @@ class IMAGE(FieldType, ExternalStoredField):
             if self._image:
                 return self._image.size[1]
         height = qUtils.CachedAttribute(height)
-            
+
         def __str__(self):
             return self.path
         def __nonzero__(self):
@@ -1095,7 +1095,7 @@ class RESTRICTED_IMAGE(IMAGE):
 
 
 class THUMBNAIL(IMAGE):
-    
+
     fieldToThumb = None
     width = 0  # define correct sizes of thumbnail
     height = 0
@@ -1104,7 +1104,7 @@ class THUMBNAIL(IMAGE):
         import PIL.Image
         return PIL.Image.ANTIALIAS
     resizeFilter = property(resizeFilter)
-    
+
     def convertFromForm(self, form, name, item):
         if self.fieldToThumb:
             # have field to thumbnail
@@ -1177,7 +1177,7 @@ class THUMBNAIL(IMAGE):
             image = image.crop(rect)
         return image
 
-    
+
 class AgregateFieldType(FieldType):
 
     def _unescape(self, string):
@@ -1207,7 +1207,7 @@ class CONTAINER(AgregateFieldType):
 
     def _split(self, string):
         return [(self._unescape(key), self._unescape(field))
-                for key, field in 
+                for key, field in
                     re.findall(r'(?:^|,)((?:[^\\:]|\\.)*):((?:[^\\,]|\\.)*)',
                                string)]
 
@@ -1227,7 +1227,7 @@ class CONTAINER(AgregateFieldType):
         for key, field_type in self.fields:
             result[key] = field_type.convertFromCode(value[key], item)
         return result
-    
+
     def convertFromString(self, string, item=None):
         result = self.dictClass()
         key_field_map = dict(self._split(string))
@@ -1293,18 +1293,18 @@ class ARRAY(AgregateFieldType):
         while len(value)<self.length:
             value.append(self.itemField.getDefault(item))
         return value[:self.length]
-    
+
     def hideItem(self, value, tag=None):
         return value is None
 
     def _filter(self, values, item):
         tag = item.site.transmitTag(item.stream.tag)
         return [value for value in values if not self.hideItem(value, tag)]
-    
+
     def convertFromCode(self, values, item=None):
         return self._filter([self.itemField.convertFromCode(value, item)
                              for value in values], item)
-    
+
     def convertFromString(self, string, item=None):
         return self._filter([self.itemField.convertFromString(field, item)
                              for field in self._split(string)], item)
@@ -1336,7 +1336,7 @@ class ARRAY(AgregateFieldType):
 
 class FieldDescriptions(qUtils.Descriptions):
     """Storage for fields config.
-    
+
     Usage:
 
         fields = FieldDescriptions([(field1_name, field1_type_class(...)),
@@ -1358,7 +1358,7 @@ class FieldDescriptions(qUtils.Descriptions):
         idFieldName - name of id field"""
 
     idFieldName = "id"
-        
+
     def __init__(self, config, **kwargs):
         self._config = config
         self.__dict__.update(kwargs)
@@ -1377,10 +1377,10 @@ class FieldDescriptions(qUtils.Descriptions):
         return self[self.idFieldName]
     id = qUtils.CachedAttribute(id)
 
-    
+
 class FieldDescriptionsRepository:
     '''Wraps config (dictionary) values with FieldDescriptions class.
-    
+
     Usage:
         fieldDescriptions = FieldDescriptionsRepository({
             'table1': [

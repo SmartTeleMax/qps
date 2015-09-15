@@ -20,7 +20,7 @@ from qDB.qSQL import Query, Param
 
 class VirtualRule:
     '''Class for rules of virtual streams with single parameter.  Stream ID is
-    formed as prefix+item_id_from_paramStream+suffix, where 
+    formed as prefix+item_id_from_paramStream+suffix, where
     (prefix, suffix)=format.  If format is not set, then (paramStream+'/', '')
     assumed.'''
 
@@ -90,7 +90,7 @@ class VirtualRule:
         condition = self.condition(stream)
         if condition:
             stream.addToCondition(condition)
-    
+
     def condition(self, stream):
         conn = stream.dbConn
         item = stream.createNewItem()

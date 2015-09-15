@@ -17,7 +17,7 @@ class StaticItem(qBase.Item):
 
 class StaticStream(qBase.Stream):
     '''Class for streams with statically defined (hard-coded) items data.
-    
+
     The simpiest way to use it is defining itemListSpec option in stream
     configuration.  But for large data sets you may want to subclass, e.g.:
         class Cities(StaticStream):

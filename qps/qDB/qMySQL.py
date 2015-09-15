@@ -42,7 +42,7 @@ class Connection(qSQL.Connection):
             query += Query('%s=' % name, Param(value))
         query = 'UPDATE %s SET ' % table + query
         return self.execute(query)
-    
+
     class _sql_lock:
         def __init__(self, connection, lock_string):
             self.connection = connection

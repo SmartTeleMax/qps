@@ -63,12 +63,12 @@ class FieldStorage(cgi.FieldStorage):
     getfirst and getlist methods return unicode strings instead of
     binary strings (except ascii strings)
     '''
-    
+
     def __init__(self, *args, **kwargs):
         self._charset = kwargs.pop('charset', None)
         self._errors = kwargs.pop('errors', 'strict')
         cgi.FieldStorage.__init__(self, *args, **kwargs)
-        
+
     def getString(self, key, default=None):
         '''Like of getfirst, returning unicode object if charset is set'''
         value = self.getfirst(key)
@@ -106,7 +106,7 @@ class FieldStorage(cgi.FieldStorage):
         item.stream = stream
         errors = item.initFieldsFromForm(self)
         return (item, errors)
-    
+
 
 class BaseForm(object):
     '''Hacked cgi.FieldStorage for use with PPA HTTP adapters'''

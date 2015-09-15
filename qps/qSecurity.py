@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 #
 # access rights for stream should be defined like following:
 #   [('wheel', perm_all), ('editor', perm_edit)]
-# 
+#
 # Permissions:
 # r - read (former 'view' for streams and 'read' for fields)
 # w - write (former 'edit')
@@ -96,7 +96,7 @@ class UserItem(UserBase, SQLItem):
     def groups(self):
         return [x.id for x in self.qps_groups]
     groups = qUtils.CachedAttribute(groups)"""
-    
+
     groups = defaultGroups # should be overloaded
 
     def __str__(self):
@@ -104,7 +104,7 @@ class UserItem(UserBase, SQLItem):
 
     def __nonzero__(self):
         return self.id is not None
-        
+
 
 class UsersStream(SQLStream):
     itemClass = UserItem
@@ -161,7 +161,7 @@ class Authentication(object):
 class HTTPAuthentication(Authentication):
     securityGroupTable = {}
     authenticationHeader = 'Basic realm="QPS"'
-    
+
     def getUser(self, publisher, request, response):
         return PyUser(request.user(), self.securityGroupTable)
 
@@ -175,7 +175,7 @@ class CookieAuthentication(Authentication):
     authCookieName = "qpsuser" # name for auth cookie
     expireTimeout = 31536000 # year in seconds
     authCookieTmpl = "%(publisher.prefix)s"
-    
+
 
     def _authCookiePath(self, publisher):
         return qUtils.interpolateString(self.authCookieTmpl,
@@ -222,7 +222,7 @@ class CookieAuthentication(Authentication):
         try:
             passwd = str(passwd)
         except UnicodeEncodeError:
-            passwd = None        
+            passwd = None
 
         stream = publisher.site.retrieveStream(self.usersStream)
         user = stream.getUser(login)
@@ -237,7 +237,7 @@ class CookieAuthentication(Authentication):
     def checkCreds(self, publisher, login, passwd):
         """Returns user object, associated with given login and password,
         if no user is matched - bool(of returned user object) is False"""
-        
+
         stream = publisher.site.retrieveStream(self.usersStream)
         user = stream.getUser(login)
         if user and user.fields[stream.passwdField].crypt(passwd) == \

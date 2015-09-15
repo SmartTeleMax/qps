@@ -7,7 +7,7 @@ class Connection(qSQL.Connection):
                                  IntegrityError, Binary
 
     DuplicateEntryError = IntegrityError
-    
+
     def queryLimits(self, limitOffset=0, limitSize=0):
         '''Return SQL representation of limits.  Used by other methods.'''
         if limitOffset or limitSize:
@@ -20,22 +20,22 @@ class Connection(qSQL.Connection):
         if not rows:
             return
         if len(rows) > 1:
-            raise self.ProgrammingError('too many rows in result: %d' % 
+            raise self.ProgrammingError('too many rows in result: %d' %
                                                                     len(rows))
         return rows[0]
-    
+
     def selectRowAsDict(self, table, fields, condition=''):
         rows = self.selectRowsAsDict(table, fields, condition='')
         if not rows:
             return
         if len(rows) > 1:
-            raise self.ProgrammingError('too many rows in result: %d' % 
+            raise self.ProgrammingError('too many rows in result: %d' %
                                                                     len(rows))
         return rows[0]
-    
+
     def lastInsertID(self, table, column='id'):
         return self.execute('select last_insert_rowid()').fetchone()[0]
-    
+
     def begin(self):
         # sqlite starts transactions automatically
         self.connect()
@@ -56,20 +56,20 @@ fk_id = '%(child_table)s_%(child_column)s'
 # insert and update triggers
 
 # foreign key not null
-notexist_condition = '''((SELECT %(parent_column)s FROM %(parent_table)s 
+notexist_condition = '''((SELECT %(parent_column)s FROM %(parent_table)s
                 WHERE %(parent_column)s = new.%(child_column)s)
                IS NULL)'''
 
 # foreign key may be null
-notnull_and_notexist_condition = '''((new.%(child_column)s IS NOT NULL) 
+notnull_and_notexist_condition = '''((new.%(child_column)s IS NOT NULL)
           AND ''' + notexist_condition + ')'
-               
+
 insert_trigger = '''
 CREATE TRIGGER fki_%(fk_id)s
 BEFORE INSERT ON %(child_table)s
-FOR EACH ROW 
+FOR EACH ROW
     WHEN %(condition)s
-BEGIN 
+BEGIN
     SELECT RAISE(ABORT, 'insert on table "%(child_table)s" violates foreign key constraint on column "%(child_column)s"');
 END;
 '''
@@ -79,7 +79,7 @@ CREATE TRIGGER fku_%(fk_id)s
 BEFORE UPDATE ON %(child_table)s
 FOR EACH ROW
     WHEN %(condition)s
-BEGIN 
+BEGIN
     SELECT RAISE(ABORT, 'update on table "%(child_table)s" violates foreign key constraint on column "%(child_column)s"');
 END;
 '''
@@ -95,7 +95,7 @@ FOR EACH ROW
     WHEN ((SELECT %(child_column)s FROM %(child_table)s
            WHERE '''  + _is_child + ''')
           IS NOT NULL)
-BEGIN 
+BEGIN
     SELECT RAISE(ABORT, 'delete on table "%(parent_table)s" violates foreign key constraint on table "%(child_table)s" column "%(child_column)s"');
 END;
 '''
@@ -103,7 +103,7 @@ END;
 del_cascade = '''
 CREATE TRIGGER fkd_%(fk_id)s
 BEFORE DELETE ON %(parent_table)s
-FOR EACH ROW BEGIN 
+FOR EACH ROW BEGIN
     DELETE from %(child_table)s WHERE ''' + _is_child + ''';
 END;
 '''
@@ -111,7 +111,7 @@ END;
 del_null = '''
 CREATE TRIGGER fkd_%(fk_id)s
 BEFORE DELETE ON %(parent_table)s
-FOR EACH ROW BEGIN 
+FOR EACH ROW BEGIN
     UPDATE %(child_table)s set %(child_column)s=NULL WHERE ''' + _is_child +''';
 END;
 '''
@@ -119,9 +119,9 @@ END;
 
 def make_triggers(table, col, parent_table, parent_col='id',
                          not_null=False, on_delete='restrict'):
-    ''' Generates a list of CREATE TRIGGER statements that can be used 
-        to emulate a foreign key on <table.col> referencing 
-        <parent_table.parent_col>. 
+    ''' Generates a list of CREATE TRIGGER statements that can be used
+        to emulate a foreign key on <table.col> referencing
+        <parent_table.parent_col>.
         No trigger fires on update of a primary key -don't do that '''
     names = {
         'child_table': table,
@@ -130,7 +130,7 @@ def make_triggers(table, col, parent_table, parent_col='id',
         'parent_column': parent_col,
     }
     names['fk_id'] = fk_id % names
-    
+
     # insert and update triggers
     if not_null:
         condition = notexist_condition

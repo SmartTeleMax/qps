@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class Raw:
     "Raw query parameter"
-    
+
     def __init__(self, value):
         self.value = value
     def __repr__(self):
@@ -38,7 +38,7 @@ class Query(object):
         query = Query('id=', Param(10))
         query += ' AND ' + Query('date>', Param(datetimeobject)) + \
         ' AND published=' + Param('y')
-        
+
 
         Query(' AND ').join(query_parts)
 
@@ -202,16 +202,16 @@ class Connection(object):
     _db_module = None  # Overwrite it in descending class
     _dbh = None
     _current_transaction = None
-    connectHandler = None    
+    connectHandler = None
 
     # redefine in subclasses to exception
     # dbmodule raises for duplicate entries
     class DuplicateEntryError(RuntimeError):
         pass
-                                    
+
     class ExecuteOutsideOfTransaction(RuntimeError):
         pass
-    
+
     class ConnectInTransaction(RuntimeError):
         pass
 
@@ -248,7 +248,7 @@ class Connection(object):
     def begin(self):
         pass
     commit = rollback = begin
-    
+
     def execute(self, query):
         '''Execute SQL command and return cursor.'''
 

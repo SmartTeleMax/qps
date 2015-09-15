@@ -22,7 +22,7 @@ class AtomicWriteFile(file):
         if isinstance(data, unicode):
             data = data.encode(self._charset)
         file.write(self, data)
-    
+
     # Inherited __del__ calls file.close() and file is not renamed.  So
     # redefined close() method is like a commit.
     def close(self):
@@ -77,7 +77,7 @@ class Writer:
             try:
                 os.rmdir(full_path)
             except OSError:
-                break    
+                break
 
     def getFP(self, path):
         full_path = self.path(path)
@@ -149,7 +149,7 @@ class Maker(BaseMaker):
         template.interpret(fp, namespace, {'brick': obj, '__object__': obj})
         fp.close()
 
-       
+
 class StreamsMaker(BaseMaker):
 
     def process(self, site):
@@ -162,7 +162,7 @@ class ItemsMaker(BaseMaker):
     tag = None
     skip_items = 0
     all_pages = 0
-    
+
     def process(self, stream):
         if self.skip_items:
             return
