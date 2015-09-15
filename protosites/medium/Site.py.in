@@ -1,4 +1,4 @@
-# $Id: Site.py.in,v 1.1 2004/06/04 08:43:35 ods Exp $
+# $Id: Site.py.in,v 1.2 2004/06/09 10:18:52 ods Exp $
 #import locale
 #locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 from qps import qSite

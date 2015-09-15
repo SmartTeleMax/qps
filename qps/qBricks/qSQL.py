@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.19 2006/06/01 13:34:04 corva Exp $
+# $Id: qSQL.py,v 1.20 2006/09/14 13:22:09 corva Exp $
 
 '''Classes for bricks with data stored in SQL DB'''
 
@@ -234,7 +234,7 @@ class SQLStream(qBase.Stream):
         '''Retrieve stream items'''
         if not self._retrieved or ignoreStatus:
             self.clear()
-            logger.debug("Retrieving stream `%s'", self.id)
+            #logger.debug("Retrieving stream `%s'", self.id)
             limits=self.calculateLimits()
             table, fields, condition, group, order = self.constructQuery()
             self.itemList = self.itemsByQuery(table, fields, condition,

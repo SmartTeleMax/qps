@@ -1,4 +1,4 @@
-# $Id: qBase.py,v 1.23 2006/09/28 19:03:01 corva Exp $
+# $Id: qBase.py,v 1.24 2006/10/05 14:42:31 olga_sorokina Exp $
 
 '''Base brick classes'''
 

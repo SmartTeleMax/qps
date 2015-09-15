@@ -1,4 +1,4 @@
-# $Id: qFieldTypes.py,v 1.95 2006/10/04 15:02:17 corva Exp $
+# $Id: qFieldTypes.py,v 1.96 2006/10/09 16:15:25 ods Exp $
 
 '''Classes for common field types'''
 
@@ -306,7 +306,7 @@ class NUMBER(FieldType):
         else:
             return self.type(value)
 
-    def convertToString(self, value, item):
+    def convertToString(self, value, item=None):
         if not value and self.allowNull:
             return ''
         else:
@@ -759,7 +759,7 @@ class BOOLEAN(FieldType):
     def convertToDB(self, value, item):
         return value and self.dbTrue or self.dbFalse
 
-    def convertToString(self, value, item):
+    def convertToString(self, value, item=None):
         return value and 'True' or ''
 
     def convertFromString(self, value, item):

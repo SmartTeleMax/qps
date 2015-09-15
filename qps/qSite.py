@@ -1,4 +1,4 @@
-# $Id: qSite.py,v 1.17 2006/10/09 22:19:58 corva Exp $
+# $Id: qSite.py,v 1.18 2006/10/10 08:43:41 ods Exp $
 
 '''Classes for site as collection of streams'''
 

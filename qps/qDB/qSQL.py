@@ -1,4 +1,4 @@
-# $Id: qSQL.py,v 1.11 2006/04/10 13:36:36 ods Exp $
+# $Id: qSQL.py,v 1.12 2006/10/06 16:42:09 corva Exp $
 
 '''Base classes for database adapters to generate SQL queries'''
 
@@ -143,10 +143,10 @@ class Transaction:
         self.dbConn = conn
         if not conn._current_transaction:
             self.impl = conn._current_transaction = TransactionImpl(conn)
-            logger.debug('Transaction started')
+            #logger.debug('Transaction started')
         else:
             self.impl = conn._current_transaction
-            logger.debug('Transaction reused (level=%s)', self.impl.level)
+            #logger.debug('Transaction reused (level=%s)', self.impl.level)
         conn._current_transaction.pushLevel()
         self.opened = 1
 
@@ -173,22 +173,22 @@ class TransactionImpl:
         self.is_aborted = 0
 
     def pushLevel(self):
-        logger.debug('Transaction level %d -> %d', self.level, self.level+1)
+        #logger.debug('Transaction level %d -> %d', self.level, self.level+1)
         if not self.level:
             self.dbConn.begin()
         self.level += 1
 
     def popLevel(self):
         if self.level>0:
-            logger.debug('Transaction level %d -> %d', self.level,
-                         self.level-1)
+            #logger.debug('Transaction level %d -> %d', self.level,
+            #             self.level-1)
             self.level -= 1
             if not (self.level or self.is_aborted):
                 self.dbConn.commit()
 
     def abort(self):
         if not self.is_aborted:
-            logger.debug('Transaction aborted')
+            #logger.debug('Transaction aborted')
             self.level = 0
             self.dbConn.rollback()
             self.is_aborted = 1
@@ -233,7 +233,7 @@ class Connection(object):
     def connect(self):
         if not self.connected():
             if not self._current_transaction:
-                logger.debug('Connecting to database')
+                #logger.debug('Connecting to database')
                 args, kwargs = self.__connection_params
                 self._dbh = self._connect(*args, **kwargs)
                 if self.connectHandler:

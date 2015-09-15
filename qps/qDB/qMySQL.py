@@ -1,4 +1,4 @@
-# $Id: qMySQL.py,v 1.2 2004/06/29 08:17:33 corva Exp $
+# $Id: qMySQL.py,v 1.3 2005/12/20 20:58:47 corva Exp $
 
 '''Connection class for MySQL(tm)'''
 
@@ -13,6 +13,12 @@ class Connection(qSQL.Connection):
     escape = staticmethod(_db_module.escape_string)
 
     DuplicateEntryError = IntegrityError
+
+    def _connect(self, *args, **kwargs):
+        conn = self._db_module.connect(*args, **kwargs)
+        if self._db_module.version_info[:3] >= (1, 2, 2):
+            conn.ping(True) # Attempt to reconnect. This setting is persistent.
+        return conn
 
     def queryLimits(self, limitOffset=0, limitSize=0):
         '''Return SQL representation of limits.  Used by other methods.'''

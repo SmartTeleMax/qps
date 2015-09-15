@@ -1,4 +1,4 @@
-# $Id: qInterbase.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qInterbase.py,v 1.1 2004/06/29 08:12:37 corva Exp $
 
 '''Connection class for Interbase/Firebird
 

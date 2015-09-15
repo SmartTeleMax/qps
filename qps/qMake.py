@@ -1,4 +1,4 @@
-# $Id: qMake.py,v 1.10 2005/02/08 13:52:28 ods Exp $
+# $Id: qMake.py,v 1.11 2005/08/02 23:17:50 corva Exp $
 
 '''Defines common maker classes'''
 

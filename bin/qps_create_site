@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: qps_create_site,v 1.12 2004/04/22 11:23:36 corva Exp $
+# $Id: qps_create_site,v 1.13 2004/04/22 14:24:24 corva Exp $
 
 import sys, os, shutil
 sys.path.append('..')  # let it work without installation

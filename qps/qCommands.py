@@ -1,4 +1,4 @@
-# $Id: qCommands.py,v 1.13 2006/09/28 15:37:34 ods Exp $
+# $Id: qCommands.py,v 1.14 2006/10/05 14:42:30 olga_sorokina Exp $
 
 '''Framework for scripts with several commands (actions)'''
 

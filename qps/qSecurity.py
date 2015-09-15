@@ -1,4 +1,4 @@
-# $Id: qSecurity.py,v 1.19 2006/10/02 14:46:07 ods Exp $
+# $Id: qSecurity.py,v 1.20 2006/10/05 14:42:30 olga_sorokina Exp $
 
 '''Function to check permissions'''
 

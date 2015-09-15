@@ -1,4 +1,4 @@
-# $Id: qEvents.py,v 1.10 2005/01/19 23:44:33 corva Exp $
+# $Id: qEvents.py,v 1.1 2005/02/15 15:24:37 corva Exp $
 
 '''Event handlers'''
 

@@ -1,4 +1,4 @@
-# $Id: qPgSQL.py,v 1.1.1.1 2004/03/18 15:17:18 ods Exp $
+# $Id: qPgSQL.py,v 1.2 2006/02/23 23:04:54 corva Exp $
 
 '''Connection class for PosgreSQL'''
 

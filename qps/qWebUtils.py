@@ -1,4 +1,4 @@
-# $Id: qWebUtils.py,v 1.10 2006/02/24 18:00:38 corva Exp $
+# $Id: qWebUtils.py,v 1.11 2006/06/19 09:09:19 corva Exp $
 
 '''Template support'''
 
@@ -13,27 +13,27 @@ from PPA.Template.SourceFinders import FileSourceFinder, TemplateNotFoundError
 class Writer:
     """Fast, but incompatible StringIO.StringIO implementation. Only supports
     write and getvalue methods"""
-    
+
     def __init__(self):
-	self.parts = []
-	self.write = self.parts.append
-    
+        self.parts = []
+        self.write = lambda s: self.parts.append(unicode(s))
+
     def getvalue(self):
-	return ''.join(self.parts)
-	
+        return ''.join(self.parts)
+
 
 class _PPATemplateWrapper(TemplateWrapper):
-    
+
     def __call__(self, namespace={}, **kwargs):
-	fp = Writer()
+        fp = Writer()
         self.interpret(fp, namespace, kwargs)
         return fp.getvalue()
-        
+
 
 class TemplateGetter(object):
 
     _getters = {}
-    
+
     def __new__(cls, search_dirs, cacheClass=MemoryCache):
         search_dirs = tuple(search_dirs)  # Insure sequence is immutable
         getter_key = (search_dirs,)

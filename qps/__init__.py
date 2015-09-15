@@ -1,4 +1,4 @@
-# $Id: __init__.py,v 1.15 2005/04/05 12:23:31 ods Exp $
+# $Id: __init__.py,v 1.16 2005/08/18 02:12:28 corva Exp $
 
 '''Q Publishing System
 (c) 2000-2004 Sergey Barbarash, Oleg Broytmann, Pavel Barykin, Alexey
